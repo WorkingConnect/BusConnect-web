@@ -942,7 +942,44 @@ export interface AdminBus {
   bus_type: { name: string; class: string; seat_count: number } | null;
 }
 
-export type AdminRoute = RouteCatalogEntry;
+/** A stop as the admin editor sees it — its own pin + waypoint flag. A hidden
+ *  waypoint has no named location (location_id/name null). */
+export interface AdminRouteStop {
+  route_stop_id: string;
+  location_id: string | null;
+  name: string | null;
+  seq: number;
+  lat: number | null;
+  lng: number | null;
+  is_waypoint: boolean;
+}
+
+/** GeoJSON LineString the route's saved road path comes back as. */
+export interface GeoJsonLineString {
+  type: 'LineString';
+  coordinates: [number, number][]; // [lng, lat]
+}
+
+export interface AdminRoute {
+  id: string;
+  name: string;
+  image_url: string | null;
+  origin_id: string;
+  dest_id: string;
+  origin_name: string | null;
+  dest_name: string | null;
+  path: GeoJsonLineString | null;
+  stops: AdminRouteStop[];
+  created_at: string;
+}
+
+/** One road-path option from Google Directions (via the preview endpoint). */
+export interface RoutePathOption {
+  coordinates: [number, number][]; // [lng, lat]
+  summary: string;
+  distanceM: number;
+  durationS: number;
+}
 
 // ── Users (admin) — every account, any role ─────────────────────────────────
 
@@ -1189,9 +1226,20 @@ export function listAdminRoutes(accessToken: string) {
   return request<AdminRoute[]>('/admin/routes', { accessToken });
 }
 
+export interface RouteStopInput {
+  /** Named place for a real stop; omit/null for a hidden waypoint. */
+  locationId?: string | null;
+  lat: number;
+  lng: number;
+  isWaypoint?: boolean;
+}
+
 export interface UpsertRouteInput {
   name: string;
-  stopLocationIds: string[];
+  stops: RouteStopInput[];
+  /** Admin-chosen road path from the preview ([lng, lat] pairs); falls back to
+   *  the Directions best route when omitted. */
+  pathCoordinates?: [number, number][];
   imageUrl?: string;
 }
 
@@ -1220,14 +1268,12 @@ export function regenerateAdminRoutePath(accessToken: string, routeId: string) {
   return request<{ ok: true }>(`/admin/routes/${routeId}/path`, { method: 'POST', accessToken });
 }
 
-export function updateAdminLocationCoords(
-  accessToken: string,
-  locationId: string,
-  body: { lat: number; lng: number },
-) {
-  return request<AdminLocation>(`/admin/locations/${locationId}/coords`, {
-    method: 'PATCH',
-    body: JSON.stringify(body),
+/** Previews the Google Directions road path(s) for a set of stops without
+ *  saving — powers the editor's "Preview path" button and alternatives picker. */
+export function previewAdminRoutePath(accessToken: string, stops: RouteStopInput[]) {
+  return request<{ options: RoutePathOption[] }>('/admin/routes/preview-path', {
+    method: 'POST',
+    body: JSON.stringify({ stops }),
     accessToken,
   });
 }
