@@ -1278,6 +1278,32 @@ export function previewAdminRoutePath(accessToken: string, stops: RouteStopInput
   });
 }
 
+export interface RouteTripCandidate {
+  trip_id: string;
+  depart_at: string;
+  status: string;
+  bus_reg_no: string;
+  operator_name: string;
+  gps_points: number;
+  distance_m: number;
+}
+
+/** Trips run on this route with a recorded GPS trace — pick one to use its
+ *  real driven path instead of a Directions guess (optional). */
+export function listCandidateTripsForPath(accessToken: string, routeId: string) {
+  return request<RouteTripCandidate[]>(`/admin/routes/${routeId}/candidate-trips`, { accessToken });
+}
+
+/** Optional: previews the route's path from a real trip's recorded GPS trace,
+ *  snapped to roads — "record once, snap to roads", without saving. */
+export function previewPathFromTrip(accessToken: string, routeId: string, tripId: string) {
+  return request<{ coordinates: [number, number][] }>(`/admin/routes/${routeId}/path-from-trip`, {
+    method: 'POST',
+    body: JSON.stringify({ tripId }),
+    accessToken,
+  });
+}
+
 /** Parses a pasted Google Maps link (long-form or maps.app.goo.gl short link) into coordinates. */
 export function resolveMapsLink(accessToken: string, url: string) {
   return request<{ lat: number; lng: number }>('/admin/locations/resolve-maps-link', {

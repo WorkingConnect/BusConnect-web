@@ -32,11 +32,14 @@ import {
   deleteAdminRoute,
   regenerateAdminRoutePath,
   previewAdminRoutePath,
+  listCandidateTripsForPath,
+  previewPathFromTrip,
   ApiError,
   type AdminLocation,
   type AdminRoute,
   type RoutePathOption,
   type RouteStopInput,
+  type RouteTripCandidate,
 } from "@/lib/api";
 
 let stopKeySeq = 0;
@@ -264,6 +267,14 @@ function RouteEditor({
   const [options, setOptions] = useState<RoutePathOption[] | null>(null);
   const [selectedOption, setSelectedOption] = useState(0);
 
+  // Optional: use a real recorded trip's GPS trace as the path instead.
+  const [tripSectionOpen, setTripSectionOpen] = useState(false);
+  const [candidateTrips, setCandidateTrips] = useState<RouteTripCandidate[] | null>(null);
+  const [loadingTrips, setLoadingTrips] = useState(false);
+  const [tripPathBusy, setTripPathBusy] = useState<string | null>(null); // tripId in flight
+  const [tripPathError, setTripPathError] = useState<string | null>(null);
+  const [usedTripId, setUsedTripId] = useState<string | null>(null);
+
   const stops = editor.stops;
   const setStops = (next: EditorStop[]) => setEditor({ ...editor, stops: next });
 
@@ -349,6 +360,7 @@ function RouteEditor({
       }
       setOptions(opts);
       setSelectedOption(0);
+      setUsedTripId(null);
       setEditor({ ...editor, stops, path: opts[0].coordinates });
     } catch (e) {
       setPreviewError(e instanceof ApiError ? e.message : "Could not preview the path.");
@@ -360,7 +372,37 @@ function RouteEditor({
   function chooseOption(i: number) {
     if (!options) return;
     setSelectedOption(i);
+    setUsedTripId(null);
     setEditor({ ...editor, stops, path: options[i].coordinates });
+  }
+
+  async function openTripSection() {
+    setTripSectionOpen((v) => !v);
+    if (candidateTrips || !editor.id) return;
+    setLoadingTrips(true);
+    try {
+      setCandidateTrips(await listCandidateTripsForPath(token, editor.id));
+    } catch (e) {
+      setTripPathError(e instanceof ApiError ? e.message : "Could not load trips for this route.");
+    } finally {
+      setLoadingTrips(false);
+    }
+  }
+
+  async function applyTripPath(tripId: string) {
+    if (!editor.id) return;
+    setTripPathError(null);
+    setTripPathBusy(tripId);
+    try {
+      const { coordinates } = await previewPathFromTrip(token, editor.id, tripId);
+      setOptions(null);
+      setUsedTripId(tripId);
+      setEditor({ ...editor, stops, path: coordinates });
+    } catch (e) {
+      setTripPathError(e instanceof ApiError ? e.message : "Could not snap that trip's GPS trace to roads.");
+    } finally {
+      setTripPathBusy(null);
+    }
   }
 
   async function save() {
@@ -619,8 +661,79 @@ function RouteEditor({
           )}
           {editor.path && (
             <p className="ui mt-2 text-xs text-slate-400 dark:text-zinc-500">
-              Road path set — it saves with the route.
+              {usedTripId
+                ? "Using a real recorded trip's driven path — it saves with the route."
+                : "Road path set — it saves with the route."}
             </p>
+          )}
+
+          {editor.id && (
+            <div className="mt-4 border-t border-slate-100 pt-3 dark:border-zinc-800">
+              <button
+                type="button"
+                onClick={() => void openTripSection()}
+                className="ui flex w-full items-center justify-between text-left text-xs font-medium text-slate-600 hover:text-slate-800 dark:text-zinc-400 dark:hover:text-zinc-200"
+              >
+                <span>Optional: use a real recorded trip&rsquo;s driven path instead</span>
+                <ArrowDown
+                  size={13}
+                  className={`shrink-0 transition-transform ${tripSectionOpen ? "rotate-180" : ""}`}
+                />
+              </button>
+              {tripSectionOpen && (
+                <div className="mt-2">
+                  <p className="ui mb-2 text-xs text-slate-400 dark:text-zinc-500">
+                    If a bus has actually run this route with live tracking on, its recorded GPS
+                    trace can become the route&rsquo;s official path (snapped to roads) — more
+                    accurate than a Directions guess since it&rsquo;s the exact road the bus took.
+                  </p>
+                  {loadingTrips ? (
+                    <div className="flex items-center gap-2 text-xs text-slate-400 dark:text-zinc-500">
+                      <Loader2 size={13} className="animate-spin" /> Loading trips…
+                    </div>
+                  ) : !candidateTrips?.length ? (
+                    <p className="ui text-xs text-slate-400 dark:text-zinc-500">
+                      No trips on this route have a recorded GPS trace yet.
+                    </p>
+                  ) : (
+                    <div className="flex flex-col gap-1.5">
+                      {candidateTrips.map((t) => (
+                        <div
+                          key={t.trip_id}
+                          className={`ui flex items-center justify-between rounded-lg border px-3 py-1.5 text-xs ${
+                            usedTripId === t.trip_id
+                              ? "border-brand bg-brand-soft text-brand dark:border-blue-500 dark:bg-brand-soft-dark dark:text-blue-300"
+                              : "border-slate-200 text-slate-600 dark:border-zinc-800 dark:text-zinc-300"
+                          }`}
+                        >
+                          <span>
+                            {new Date(t.depart_at).toLocaleDateString()} · {t.operator_name} ·{" "}
+                            {t.bus_reg_no} · {(t.distance_m / 1000).toFixed(1)} km · {t.gps_points} pts
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => void applyTripPath(t.trip_id)}
+                            disabled={tripPathBusy === t.trip_id}
+                            className="ui shrink-0 font-semibold text-brand hover:underline disabled:opacity-60 dark:text-blue-400"
+                          >
+                            {tripPathBusy === t.trip_id ? (
+                              <Loader2 size={12} className="animate-spin" />
+                            ) : usedTripId === t.trip_id ? (
+                              "Using this"
+                            ) : (
+                              "Use this trip"
+                            )}
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  {tripPathError && (
+                    <p className="ui mt-2 text-xs text-red-600 dark:text-red-400">{tripPathError}</p>
+                  )}
+                </div>
+              )}
+            </div>
           )}
         </div>
       </div>
