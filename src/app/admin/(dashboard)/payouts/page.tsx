@@ -169,24 +169,24 @@ function PayoutSection({
 
   return (
     <section className="mt-8">
-      <div className="flex flex-wrap items-center gap-2">
-        <h2 className="font-heading text-lg font-semibold">{active.title}</h2>
-        <div className="ui flex gap-1 rounded-xl bg-slate-100 p-1 dark:bg-zinc-800">
-          {order.map((b) => (
-            <button
-              key={b}
-              type="button"
-              onClick={() => onSelect(b)}
-              className={`rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
-                selected === b
-                  ? "bg-white text-slate-900 shadow-sm dark:bg-zinc-950 dark:text-white"
-                  : "text-slate-500 hover:text-slate-700 dark:text-zinc-400 dark:hover:text-zinc-200"
-              }`}
-            >
-              {sections[b].title} ({sections[b].rows.length})
-            </button>
-          ))}
-        </div>
+      <div className="ui flex flex-wrap gap-1 rounded-xl bg-slate-100 p-1 dark:bg-zinc-800">
+        {order.map((b) => (
+          <button
+            key={b}
+            type="button"
+            onClick={() => onSelect(b)}
+            className={`font-heading rounded-lg px-3 py-1.5 text-lg font-semibold transition-colors ${
+              selected === b
+                ? "bg-white text-slate-900 shadow-sm dark:bg-zinc-950 dark:text-white"
+                : "text-slate-400 hover:text-slate-600 dark:text-zinc-500 dark:hover:text-zinc-300"
+            }`}
+          >
+            {sections[b].title}{" "}
+            <span className="ui text-sm font-normal text-slate-400 dark:text-zinc-500">
+              ({sections[b].rows.length})
+            </span>
+          </button>
+        ))}
       </div>
       <p className="ui mt-2 text-xs text-slate-500 dark:text-zinc-500">{active.subtitle}</p>
 
