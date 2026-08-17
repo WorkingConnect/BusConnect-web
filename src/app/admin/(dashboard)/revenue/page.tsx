@@ -22,11 +22,14 @@ function localDateIso(iso: string) {
   return new Date(iso).toLocaleDateString("en-CA");
 }
 
+type Bucket = "ready" | "locked";
+
 export default function AdminRevenuePage() {
   const [token, setToken] = useState<string | null>(null);
   const [rows, setRows] = useState<AdminPayoutRow[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [viewTripId, setViewTripId] = useState<string | null>(null);
+  const [selected, setSelected] = useState<Bucket>("ready");
 
   const [operatorId, setOperatorId] = useState("");
   const [routeId, setRouteId] = useState("");
@@ -111,6 +114,22 @@ export default function AdminRevenuePage() {
     list.reduce((s, r) => s + r[key], 0);
   const filtersActive = !!operatorId || !!routeId || !!busRegNo || !!date;
 
+  const sections: Record<Bucket, { title: string; subtitle: string; rows: AdminPayoutRow[]; emptyMessage: string }> = {
+    ready: {
+      title: "Ready payouts",
+      subtitle: "Completed trips — revenue is final.",
+      rows: ready,
+      emptyMessage: "No completed trips yet.",
+    },
+    locked: {
+      title: "Locked payouts",
+      subtitle: "Upcoming or in-progress trips — revenue is still provisional until the trip completes.",
+      rows: locked,
+      emptyMessage: "No upcoming or in-progress trips with bookings.",
+    },
+  };
+  const active = sections[selected];
+
   return (
     <div>
       <div className="flex items-center gap-2.5">
@@ -128,8 +147,19 @@ export default function AdminRevenuePage() {
       <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
         <Stat label="Gross revenue" value={money(sum(filtered, "gross"))} />
         <Stat label="Net revenue" value={money(sum(filtered, "net_amount"))} />
-        <Stat label="Ready payouts" value={money(sum(ready, "net_amount"))} accent />
-        <Stat label="Locked payouts" value={money(sum(locked, "net_amount"))} />
+        <Stat
+          label="Ready payouts"
+          value={money(sum(ready, "net_amount"))}
+          accent
+          selected={selected === "ready"}
+          onClick={() => setSelected("ready")}
+        />
+        <Stat
+          label="Locked payouts"
+          value={money(sum(locked, "net_amount"))}
+          selected={selected === "locked"}
+          onClick={() => setSelected("locked")}
+        />
         <Stat label="BusConnect revenue" value={money(sum(filtered, "commission_amount"))} />
       </div>
 
@@ -196,22 +226,13 @@ export default function AdminRevenuePage() {
         )}
       </div>
 
-      <div className="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <RevenueSection
-          title="Ready payouts"
-          subtitle="Completed trips — revenue is final."
-          rows={ready}
-          emptyMessage="No completed trips yet."
-          onView={setViewTripId}
-        />
-        <RevenueSection
-          title="Locked payouts"
-          subtitle="Upcoming or in-progress trips — revenue is still provisional until the trip completes."
-          rows={locked}
-          emptyMessage="No upcoming or in-progress trips with bookings."
-          onView={setViewTripId}
-        />
-      </div>
+      <RevenueSection
+        title={active.title}
+        subtitle={active.subtitle}
+        rows={active.rows}
+        emptyMessage={active.emptyMessage}
+        onView={setViewTripId}
+      />
 
       {viewTripId && token && (
         <TripDetailModal token={token} tripId={viewTripId} onClose={() => setViewTripId(null)} />
@@ -234,7 +255,7 @@ function RevenueSection({
   onView: (tripId: string) => void;
 }) {
   return (
-    <section>
+    <section className="mt-8">
       <h2 className="font-heading text-lg font-semibold">
         {title} <span className="ui text-sm font-normal text-slate-400 dark:text-zinc-500">({rows.length})</span>
       </h2>
@@ -299,13 +320,45 @@ function RevenueSection({
   );
 }
 
-function Stat({ label, value, accent }: { label: string; value: string; accent?: boolean }) {
-  return (
-    <div className="card px-4 py-4 text-center">
-      <div className={`font-heading text-lg font-bold ${accent ? "text-emerald-600 dark:text-emerald-400" : "text-brand dark:text-blue-400"}`}>
-        {value}
-      </div>
-      <div className="ui mt-1 text-xs uppercase tracking-wide text-slate-500 dark:text-zinc-500">{label}</div>
+function Stat({
+  label,
+  value,
+  accent,
+  selected,
+  onClick,
+}: {
+  label: string;
+  value: string;
+  accent?: boolean;
+  selected?: boolean;
+  onClick?: () => void;
+}) {
+  const valueEl = (
+    <div className={`font-heading text-lg font-bold ${accent ? "text-emerald-600 dark:text-emerald-400" : "text-brand dark:text-blue-400"}`}>
+      {value}
     </div>
+  );
+  const labelEl = <div className="ui mt-1 text-xs uppercase tracking-wide text-slate-500 dark:text-zinc-500">{label}</div>;
+
+  if (!onClick) {
+    return (
+      <div className="card px-4 py-4 text-center">
+        {valueEl}
+        {labelEl}
+      </div>
+    );
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`card px-4 py-4 text-center transition-colors ${
+        selected ? "ring-2 ring-brand dark:ring-blue-400" : "hover:bg-slate-50 dark:hover:bg-zinc-900"
+      }`}
+    >
+      {valueEl}
+      {labelEl}
+    </button>
   );
 }

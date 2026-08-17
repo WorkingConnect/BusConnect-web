@@ -15,6 +15,8 @@ function dateTime(iso: string) {
   return new Date(iso).toLocaleString("en-LK", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
 }
 
+type Bucket = "ready" | "locked" | "paid";
+
 export default function AdminPayoutsPage() {
   const [token, setToken] = useState<string | null>(null);
   const [rows, setRows] = useState<AdminPayoutRow[]>([]);
@@ -22,6 +24,7 @@ export default function AdminPayoutsPage() {
   const [error, setError] = useState<string | null>(null);
   const [settleTrip, setSettleTrip] = useState<AdminPayoutRow | null>(null);
   const [viewTripId, setViewTripId] = useState<string | null>(null);
+  const [selected, setSelected] = useState<Bucket>("ready");
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -76,6 +79,28 @@ export default function AdminPayoutsPage() {
   const lockedTotal = locked.reduce((s, r) => s + r.net_amount, 0);
   const paidTotal = paid.reduce((s, r) => s + r.net_amount, 0);
 
+  const sections: Record<Bucket, { title: string; subtitle: string; rows: AdminPayoutRow[]; emptyMessage: string }> = {
+    ready: {
+      title: "Ready payouts",
+      subtitle: "Arrived trips awaiting settlement.",
+      rows: ready,
+      emptyMessage: "No trips awaiting settlement.",
+    },
+    locked: {
+      title: "Locked payouts",
+      subtitle: "Upcoming or in-progress trips — revenue is still provisional until the trip arrives.",
+      rows: locked,
+      emptyMessage: "No upcoming or in-progress trips.",
+    },
+    paid: {
+      title: "Paid out",
+      subtitle: "Already settled.",
+      rows: paid,
+      emptyMessage: "Nothing settled yet.",
+    },
+  };
+  const active = sections[selected];
+
   return (
     <div>
       <div className="flex items-center gap-2.5">
@@ -91,43 +116,21 @@ export default function AdminPayoutsPage() {
       </div>
 
       <div className="mt-6 grid grid-cols-3 gap-3">
-        <Stat label="Ready payouts" value={money(readyTotal)} accent />
-        <Stat label="Locked payouts" value={money(lockedTotal)} />
-        <Stat label="Paid out" value={money(paidTotal)} />
+        <Stat label="Ready payouts" value={money(readyTotal)} accent selected={selected === "ready"} onClick={() => setSelected("ready")} />
+        <Stat label="Locked payouts" value={money(lockedTotal)} selected={selected === "locked"} onClick={() => setSelected("locked")} />
+        <Stat label="Paid out" value={money(paidTotal)} selected={selected === "paid"} onClick={() => setSelected("paid")} />
       </div>
 
-      <div className="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-3">
-        <PayoutSection
-          title="Ready payouts"
-          subtitle="Arrived trips awaiting settlement."
-          rows={ready}
-          emptyMessage="No trips awaiting settlement."
-          token={token}
-          onView={setViewTripId}
-          onSettle={setSettleTrip}
-          onChange={load}
-        />
-        <PayoutSection
-          title="Locked payouts"
-          subtitle="Upcoming or in-progress trips — revenue is still provisional until the trip arrives."
-          rows={locked}
-          emptyMessage="No upcoming or in-progress trips."
-          token={token}
-          onView={setViewTripId}
-          onSettle={setSettleTrip}
-          onChange={load}
-        />
-        <PayoutSection
-          title="Paid out"
-          subtitle="Already settled."
-          rows={paid}
-          emptyMessage="Nothing settled yet."
-          token={token}
-          onView={setViewTripId}
-          onSettle={setSettleTrip}
-          onChange={load}
-        />
-      </div>
+      <PayoutSection
+        title={active.title}
+        subtitle={active.subtitle}
+        rows={active.rows}
+        emptyMessage={active.emptyMessage}
+        token={token}
+        onView={setViewTripId}
+        onSettle={setSettleTrip}
+        onChange={load}
+      />
 
       {settleTrip && (
         <SettleModal
@@ -166,7 +169,7 @@ function PayoutSection({
   onChange: () => void;
 }) {
   return (
-    <section>
+    <section className="mt-8">
       <h2 className="font-heading text-lg font-semibold">
         {title} <span className="ui text-sm font-normal text-slate-400 dark:text-zinc-500">({rows.length})</span>
       </h2>
@@ -224,13 +227,33 @@ function PayoutSection({
   );
 }
 
-function Stat({ label, value, accent }: { label: string; value: string; accent?: boolean }) {
+function Stat({
+  label,
+  value,
+  accent,
+  selected,
+  onClick,
+}: {
+  label: string;
+  value: string;
+  accent?: boolean;
+  selected: boolean;
+  onClick: () => void;
+}) {
   return (
-    <div className="card px-4 py-4 text-center">
+    <button
+      type="button"
+      onClick={onClick}
+      className={`card px-4 py-4 text-center transition-colors ${
+        selected
+          ? "ring-2 ring-brand dark:ring-blue-400"
+          : "hover:bg-slate-50 dark:hover:bg-zinc-900"
+      }`}
+    >
       <div className={`font-heading text-lg font-bold ${accent ? "text-emerald-600 dark:text-emerald-400" : "text-brand dark:text-blue-400"}`}>
         {value}
       </div>
       <div className="ui mt-1 text-xs uppercase tracking-wide text-slate-500 dark:text-zinc-500">{label}</div>
-    </div>
+    </button>
   );
 }
