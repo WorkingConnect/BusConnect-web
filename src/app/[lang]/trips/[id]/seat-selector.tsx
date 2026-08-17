@@ -205,6 +205,10 @@ export function SeatSelector(props: Props) {
           </span>
         </div>
 
+        <p className="ui mb-2 text-center text-[11px] font-bold tracking-wide text-slate-400 dark:text-zinc-500">
+          FRONT OF BUS
+        </p>
+
         <div className="flex flex-col items-center gap-2">
           {grid.map((row, r) => (
             <div key={r} className="flex items-center gap-2">
