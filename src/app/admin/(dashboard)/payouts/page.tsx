@@ -96,36 +96,38 @@ export default function AdminPayoutsPage() {
         <Stat label="Paid out" value={money(paidTotal)} />
       </div>
 
-      <PayoutSection
-        title="Ready payouts"
-        subtitle="Arrived trips awaiting settlement."
-        rows={ready}
-        emptyMessage="No trips awaiting settlement."
-        token={token}
-        onView={setViewTripId}
-        onSettle={setSettleTrip}
-        onChange={load}
-      />
-      <PayoutSection
-        title="Locked payouts"
-        subtitle="Upcoming or in-progress trips — revenue is still provisional until the trip arrives."
-        rows={locked}
-        emptyMessage="No upcoming or in-progress trips."
-        token={token}
-        onView={setViewTripId}
-        onSettle={setSettleTrip}
-        onChange={load}
-      />
-      <PayoutSection
-        title="Paid out"
-        subtitle="Already settled."
-        rows={paid}
-        emptyMessage="Nothing settled yet."
-        token={token}
-        onView={setViewTripId}
-        onSettle={setSettleTrip}
-        onChange={load}
-      />
+      <div className="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-3">
+        <PayoutSection
+          title="Ready payouts"
+          subtitle="Arrived trips awaiting settlement."
+          rows={ready}
+          emptyMessage="No trips awaiting settlement."
+          token={token}
+          onView={setViewTripId}
+          onSettle={setSettleTrip}
+          onChange={load}
+        />
+        <PayoutSection
+          title="Locked payouts"
+          subtitle="Upcoming or in-progress trips — revenue is still provisional until the trip arrives."
+          rows={locked}
+          emptyMessage="No upcoming or in-progress trips."
+          token={token}
+          onView={setViewTripId}
+          onSettle={setSettleTrip}
+          onChange={load}
+        />
+        <PayoutSection
+          title="Paid out"
+          subtitle="Already settled."
+          rows={paid}
+          emptyMessage="Nothing settled yet."
+          token={token}
+          onView={setViewTripId}
+          onSettle={setSettleTrip}
+          onChange={load}
+        />
+      </div>
 
       {settleTrip && (
         <SettleModal
@@ -164,7 +166,7 @@ function PayoutSection({
   onChange: () => void;
 }) {
   return (
-    <section className="mt-8">
+    <section>
       <h2 className="font-heading text-lg font-semibold">
         {title} <span className="ui text-sm font-normal text-slate-400 dark:text-zinc-500">({rows.length})</span>
       </h2>
