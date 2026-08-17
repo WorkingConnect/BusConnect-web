@@ -128,9 +128,11 @@ export default async function TripPage({
         </div>
       </header>
 
-      {/* 12-col: 8 main (seat map) + 4 sidebar */}
+      {/* 12-col: 8 main (seat map) + 4 sidebar. Below lg, order is flipped so
+          the journey/trip details lead and the seat map sits at the bottom —
+          matching the mobile app's screen order (trip info, then seats). */}
       <div className="mt-8 grid grid-cols-1 gap-8 lg:grid-cols-12">
-        <section className="lg:col-span-8">
+        <section className="order-2 lg:order-1 lg:col-span-8">
           <h2 className="mb-4 font-heading text-xl font-semibold">Select your seats</h2>
           <SeatSelector
             tripId={trip.id}
@@ -143,7 +145,7 @@ export default async function TripPage({
           />
         </section>
 
-        <aside className="lg:col-span-4">
+        <aside className="order-1 lg:order-2 lg:col-span-4">
           <div className="lg:sticky lg:top-32">
             <div className="card p-5">
               <h3 className="font-heading font-semibold">Your journey</h3>

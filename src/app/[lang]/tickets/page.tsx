@@ -41,6 +41,9 @@ export default async function TicketsPage() {
   // RLS restricts bookings + tickets to the signed-in user's own rows.
   // Unpaid bookings (pending/reserved_unpaid) never surface here — a booking
   // only belongs in "my tickets" once it's confirmed or explicitly cancelled.
+  // hidden_by_passenger excludes cancelled/refunded bookings the passenger
+  // has removed from their list (see TicketsList's delete action) — mirrors
+  // BusConnect-mobile's listMyBookings() query.
   const { data } = await supabase
     .from("bookings")
     .select(
@@ -52,6 +55,7 @@ export default async function TicketsPage() {
        tickets ( qr_signature, status )`,
     )
     .in("status", ["confirmed", "cancelled", "refunded"])
+    .eq("hidden_by_passenger", false)
     .order("created_at", { ascending: false });
 
   // A confirmed booking whose trip has arrived and whose ticket was fully
