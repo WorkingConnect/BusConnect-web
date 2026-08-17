@@ -1099,6 +1099,27 @@ export function getAdminAnalytics(accessToken: string) {
   return request<AdminAnalytics>('/admin/analytics', { accessToken });
 }
 
+export interface AdminWalletHolder {
+  passengerId: string;
+  name: string | null;
+  phone: string | null;
+  email: string | null;
+  balance: number;
+  currency: string;
+  updatedAt: string;
+}
+
+export interface AdminWalletOverview {
+  totalBalance: number;
+  currency: string;
+  holderCount: number;
+  wallets: AdminWalletHolder[];
+}
+
+export function getAdminWalletOverview(accessToken: string) {
+  return request<AdminWalletOverview>('/admin/wallets', { accessToken });
+}
+
 export function findAdminBookingById(accessToken: string, bookingId: string) {
   return request<AdminBooking>(`/admin/bookings/${bookingId}`, { accessToken });
 }
