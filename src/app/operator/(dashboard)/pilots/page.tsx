@@ -147,6 +147,8 @@ export default async function OperatorPilotsPage() {
                   <AssignFleetButton
                     pilotId={p.id}
                     busOptions={busOptions}
+                    currentBusId={p.assigned_bus_id}
+                    currentRole={p.assigned_role}
                     disabled={p.status !== "active" || !p.user_id}
                     disabledReason={
                       p.status !== "active"

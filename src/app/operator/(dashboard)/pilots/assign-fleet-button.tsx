@@ -15,18 +15,25 @@ const ROLES = [
 export function AssignFleetButton({
   pilotId,
   busOptions,
+  currentBusId,
+  currentRole,
   disabled,
   disabledReason,
 }: {
   pilotId: string;
   busOptions: { id: string; label: string }[];
+  /** Pre-fills the modal with the pilot's existing assignment, if any —
+   *  without this, "updating" an already-assigned pilot's role could
+   *  silently move them to whichever bus happens to be first in the list. */
+  currentBusId?: string | null;
+  currentRole?: "driver" | "conductor" | null;
   disabled?: boolean;
   disabledReason?: string;
 }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
-  const [busId, setBusId] = useState(busOptions[0]?.id ?? "");
-  const [role, setRole] = useState<"driver" | "conductor">("driver");
+  const [busId, setBusId] = useState(currentBusId ?? busOptions[0]?.id ?? "");
+  const [role, setRole] = useState<"driver" | "conductor">(currentRole ?? "driver");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -57,7 +64,11 @@ export function AssignFleetButton({
     <>
       <button
         type="button"
-        onClick={() => setOpen(true)}
+        onClick={() => {
+          setBusId(currentBusId ?? busOptions[0]?.id ?? "");
+          setRole(currentRole ?? "driver");
+          setOpen(true);
+        }}
         disabled={disabled}
         title={disabled ? disabledReason : undefined}
         className="ui inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg border border-slate-200 px-2.5 py-1.5 text-xs font-semibold text-slate-700 transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40 dark:border-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-800"
