@@ -107,7 +107,8 @@ export default function AdminRevenuePage() {
   );
   const ready = filtered.filter((r) => r.status === "arrived");
   const locked = filtered.filter((r) => r.status !== "arrived" && r.status !== "cancelled");
-  const sum = (list: AdminPayoutRow[], key: "net_amount" | "seats_sold") => list.reduce((s, r) => s + r[key], 0);
+  const sum = (list: AdminPayoutRow[], key: "net_amount" | "seats_sold" | "commission_amount") =>
+    list.reduce((s, r) => s + r[key], 0);
   const filtersActive = !!operatorId || !!routeId || !!busRegNo || !!date;
 
   return (
@@ -128,7 +129,7 @@ export default function AdminRevenuePage() {
         <Stat label="Net revenue" value={money(sum(filtered, "net_amount"))} />
         <Stat label="Ready payouts" value={money(sum(ready, "net_amount"))} accent />
         <Stat label="Locked payouts" value={money(sum(locked, "net_amount"))} />
-        <Stat label="Confirmed bookings" value={String(sum(filtered, "seats_sold"))} />
+        <Stat label="BusConnect revenue" value={money(sum(filtered, "commission_amount"))} />
       </div>
 
       <div className="mt-6 flex flex-wrap items-end gap-3">
