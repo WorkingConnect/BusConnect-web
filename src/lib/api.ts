@@ -919,10 +919,12 @@ export interface AdminAnalytics {
 
 export interface AdminBooking {
   id: string;
+  passenger_id: string | null;
   seats: string[];
   amount: number;
   status: string;
   created_at: string;
+  hidden_by_passenger: boolean;
   trip: { depart_at: string; bus: { operator: { name: string } | null } | null } | null;
   tickets?: { id: string; status: string }[];
   payments?: { id: string; status: string; amount: number }[];
