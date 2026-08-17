@@ -48,7 +48,7 @@ export default async function OperatorRevenuePage() {
         <div>
           <h1 className="font-heading text-2xl font-bold tracking-tight">Revenue</h1>
           <p className="ui text-sm text-slate-500 dark:text-zinc-400">
-            Every trip&apos;s earnings, split by whether they&apos;re finished (ready to pay out) or still upcoming.
+            Every trip&apos;s earnings — awaiting settlement, still upcoming, or already paid out.
           </p>
         </div>
       </div>

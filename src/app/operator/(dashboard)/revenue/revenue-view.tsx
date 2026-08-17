@@ -1,8 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import Link from "next/link";
-import { Users, ArrowUpRight, ChevronDown } from "lucide-react";
+import { Users, ChevronDown } from "lucide-react";
 import type { OperatorRevenueRow } from "@/lib/api";
 import { ViewSlipButton } from "./view-slip-button";
 
@@ -50,8 +49,11 @@ export function RevenueView({ rows }: { rows: OperatorRevenueRow[] }) {
       (!date || localDateIso(r.depart_at) === date),
   );
 
-  const ready = filtered.filter((r) => r.status === "arrived");
+  // Three mutually exclusive buckets, same split as admin's Payouts page:
+  // arrived-and-unpaid, not-yet-arrived (still provisional), already paid.
+  const ready = filtered.filter((r) => r.status === "arrived" && r.payout_status !== "paid");
   const locked = filtered.filter((r) => r.status !== "arrived" && r.status !== "cancelled");
+  const paidOut = filtered.filter((r) => r.payout_status === "paid");
 
   const sum = (list: OperatorRevenueRow[], key: "net_amount" | "seats_sold") =>
     list.reduce((s, r) => s + r[key], 0);
@@ -60,11 +62,10 @@ export function RevenueView({ rows }: { rows: OperatorRevenueRow[] }) {
 
   return (
     <div>
-      <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <Stat label="Net earned" value={money(sum(filtered, "net_amount"))} />
+      <div className="mt-6 grid grid-cols-3 gap-3">
         <Stat label="Ready payouts" value={money(sum(ready, "net_amount"))} accent />
         <Stat label="Locked payouts" value={money(sum(locked, "net_amount"))} />
-        <Stat label="Confirmed bookings" value={String(sum(filtered, "seats_sold"))} />
+        <Stat label="Paid out" value={money(sum(paidOut, "net_amount"))} />
       </div>
 
       <div className="mt-6 flex flex-wrap items-end gap-3">
@@ -117,15 +118,21 @@ export function RevenueView({ rows }: { rows: OperatorRevenueRow[] }) {
 
       <RevenueSection
         title="Ready payouts"
-        subtitle="Completed trips — revenue is final."
+        subtitle="Completed trips awaiting settlement."
         rows={ready}
-        emptyMessage="No completed trips yet."
+        emptyMessage="No trips awaiting settlement."
       />
       <RevenueSection
         title="Locked payouts"
         subtitle="Upcoming or in-progress trips — revenue is still provisional until the trip completes."
         rows={locked}
         emptyMessage="No upcoming or in-progress trips."
+      />
+      <RevenueSection
+        title="Paid out"
+        subtitle="Already settled."
+        rows={paidOut}
+        emptyMessage="Nothing settled yet."
       />
     </div>
   );
@@ -159,16 +166,14 @@ function RevenueSection({
                 <div className="min-w-0">
                   <div className="flex items-center gap-2">
                     <p className="truncate font-heading font-semibold">{r.route?.name ?? "—"}</p>
-                    {r.status === "arrived" ? (
-                      r.payout_status === "paid" ? (
-                        <span className="ui shrink-0 rounded-full bg-emerald-100 px-2 py-0.5 text-[11px] font-semibold text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300">
-                          Paid
-                        </span>
-                      ) : (
-                        <span className="ui shrink-0 rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-semibold text-amber-700 dark:bg-amber-950/50 dark:text-amber-300">
-                          Pending
-                        </span>
-                      )
+                    {r.payout_status === "paid" ? (
+                      <span className="ui shrink-0 rounded-full bg-emerald-100 px-2 py-0.5 text-[11px] font-semibold text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300">
+                        Paid
+                      </span>
+                    ) : r.status === "arrived" ? (
+                      <span className="ui shrink-0 rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-semibold text-amber-700 dark:bg-amber-950/50 dark:text-amber-300">
+                        Pending
+                      </span>
                     ) : (
                       <span className={`ui shrink-0 rounded-full px-2 py-0.5 text-[11px] font-semibold capitalize ${TRIP_STATUS_STYLE[r.status] ?? TRIP_STATUS_STYLE.scheduled}`}>
                         {r.status}
@@ -191,12 +196,6 @@ function RevenueSection({
                     </p>
                     <p className="font-heading text-lg font-bold text-brand dark:text-blue-400">{money(r.net_amount)}</p>
                   </div>
-                  <Link
-                    href={`/operator/trips/${r.trip_id}`}
-                    className="ui inline-flex items-center gap-1 rounded-lg border border-slate-200 px-2 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-50 dark:border-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-800"
-                  >
-                    View <ArrowUpRight size={12} />
-                  </Link>
                   {r.payout_status === "paid" && r.has_slip && <ViewSlipButton tripId={r.trip_id} />}
                 </div>
               </div>
