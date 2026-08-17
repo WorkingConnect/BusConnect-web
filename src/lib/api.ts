@@ -183,6 +183,9 @@ export interface Booking {
   payments?: { id: string; status: string; amount: number }[];
   refunds?: { id: string; amount: number; reason: string; status: string }[];
   trip?: { depart_at: string };
+  /** All rows share the same expires_at — created together by one
+   *  hold_seats() call and linked to this booking as a group. */
+  holds?: { expires_at: string }[];
 }
 
 export interface CancelResult {

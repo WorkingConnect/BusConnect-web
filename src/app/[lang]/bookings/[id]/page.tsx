@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getBooking, ApiError, type Booking } from "@/lib/api";
 import { PayButton } from "./pay-button";
 import { CancelButton } from "./cancel-button";
+import { HoldTimer } from "./hold-timer";
 
 export default async function BookingPage({
   params,
@@ -55,6 +56,15 @@ export default async function BookingPage({
   const isConfirmed = booking.status === "confirmed";
   const isPayable = booking.status === "pending" || booking.status === "reserved_unpaid";
   const isCancelled = booking.status === "cancelled";
+  // Card and wallet payments both add a 2% convenience fee server-side
+  // (mpgs.service.ts checkout(), 0055_wallet_convenience_fee.sql) — show it
+  // up front so what's charged never surprises the payer, and once paid,
+  // show what was actually charged (the payments row) rather than
+  // recomputing, since a refund/adjustment could make that inaccurate.
+  const CONVENIENCE_FEE_PCT = 0.02;
+  const latestPayment = booking.payments?.[booking.payments.length - 1];
+  const paidAmount = isConfirmed && latestPayment ? Number(latestPayment.amount) : null;
+  const totalWithFee = Number(booking.amount) * (1 + CONVENIENCE_FEE_PCT);
   const hasDeparted = booking.trip
     ? new Date(booking.trip.depart_at).getTime() <= Date.now()
     : false;
@@ -96,12 +106,38 @@ export default async function BookingPage({
             <dt className="ui text-slate-500 dark:text-zinc-400">Seats</dt>
             <dd className="font-semibold">{booking.seats.join(", ")}</dd>
           </div>
-          <div className="flex justify-between">
-            <dt className="ui text-slate-500 dark:text-zinc-400">Amount</dt>
-            <dd className="font-heading font-bold text-brand dark:text-blue-400">
-              LKR {Number(booking.amount).toLocaleString("en-LK")}
-            </dd>
-          </div>
+          {isPayable ? (
+            <>
+              <div className="flex justify-between">
+                <dt className="ui text-slate-500 dark:text-zinc-400">Subtotal</dt>
+                <dd>LKR {Number(booking.amount).toLocaleString("en-LK")}</dd>
+              </div>
+              <div className="flex justify-between">
+                <dt className="ui text-slate-500 dark:text-zinc-400">Convenience fee (2%)</dt>
+                <dd>
+                  LKR{" "}
+                  {(Number(booking.amount) * CONVENIENCE_FEE_PCT).toLocaleString("en-LK", {
+                    maximumFractionDigits: 2,
+                  })}
+                </dd>
+              </div>
+              <div className="flex justify-between border-t border-slate-200 pt-3 dark:border-zinc-800">
+                <dt className="ui font-semibold text-slate-700 dark:text-zinc-300">Amount due</dt>
+                <dd className="font-heading font-bold text-brand dark:text-blue-400">
+                  LKR {totalWithFee.toLocaleString("en-LK", { maximumFractionDigits: 2 })}
+                </dd>
+              </div>
+            </>
+          ) : (
+            <div className="flex justify-between">
+              <dt className="ui text-slate-500 dark:text-zinc-400">Amount</dt>
+              <dd className="font-heading font-bold text-brand dark:text-blue-400">
+                LKR {(paidAmount ?? Number(booking.amount)).toLocaleString("en-LK", {
+                  maximumFractionDigits: 2,
+                })}
+              </dd>
+            </div>
+          )}
           <div className="flex justify-between">
             <dt className="ui text-slate-500 dark:text-zinc-400">Status</dt>
             <dd
@@ -156,6 +192,10 @@ export default async function BookingPage({
             </p>
           </div>
         </div>
+      )}
+
+      {isPayable && booking.holds?.[0]?.expires_at && (
+        <HoldTimer expiresAt={booking.holds[0].expires_at} />
       )}
 
       {isPayable && (
