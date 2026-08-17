@@ -326,6 +326,7 @@ export interface OperatorTrip {
   arrive_est: string | null;
   base_fare: number;
   status: string;
+  journey_id: string | null;
   route: { id: string; name: string; origin_id: string; dest_id: string } | null;
   bus: { reg_no: string; bus_type: { name: string; class: string; seat_count: number } };
 }

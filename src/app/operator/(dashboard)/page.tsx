@@ -8,7 +8,6 @@ import {
   ArrowRight,
   Clock,
   Ban,
-  CalendarClock,
   Bus as BusIcon,
   ScanLine,
 } from "lucide-react";
@@ -27,11 +26,6 @@ import {
   type MyAssignment,
 } from "@/lib/api";
 import { formatTime } from "@/lib/journey-format";
-
-const STATUS_STYLE: Record<string, string> = {
-  active: "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300",
-  paused: "bg-amber-100 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300",
-};
 
 function formatDateTime(iso: string) {
   return new Date(iso).toLocaleString("en-LK", {
@@ -157,17 +151,42 @@ export default async function OperatorOverviewPage() {
   const upcomingTrips = trips
     .filter((t) => new Date(t.depart_at).getTime() > now && t.status !== "cancelled")
     .sort((a, b) => new Date(a.depart_at).getTime() - new Date(b.depart_at).getTime());
-  const DEPARTURES_SHOWN = 8;
-  const shownTrips = upcomingTrips.slice(0, DEPARTURES_SHOWN);
-  const moreTripsCount = upcomingTrips.length - shownTrips.length;
-
-  const JOURNEYS_SHOWN = 4;
-  const sortedJourneys = [...journeys].sort((a, b) => {
-    if (a.status !== b.status) return a.status === "active" ? -1 : 1;
-    return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
-  });
-  const shownJourneys = sortedJourneys.slice(0, JOURNEYS_SHOWN);
   const activeJourneyCount = journeys.filter((j) => j.status === "active").length;
+
+  // Group upcoming departures by their parent journey — the dashboard shows
+  // one card per journey (soonest departure + how many more are scheduled)
+  // rather than a flat trip list; drilling into a journey shows its full
+  // upcoming-departures list. Ad-hoc trips with no journey_id (e.g. admin-
+  // created) get their own bucket so they're never silently dropped.
+  const journeyById = new Map(journeys.map((j) => [j.id, j] as const));
+  const tripsByJourney = new Map<string, OperatorTrip[]>();
+  const adHocTrips: OperatorTrip[] = [];
+  for (const t of upcomingTrips) {
+    if (t.journey_id && journeyById.has(t.journey_id)) {
+      const list = tripsByJourney.get(t.journey_id) ?? [];
+      list.push(t);
+      tripsByJourney.set(t.journey_id, list);
+    } else {
+      adHocTrips.push(t);
+    }
+  }
+  const journeyGroups = [...tripsByJourney.entries()]
+    .map(([journeyId, journeyTrips]) => ({ journey: journeyById.get(journeyId)!, trips: journeyTrips }))
+    .sort((a, b) => new Date(a.trips[0].depart_at).getTime() - new Date(b.trips[0].depart_at).getTime());
+
+  const GROUPS_SHOWN = 6;
+  const shownGroups = journeyGroups.slice(0, GROUPS_SHOWN);
+  const moreGroupsCount = journeyGroups.length - shownGroups.length;
+
+  const AD_HOC_SHOWN = 4;
+  const shownAdHoc = adHocTrips.slice(0, AD_HOC_SHOWN);
+  const moreAdHocCount = adHocTrips.length - shownAdHoc.length;
+
+  // Pilots aren't grouped by journey — they just see their assigned bus's
+  // upcoming trips as a flat list, same as before.
+  const PILOT_DEPARTURES_SHOWN = 8;
+  const shownTrips = upcomingTrips.slice(0, PILOT_DEPARTURES_SHOWN);
+  const moreTripsCount = upcomingTrips.length - shownTrips.length;
 
   return (
     <div>
@@ -259,82 +278,32 @@ export default async function OperatorOverviewPage() {
         </div>
       )}
 
-      {role === "owner" && (
-        <section className="mt-8">
-          <div className="flex items-center justify-between gap-3">
-            <div className="flex items-center gap-2.5">
-              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand-soft text-brand dark:bg-brand-soft-dark dark:text-blue-300">
-                <CalendarClock size={18} />
-              </span>
-              <h2 className="font-heading text-xl font-semibold">Your journeys</h2>
-            </div>
-            {journeys.length > 0 && (
-              <Link
-                href="/operator/journeys"
-                className="ui flex items-center gap-1 text-sm font-medium text-brand hover:underline dark:text-blue-400"
-              >
-                View all <ArrowRight size={13} />
-              </Link>
-            )}
-          </div>
-
-          {shownJourneys.length === 0 ? (
-            <div className="card mt-4 p-8 text-center text-slate-500 dark:text-zinc-400">
-              No journeys yet — create a reusable service, then schedule its dates from the Timetable.
-              <div>
-                <Link href="/operator/journeys/new" className="btn-primary mt-4">
-                  <PlusCircle size={16} /> Create your first journey
-                </Link>
-              </div>
-            </div>
-          ) : (
-            <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
-              {shownJourneys.map((j) => (
-                <Link
-                  key={j.id}
-                  href={`/operator/journeys/${j.id}`}
-                  className="card card-hover flex items-center justify-between gap-3 p-4"
-                >
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-2">
-                      <p className="truncate font-heading font-semibold">{j.route?.name ?? "—"}</p>
-                      <span className={`ui shrink-0 rounded-full px-2 py-0.5 text-[11px] font-semibold capitalize ${STATUS_STYLE[j.status]}`}>
-                        {j.status}
-                      </span>
-                    </div>
-                    <p className="ui mt-0.5 text-sm text-slate-500 dark:text-zinc-400">
-                      {formatTime(j.depart_time)} → {formatTime(j.arrive_time)}
-                    </p>
-                    <p className="ui mt-0.5 text-xs text-slate-400 dark:text-zinc-500">
-                      {j.bus?.reg_no ?? "—"} · {j.bus?.bus_type?.name ?? "—"}
-                    </p>
-                  </div>
-                  <ChevronRight size={16} className="shrink-0 text-slate-400" />
-                </Link>
-              ))}
-            </div>
-          )}
-        </section>
-      )}
-
       <section className="mt-8">
-        <div className="flex items-center gap-2.5">
-          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand-soft text-brand dark:bg-brand-soft-dark dark:text-blue-300">
-            <TrendingUp size={18} />
-          </span>
-          <h2 className="font-heading text-xl font-semibold">
-            {role === "owner" ? "Upcoming departures" : "Trips you can board"}
-          </h2>
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2.5">
+            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand-soft text-brand dark:bg-brand-soft-dark dark:text-blue-300">
+              <TrendingUp size={18} />
+            </span>
+            <h2 className="font-heading text-xl font-semibold">
+              {role === "owner" ? "Upcoming departures" : "Trips you can board"}
+            </h2>
+          </div>
+          {role === "owner" && journeys.length > 0 && (
+            <Link
+              href="/operator/journeys"
+              className="ui flex items-center gap-1 text-sm font-medium text-brand hover:underline dark:text-blue-400"
+            >
+              All journeys <ArrowRight size={13} />
+            </Link>
+          )}
         </div>
 
-        {shownTrips.length === 0 ? (
-          <div className="card mt-4 p-10 text-center text-slate-500 dark:text-zinc-400">
-            {role === "owner"
-              ? journeys.length === 0
+        {role === "owner" ? (
+          journeyGroups.length === 0 && adHocTrips.length === 0 ? (
+            <div className="card mt-4 p-10 text-center text-slate-500 dark:text-zinc-400">
+              {journeys.length === 0
                 ? "No upcoming departures — create a journey, then schedule its dates from the Timetable."
-                : "No upcoming departures — schedule some dates for your journeys from the Timetable."
-              : "No trips yet — you'll see them here once your operator assigns you to a bus."}
-            {role === "owner" && (
+                : "No upcoming departures — schedule some dates for your journeys from the Timetable."}
               <div>
                 {journeys.length === 0 ? (
                   <Link href="/operator/journeys/new" className="btn-primary mt-4">
@@ -346,7 +315,83 @@ export default async function OperatorOverviewPage() {
                   </Link>
                 )}
               </div>
-            )}
+            </div>
+          ) : (
+            <>
+              {/* One card per journey — click through for its full upcoming-departures list. */}
+              <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                {shownGroups.map(({ journey, trips: journeyTrips }) => (
+                  <Link
+                    key={journey.id}
+                    href={`/operator/journeys/${journey.id}`}
+                    className="card card-hover flex items-center justify-between gap-3 p-4"
+                  >
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2">
+                        <p className="truncate font-heading font-semibold">{journey.route?.name ?? "—"}</p>
+                        <span className="ui shrink-0 rounded-full bg-brand-soft px-2 py-0.5 text-[11px] font-semibold text-brand dark:bg-brand-soft-dark dark:text-blue-300">
+                          {journeyTrips.length} upcoming
+                        </span>
+                      </div>
+                      <p className="ui mt-0.5 text-sm text-slate-500 dark:text-zinc-400">
+                        {formatTime(journey.depart_time)} → {formatTime(journey.arrive_time)}
+                      </p>
+                      <p className="ui mt-0.5 text-xs text-slate-400 dark:text-zinc-500">
+                        Next: {formatDateTime(journeyTrips[0].depart_at)} · {journey.bus?.reg_no ?? "—"}
+                      </p>
+                    </div>
+                    <ChevronRight size={16} className="shrink-0 text-slate-400" />
+                  </Link>
+                ))}
+              </div>
+              {moreGroupsCount > 0 && (
+                <p className="ui mt-2 px-1 text-center text-sm text-slate-500 dark:text-zinc-400">
+                  +{moreGroupsCount} more {moreGroupsCount === 1 ? "journey" : "journeys"} with upcoming departures
+                </p>
+              )}
+
+              {/* Ad-hoc trips (no parent journey — e.g. admin-created) don't fit the grouping above. */}
+              {shownAdHoc.length > 0 && (
+                <div className="mt-6">
+                  <h3 className="ui text-xs font-semibold uppercase tracking-wide text-slate-400 dark:text-zinc-600">
+                    Other upcoming trips
+                  </h3>
+                  <div className="mt-3 flex flex-col gap-3">
+                    {shownAdHoc.map((t) => (
+                      <Link
+                        key={t.id}
+                        href={`/operator/trips/${t.id}`}
+                        className="card card-hover flex items-center justify-between p-4"
+                      >
+                        <div className="min-w-0">
+                          <p className="truncate font-heading font-semibold">{t.route?.name ?? "—"}</p>
+                          <p className="ui mt-0.5 flex items-center gap-1.5 text-sm text-slate-500 dark:text-zinc-400">
+                            <Users size={13} />
+                            {t.bus.bus_type.name} · {t.bus.bus_type.seat_count} seats · Bus {t.bus.reg_no}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-3 text-right">
+                          <div>
+                            <p className="font-medium">{formatDateTime(t.depart_at)}</p>
+                            <p className="ui text-xs capitalize text-slate-500 dark:text-zinc-400">{t.status}</p>
+                          </div>
+                          <ChevronRight size={16} className="text-slate-400" />
+                        </div>
+                      </Link>
+                    ))}
+                    {moreAdHocCount > 0 && (
+                      <p className="ui px-1 text-center text-sm text-slate-500 dark:text-zinc-400">
+                        +{moreAdHocCount} more
+                      </p>
+                    )}
+                  </div>
+                </div>
+              )}
+            </>
+          )
+        ) : shownTrips.length === 0 ? (
+          <div className="card mt-4 p-10 text-center text-slate-500 dark:text-zinc-400">
+            No trips yet — you&apos;ll see them here once your operator assigns you to a bus.
           </div>
         ) : (
           <div className="mt-4 flex flex-col gap-3">

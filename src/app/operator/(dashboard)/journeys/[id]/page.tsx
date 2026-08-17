@@ -1,10 +1,19 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, ArrowRight, Bus, MapPin, Pencil, User, Wallet } from "lucide-react";
+import { ArrowLeft, ArrowRight, Bus, CalendarClock, ChevronRight, MapPin, Pencil, User, Wallet } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
-import { getJourney, ApiError, type OperatorJourneyDetail } from "@/lib/api";
+import { getJourney, listOperatorTrips, ApiError, type OperatorJourneyDetail, type OperatorTrip } from "@/lib/api";
 import { formatTime, durationLabel } from "@/lib/journey-format";
 import { JourneyActions } from "./journey-actions";
+
+function formatDateTime(iso: string) {
+  return new Date(iso).toLocaleString("en-LK", {
+    day: "numeric",
+    month: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
 
 const STATUS_STYLE: Record<string, string> = {
   active: "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300",
@@ -53,9 +62,13 @@ export default async function JourneyDetailPage({
   }
 
   let journey: OperatorJourneyDetail | null = null;
+  let trips: OperatorTrip[] = [];
   let error: string | null = null;
   try {
-    journey = await getJourney(session.access_token, id);
+    [journey, trips] = await Promise.all([
+      getJourney(session.access_token, id),
+      listOperatorTrips(session.access_token),
+    ]);
   } catch (e) {
     if (e instanceof ApiError && e.status === 404) notFound();
     error = e instanceof ApiError ? e.message : "Could not reach BusConnect-api. Is it running?";
@@ -72,6 +85,11 @@ export default async function JourneyDetailPage({
 
   const boarding = journey.stops.filter((s) => s.can_board);
   const dropoff = [...journey.stops.filter((s) => s.can_drop)].reverse();
+
+  const now = Date.now();
+  const upcomingDepartures = trips
+    .filter((t) => t.journey_id === id && new Date(t.depart_at).getTime() > now && t.status !== "cancelled")
+    .sort((a, b) => new Date(a.depart_at).getTime() - new Date(b.depart_at).getTime());
 
   return (
     <div className="mx-auto w-full max-w-3xl">
@@ -158,6 +176,40 @@ export default async function JourneyDetailPage({
       <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
         <PointsTable title="Boarding points" points={boarding} />
         <PointsTable title="Drop-off points" points={dropoff} />
+      </div>
+
+      {/* Upcoming departures scheduled for this journey */}
+      <div className="card-lg mt-4 p-5">
+        <div className="flex items-center gap-2.5">
+          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-soft text-brand dark:bg-brand-soft-dark dark:text-blue-300">
+            <CalendarClock size={15} />
+          </span>
+          <h2 className="ui text-xs font-semibold uppercase tracking-wide text-slate-400 dark:text-zinc-600">
+            Upcoming departures
+          </h2>
+        </div>
+
+        {upcomingDepartures.length === 0 ? (
+          <div className="mt-4 rounded-xl border border-dashed border-slate-200 p-6 text-center text-sm text-slate-500 dark:border-zinc-800 dark:text-zinc-400">
+            No upcoming departures — schedule some dates for this journey from the Timetable.
+          </div>
+        ) : (
+          <div className="mt-3 flex flex-col">
+            {upcomingDepartures.map((t) => (
+              <Link
+                key={t.id}
+                href={`/operator/trips/${t.id}`}
+                className="flex items-center justify-between gap-3 border-b border-slate-100 py-3 last:border-0 hover:opacity-80 dark:border-zinc-800/60"
+              >
+                <p className="font-medium">{formatDateTime(t.depart_at)}</p>
+                <div className="flex items-center gap-2">
+                  <span className="ui text-xs capitalize text-slate-500 dark:text-zinc-400">{t.status}</span>
+                  <ChevronRight size={15} className="text-slate-400" />
+                </div>
+              </Link>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
