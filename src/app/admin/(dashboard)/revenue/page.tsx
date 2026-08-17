@@ -128,7 +128,6 @@ export default function AdminRevenuePage() {
       emptyMessage: "No upcoming or in-progress trips with bookings.",
     },
   };
-  const active = sections[selected];
 
   return (
     <div>
@@ -147,19 +146,8 @@ export default function AdminRevenuePage() {
       <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
         <Stat label="Gross revenue" value={money(sum(filtered, "gross"))} />
         <Stat label="Net revenue" value={money(sum(filtered, "net_amount"))} />
-        <Stat
-          label="Ready payouts"
-          value={money(sum(ready, "net_amount"))}
-          accent
-          selected={selected === "ready"}
-          onClick={() => setSelected("ready")}
-        />
-        <Stat
-          label="Locked payouts"
-          value={money(sum(locked, "net_amount"))}
-          selected={selected === "locked"}
-          onClick={() => setSelected("locked")}
-        />
+        <Stat label="Ready payouts" value={money(sum(ready, "net_amount"))} accent />
+        <Stat label="Locked payouts" value={money(sum(locked, "net_amount"))} />
         <Stat label="BusConnect revenue" value={money(sum(filtered, "commission_amount"))} />
       </div>
 
@@ -226,13 +214,7 @@ export default function AdminRevenuePage() {
         )}
       </div>
 
-      <RevenueSection
-        title={active.title}
-        subtitle={active.subtitle}
-        rows={active.rows}
-        emptyMessage={active.emptyMessage}
-        onView={setViewTripId}
-      />
+      <RevenueSection sections={sections} selected={selected} onSelect={setSelected} onView={setViewTripId} />
 
       {viewTripId && token && (
         <TripDetailModal token={token} tripId={viewTripId} onClose={() => setViewTripId(null)} />
@@ -242,30 +224,47 @@ export default function AdminRevenuePage() {
 }
 
 function RevenueSection({
-  title,
-  subtitle,
-  rows,
-  emptyMessage,
+  sections,
+  selected,
+  onSelect,
   onView,
 }: {
-  title: string;
-  subtitle: string;
-  rows: AdminPayoutRow[];
-  emptyMessage: string;
+  sections: Record<Bucket, { title: string; subtitle: string; rows: AdminPayoutRow[]; emptyMessage: string }>;
+  selected: Bucket;
+  onSelect: (b: Bucket) => void;
   onView: (tripId: string) => void;
 }) {
+  const active = sections[selected];
+  const order: Bucket[] = ["ready", "locked"];
+
   return (
     <section className="mt-8">
-      <h2 className="font-heading text-lg font-semibold">
-        {title} <span className="ui text-sm font-normal text-slate-400 dark:text-zinc-500">({rows.length})</span>
-      </h2>
-      <p className="ui mt-0.5 text-xs text-slate-500 dark:text-zinc-500">{subtitle}</p>
+      <div className="flex flex-wrap items-center gap-2">
+        <h2 className="font-heading text-lg font-semibold">{active.title}</h2>
+        <div className="ui flex gap-1 rounded-xl bg-slate-100 p-1 dark:bg-zinc-800">
+          {order.map((b) => (
+            <button
+              key={b}
+              type="button"
+              onClick={() => onSelect(b)}
+              className={`rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
+                selected === b
+                  ? "bg-white text-slate-900 shadow-sm dark:bg-zinc-950 dark:text-white"
+                  : "text-slate-500 hover:text-slate-700 dark:text-zinc-400 dark:hover:text-zinc-200"
+              }`}
+            >
+              {sections[b].title} ({sections[b].rows.length})
+            </button>
+          ))}
+        </div>
+      </div>
+      <p className="ui mt-2 text-xs text-slate-500 dark:text-zinc-500">{active.subtitle}</p>
 
       <div className="mt-3 flex flex-col gap-2">
-        {rows.length === 0 ? (
-          <div className="card p-6 text-center text-sm text-slate-500 dark:text-zinc-400">{emptyMessage}</div>
+        {active.rows.length === 0 ? (
+          <div className="card p-6 text-center text-sm text-slate-500 dark:text-zinc-400">{active.emptyMessage}</div>
         ) : (
-          rows.map((r) => (
+          active.rows.map((r) => (
             <div key={r.id} className="card p-4">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div className="min-w-0">
@@ -320,45 +319,13 @@ function RevenueSection({
   );
 }
 
-function Stat({
-  label,
-  value,
-  accent,
-  selected,
-  onClick,
-}: {
-  label: string;
-  value: string;
-  accent?: boolean;
-  selected?: boolean;
-  onClick?: () => void;
-}) {
-  const valueEl = (
-    <div className={`font-heading text-lg font-bold ${accent ? "text-emerald-600 dark:text-emerald-400" : "text-brand dark:text-blue-400"}`}>
-      {value}
-    </div>
-  );
-  const labelEl = <div className="ui mt-1 text-xs uppercase tracking-wide text-slate-500 dark:text-zinc-500">{label}</div>;
-
-  if (!onClick) {
-    return (
-      <div className="card px-4 py-4 text-center">
-        {valueEl}
-        {labelEl}
-      </div>
-    );
-  }
-
+function Stat({ label, value, accent }: { label: string; value: string; accent?: boolean }) {
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`card px-4 py-4 text-center transition-colors ${
-        selected ? "ring-2 ring-brand dark:ring-blue-400" : "hover:bg-slate-50 dark:hover:bg-zinc-900"
-      }`}
-    >
-      {valueEl}
-      {labelEl}
-    </button>
+    <div className="card px-4 py-4 text-center">
+      <div className={`font-heading text-lg font-bold ${accent ? "text-emerald-600 dark:text-emerald-400" : "text-brand dark:text-blue-400"}`}>
+        {value}
+      </div>
+      <div className="ui mt-1 text-xs uppercase tracking-wide text-slate-500 dark:text-zinc-500">{label}</div>
+    </div>
   );
 }
