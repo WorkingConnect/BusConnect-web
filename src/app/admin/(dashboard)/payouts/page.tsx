@@ -8,7 +8,7 @@ import { SettleModal } from "./settle-modal";
 import { PaidRowActions } from "./paid-row-actions";
 import { TripDetailModal } from "./trip-detail-modal";
 
-type Filter = "ready" | "pending" | "paid";
+type Filter = "ready" | "paid";
 
 function money(n: number) {
   return `LKR ${Number(n).toLocaleString("en-LK", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
@@ -75,11 +75,10 @@ export default function AdminPayoutsPage() {
   const pendingTotal = pending.reduce((s, r) => s + r.net_amount, 0);
   const paidTotal = paid.reduce((s, r) => s + r.net_amount, 0);
 
-  const shown = filter === "ready" ? ready : filter === "paid" ? paid : pending;
+  const shown = filter === "ready" ? ready : paid;
 
   const tabs: { key: Filter; label: string; count: number }[] = [
     { key: "ready", label: "Ready to settle", count: ready.length },
-    { key: "pending", label: "Pending (all)", count: pending.length },
     { key: "paid", label: "Paid", count: paid.length },
   ];
 
