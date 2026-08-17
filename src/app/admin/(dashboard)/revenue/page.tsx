@@ -196,20 +196,22 @@ export default function AdminRevenuePage() {
         )}
       </div>
 
-      <RevenueSection
-        title="Ready payouts"
-        subtitle="Completed trips — revenue is final."
-        rows={ready}
-        emptyMessage="No completed trips yet."
-        onView={setViewTripId}
-      />
-      <RevenueSection
-        title="Locked payouts"
-        subtitle="Upcoming or in-progress trips — revenue is still provisional until the trip completes."
-        rows={locked}
-        emptyMessage="No upcoming or in-progress trips with bookings."
-        onView={setViewTripId}
-      />
+      <div className="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <RevenueSection
+          title="Ready payouts"
+          subtitle="Completed trips — revenue is final."
+          rows={ready}
+          emptyMessage="No completed trips yet."
+          onView={setViewTripId}
+        />
+        <RevenueSection
+          title="Locked payouts"
+          subtitle="Upcoming or in-progress trips — revenue is still provisional until the trip completes."
+          rows={locked}
+          emptyMessage="No upcoming or in-progress trips with bookings."
+          onView={setViewTripId}
+        />
+      </div>
 
       {viewTripId && token && (
         <TripDetailModal token={token} tripId={viewTripId} onClose={() => setViewTripId(null)} />
@@ -232,7 +234,7 @@ function RevenueSection({
   onView: (tripId: string) => void;
 }) {
   return (
-    <section className="mt-8">
+    <section>
       <h2 className="font-heading text-lg font-semibold">
         {title} <span className="ui text-sm font-normal text-slate-400 dark:text-zinc-500">({rows.length})</span>
       </h2>
