@@ -21,10 +21,10 @@ const SEAT_STYLE: Record<string, string> = {
   available:
     "border border-slate-300 bg-white text-slate-700 hover:border-brand hover:text-brand dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300",
   selected: "bg-emerald-600 text-white",
-  male: "cursor-not-allowed bg-blue-600 text-transparent",
-  female: "cursor-not-allowed bg-pink-500 text-transparent",
-  pending: "cursor-not-allowed bg-yellow-500 text-transparent",
-  blocked: "cursor-not-allowed bg-gray-500 text-transparent dark:bg-gray-600",
+  male: "cursor-not-allowed bg-blue-600 text-white",
+  female: "cursor-not-allowed bg-pink-500 text-white",
+  pending: "cursor-not-allowed bg-yellow-500 text-white",
+  blocked: "cursor-not-allowed bg-gray-500 text-white dark:bg-gray-600",
 };
 
 export function SeatSelector(props: Props) {
