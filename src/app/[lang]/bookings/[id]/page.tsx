@@ -101,10 +101,64 @@ export default async function BookingPage({
       )}
 
       <div className="card mt-6 p-6">
-        <dl className="flex flex-col gap-3 text-sm">
+        {booking.trip?.bus?.operator?.name && (
+          <div className="mb-4 flex items-center gap-2">
+            {booking.trip.bus.operator.logo_url ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={booking.trip.bus.operator.logo_url}
+                alt=""
+                width={32}
+                height={32}
+                className="rounded-lg object-cover"
+              />
+            ) : (
+              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand text-xs font-bold text-white">
+                {booking.trip.bus.operator.name.slice(0, 1)}
+              </span>
+            )}
+            <p className="font-heading font-semibold">{booking.trip.bus.operator.name}</p>
+          </div>
+        )}
+
+        {(booking.from_stop?.location?.name_en || booking.to_stop?.location?.name_en) && (
+          <div className="mb-4 flex items-center justify-between gap-3">
+            <div>
+              <p className="ui text-[11px] text-slate-500 dark:text-zinc-400">From</p>
+              <p className="font-semibold">{booking.from_stop?.location?.name_en ?? "—"}</p>
+            </div>
+            <div className="h-px flex-1 border-t border-dashed border-slate-300 dark:border-zinc-700" />
+            <ArrowLeft size={14} className="rotate-180 shrink-0 text-brand dark:text-blue-400" />
+            <div className="h-px flex-1 border-t border-dashed border-slate-300 dark:border-zinc-700" />
+            <div className="text-right">
+              <p className="ui text-[11px] text-slate-500 dark:text-zinc-400">To</p>
+              <p className="font-semibold">{booking.to_stop?.location?.name_en ?? "—"}</p>
+            </div>
+          </div>
+        )}
+
+        <dl className="flex flex-col gap-3 border-t border-slate-200 pt-4 text-sm dark:border-zinc-800">
           <div className="flex justify-between">
             <dt className="ui text-slate-500 dark:text-zinc-400">Seats</dt>
             <dd className="font-semibold">{booking.seats.join(", ")}</dd>
+          </div>
+          {booking.trip?.depart_at && (
+            <div className="flex justify-between">
+              <dt className="ui text-slate-500 dark:text-zinc-400">Departs</dt>
+              <dd className="font-semibold">
+                {new Date(booking.trip.depart_at).toLocaleString("en-LK", {
+                  day: "numeric",
+                  month: "short",
+                  year: "numeric",
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })}
+              </dd>
+            </div>
+          )}
+          <div className="flex justify-between">
+            <dt className="ui text-slate-500 dark:text-zinc-400">Reference</dt>
+            <dd className="font-semibold">{booking.id.slice(0, 8).toUpperCase()}</dd>
           </div>
           {isPayable ? (
             <>
