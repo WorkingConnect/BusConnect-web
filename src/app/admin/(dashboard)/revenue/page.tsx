@@ -107,7 +107,7 @@ export default function AdminRevenuePage() {
   );
   const ready = filtered.filter((r) => r.status === "arrived");
   const locked = filtered.filter((r) => r.status !== "arrived" && r.status !== "cancelled");
-  const sum = (list: AdminPayoutRow[], key: "net_amount" | "seats_sold" | "commission_amount") =>
+  const sum = (list: AdminPayoutRow[], key: "gross" | "net_amount" | "seats_sold" | "commission_amount") =>
     list.reduce((s, r) => s + r[key], 0);
   const filtersActive = !!operatorId || !!routeId || !!busRegNo || !!date;
 
@@ -125,7 +125,8 @@ export default function AdminRevenuePage() {
         </div>
       </div>
 
-      <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
+      <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+        <Stat label="Gross revenue" value={money(sum(filtered, "gross"))} />
         <Stat label="Net revenue" value={money(sum(filtered, "net_amount"))} />
         <Stat label="Ready payouts" value={money(sum(ready, "net_amount"))} accent />
         <Stat label="Locked payouts" value={money(sum(locked, "net_amount"))} />
