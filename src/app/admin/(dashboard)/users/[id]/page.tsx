@@ -3,9 +3,9 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { ArrowLeft, Loader2, User, Building2, IdCard, ShieldCheck, Ticket, ArrowUpRight, Wallet } from "lucide-react";
+import { ArrowLeft, Loader2, Trash2, User, Building2, IdCard, ShieldCheck, Ticket, ArrowUpRight, Wallet } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
-import { getAdminUser, ApiError, type AdminUserDetail } from "@/lib/api";
+import { getAdminUser, hideAdminBooking, ApiError, type AdminUserDetail, type AdminUserBooking } from "@/lib/api";
 
 function money(n: number) {
   return `LKR ${Number(n).toLocaleString("en-LK", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
@@ -51,6 +51,10 @@ export default function AdminUserDetailPage() {
   useEffect(() => {
     void load();
   }, [load]);
+
+  function handleBookingHidden(bookingId: string) {
+    setDetail((prev) => (prev ? { ...prev, bookings: prev.bookings.filter((b) => b.id !== bookingId) } : prev));
+  }
 
   if (error) {
     return (
@@ -195,41 +199,102 @@ export default function AdminUserDetailPage() {
         ) : (
           <div className="flex flex-col gap-2">
             {detail.bookings.map((b) => (
-              <div key={b.id} className="rounded-xl border border-slate-200 p-3 dark:border-zinc-800">
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <div className="flex items-center gap-2">
-                    <p className="font-medium">{b.trip?.route?.name ?? "—"}</p>
-                    <span className={`ui rounded-full px-2 py-0.5 text-[11px] font-semibold capitalize ${BOOKING_STATUS_STYLE[b.status] ?? BOOKING_STATUS_STYLE.pending}`}>
-                      {b.status}
-                    </span>
-                  </div>
-                  <span className="font-heading font-bold text-brand dark:text-blue-400">{money(b.amount)}</span>
-                </div>
-                <p className="ui mt-1 text-xs text-slate-500 dark:text-zinc-400">
-                  {b.trip?.bus?.operator?.name ?? "—"} · Bus {b.trip?.bus?.reg_no ?? "—"} ·{" "}
-                  {b.trip ? dateTime(b.trip.depart_at) : "—"} · Seats {b.seats.join(", ")}
-                </p>
-                {b.tickets.length > 0 && (
-                  <p className="ui mt-1 text-xs text-slate-400 dark:text-zinc-500">
-                    Ticket: {b.tickets[0].status}
-                    {b.tickets[0].boarded_seats.length > 0 ? ` (boarded ${b.tickets[0].boarded_seats.join(", ")})` : ""}
-                  </p>
-                )}
-                {b.payments.length > 0 && (
-                  <p className="ui mt-1 text-xs text-slate-400 dark:text-zinc-500">
-                    Payment: {b.payments[0].status} · {money(b.payments[0].amount)} · {b.payments[0].method}
-                  </p>
-                )}
-                {b.refunds.length > 0 && (
-                  <p className="ui mt-1 text-xs text-amber-600 dark:text-amber-400">
-                    Refund: {b.refunds[0].status} · {money(b.refunds[0].amount)} — {b.refunds[0].reason}
-                  </p>
-                )}
-              </div>
+              <BookingRow key={b.id} b={b} onHidden={() => handleBookingHidden(b.id)} />
             ))}
           </div>
         )}
       </Section>
+    </div>
+  );
+}
+
+function BookingRow({ b, onHidden }: { b: AdminUserBooking; onHidden: () => void }) {
+  const [confirming, setConfirming] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function confirmHide() {
+    setBusy(true);
+    setError(null);
+    try {
+      const supabase = createClient();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (!session) return;
+      await hideAdminBooking(session.access_token, b.id);
+      onHidden();
+    } catch (e) {
+      setError(e instanceof ApiError ? e.message : "Could not remove this booking.");
+      setBusy(false);
+      setConfirming(false);
+    }
+  }
+
+  return (
+    <div className="rounded-xl border border-slate-200 p-3 dark:border-zinc-800">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div className="flex items-center gap-2">
+          <p className="font-medium">{b.trip?.route?.name ?? "—"}</p>
+          <span className={`ui rounded-full px-2 py-0.5 text-[11px] font-semibold capitalize ${BOOKING_STATUS_STYLE[b.status] ?? BOOKING_STATUS_STYLE.pending}`}>
+            {b.status}
+          </span>
+        </div>
+        <div className="flex items-center gap-3">
+          <span className="font-heading font-bold text-brand dark:text-blue-400">{money(b.amount)}</span>
+          {confirming ? (
+            <div className="flex items-center gap-1.5">
+              <button
+                type="button"
+                onClick={() => setConfirming(false)}
+                disabled={busy}
+                className="ui rounded-lg border border-slate-200 px-2 py-1 text-[11px] font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-60 dark:border-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-800"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={confirmHide}
+                disabled={busy}
+                className="ui inline-flex items-center gap-1 rounded-lg bg-red-600 px-2 py-1 text-[11px] font-semibold text-white hover:bg-red-700 disabled:opacity-60"
+              >
+                {busy ? <Loader2 size={12} className="animate-spin" /> : <Trash2 size={12} />}
+                Remove
+              </button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setConfirming(true)}
+              aria-label="Remove this booking"
+              className="ui rounded-lg border border-slate-200 p-1.5 text-red-600 hover:bg-red-50 dark:border-zinc-800 dark:hover:bg-red-950/30"
+            >
+              <Trash2 size={13} />
+            </button>
+          )}
+        </div>
+      </div>
+      <p className="ui mt-1 text-xs text-slate-500 dark:text-zinc-400">
+        {b.trip?.bus?.operator?.name ?? "—"} · Bus {b.trip?.bus?.reg_no ?? "—"} ·{" "}
+        {b.trip ? dateTime(b.trip.depart_at) : "—"} · Seats {b.seats.join(", ")}
+      </p>
+      {b.tickets.length > 0 && (
+        <p className="ui mt-1 text-xs text-slate-400 dark:text-zinc-500">
+          Ticket: {b.tickets[0].status}
+          {b.tickets[0].boarded_seats.length > 0 ? ` (boarded ${b.tickets[0].boarded_seats.join(", ")})` : ""}
+        </p>
+      )}
+      {b.payments.length > 0 && (
+        <p className="ui mt-1 text-xs text-slate-400 dark:text-zinc-500">
+          Payment: {b.payments[0].status} · {money(b.payments[0].amount)} · {b.payments[0].method}
+        </p>
+      )}
+      {b.refunds.length > 0 && (
+        <p className="ui mt-1 text-xs text-amber-600 dark:text-amber-400">
+          Refund: {b.refunds[0].status} · {money(b.refunds[0].amount)} — {b.refunds[0].reason}
+        </p>
+      )}
+      {error && <p className="ui mt-1.5 text-xs text-red-600 dark:text-red-400">{error}</p>}
     </div>
   );
 }

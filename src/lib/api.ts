@@ -1073,6 +1073,15 @@ export function getAdminUser(accessToken: string, userId: string) {
   return request<AdminUserDetail>(`/admin/users/${userId}`, { accessToken });
 }
 
+/** Admin-side equivalent of the passenger's own "remove ticket" — same
+ *  hidden_by_passenger flag, just not restricted to cancelled/refunded. */
+export function hideAdminBooking(accessToken: string, bookingId: string) {
+  return request<{ ok: true }>(`/admin/bookings/${bookingId}/hide`, {
+    method: 'POST',
+    accessToken,
+  });
+}
+
 export function listAdminOperators(accessToken: string) {
   return request<AdminOperator[]>('/admin/operators', { accessToken });
 }
