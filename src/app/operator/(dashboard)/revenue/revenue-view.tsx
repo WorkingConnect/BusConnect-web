@@ -21,10 +21,13 @@ function localDateIso(iso: string) {
   return new Date(iso).toLocaleDateString("en-CA");
 }
 
+type Bucket = "ready" | "locked" | "paid";
+
 export function RevenueView({ rows }: { rows: OperatorRevenueRow[] }) {
   const [routeId, setRouteId] = useState("");
   const [busRegNo, setBusRegNo] = useState("");
   const [date, setDate] = useState("");
+  const [selected, setSelected] = useState<Bucket>("ready");
 
   const routeOptions = useMemo(() => {
     const map = new Map<string, string>();
@@ -59,6 +62,27 @@ export function RevenueView({ rows }: { rows: OperatorRevenueRow[] }) {
     list.reduce((s, r) => s + r[key], 0);
 
   const filtersActive = !!routeId || !!busRegNo || !!date;
+
+  const sections: Record<Bucket, { title: string; subtitle: string; rows: OperatorRevenueRow[]; emptyMessage: string }> = {
+    ready: {
+      title: "Ready payouts",
+      subtitle: "Completed trips awaiting settlement.",
+      rows: ready,
+      emptyMessage: "No trips awaiting settlement.",
+    },
+    locked: {
+      title: "Locked payouts",
+      subtitle: "Upcoming or in-progress trips — revenue is still provisional until the trip completes.",
+      rows: locked,
+      emptyMessage: "No upcoming or in-progress trips.",
+    },
+    paid: {
+      title: "Paid out",
+      subtitle: "Already settled.",
+      rows: paidOut,
+      emptyMessage: "Nothing settled yet.",
+    },
+  };
 
   return (
     <div>
@@ -116,51 +140,51 @@ export function RevenueView({ rows }: { rows: OperatorRevenueRow[] }) {
         )}
       </div>
 
-      <RevenueSection
-        title="Ready payouts"
-        subtitle="Completed trips awaiting settlement."
-        rows={ready}
-        emptyMessage="No trips awaiting settlement."
-      />
-      <RevenueSection
-        title="Locked payouts"
-        subtitle="Upcoming or in-progress trips — revenue is still provisional until the trip completes."
-        rows={locked}
-        emptyMessage="No upcoming or in-progress trips."
-      />
-      <RevenueSection
-        title="Paid out"
-        subtitle="Already settled."
-        rows={paidOut}
-        emptyMessage="Nothing settled yet."
-      />
+      <RevenueSection sections={sections} selected={selected} onSelect={setSelected} />
     </div>
   );
 }
 
 function RevenueSection({
-  title,
-  subtitle,
-  rows,
-  emptyMessage,
+  sections,
+  selected,
+  onSelect,
 }: {
-  title: string;
-  subtitle: string;
-  rows: OperatorRevenueRow[];
-  emptyMessage: string;
+  sections: Record<Bucket, { title: string; subtitle: string; rows: OperatorRevenueRow[]; emptyMessage: string }>;
+  selected: Bucket;
+  onSelect: (b: Bucket) => void;
 }) {
+  const active = sections[selected];
+  const order: Bucket[] = ["ready", "locked", "paid"];
+
   return (
     <section className="mt-8">
-      <h2 className="font-heading text-lg font-semibold">
-        {title} <span className="ui text-sm font-normal text-slate-400 dark:text-zinc-500">({rows.length})</span>
-      </h2>
-      <p className="ui mt-0.5 text-xs text-slate-500 dark:text-zinc-500">{subtitle}</p>
+      <div className="ui flex flex-wrap gap-1 rounded-xl bg-slate-100 p-1 dark:bg-zinc-800">
+        {order.map((b) => (
+          <button
+            key={b}
+            type="button"
+            onClick={() => onSelect(b)}
+            className={`font-heading rounded-lg px-3 py-1.5 text-lg font-semibold transition-colors ${
+              selected === b
+                ? "bg-white text-slate-900 shadow-sm dark:bg-zinc-950 dark:text-white"
+                : "text-slate-400 hover:text-slate-600 dark:text-zinc-500 dark:hover:text-zinc-300"
+            }`}
+          >
+            {sections[b].title}{" "}
+            <span className="ui text-sm font-normal text-slate-400 dark:text-zinc-500">
+              ({sections[b].rows.length})
+            </span>
+          </button>
+        ))}
+      </div>
+      <p className="ui mt-2 text-xs text-slate-500 dark:text-zinc-500">{active.subtitle}</p>
 
       <div className="mt-3 flex flex-col gap-2">
-        {rows.length === 0 ? (
-          <div className="card p-6 text-center text-sm text-slate-500 dark:text-zinc-400">{emptyMessage}</div>
+        {active.rows.length === 0 ? (
+          <div className="card p-6 text-center text-sm text-slate-500 dark:text-zinc-400">{active.emptyMessage}</div>
         ) : (
-          rows.map((r) => (
+          active.rows.map((r) => (
             <div key={r.trip_id} className="card p-4">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div className="min-w-0">
