@@ -15,11 +15,35 @@ export class ApiError extends Error {
   }
 }
 
+const ADMIN_OPERATOR_COOKIE = 'admin_operator_id';
+
+/**
+ * Set (via the /operator/admin-enter route handler) when an admin opens
+ * "Go to operator dashboard" from the admin operators section — every API
+ * call then carries this as X-Admin-Operator-Id, which BusConnect-api's
+ * OperatorService.getMembership() honors after verifying the caller really
+ * is a platform admin. Read both server- and client-side since this same
+ * request() function backs both Server Component page fetches and "use
+ * client" component calls; next/headers is dynamically imported so it never
+ * enters the client bundle graph (a static import there breaks the client
+ * build — next/headers is server-only).
+ */
+async function getAdminOperatorId(): Promise<string | null> {
+  if (typeof window !== 'undefined') {
+    const match = document.cookie.match(new RegExp(`(?:^|; )${ADMIN_OPERATOR_COOKIE}=([^;]*)`));
+    return match ? decodeURIComponent(match[1]) : null;
+  }
+  const { cookies } = await import('next/headers');
+  const store = await cookies();
+  return store.get(ADMIN_OPERATOR_COOKIE)?.value ?? null;
+}
+
 async function request<T>(
   path: string,
   init: RequestInit & { accessToken?: string } = {},
 ): Promise<T> {
   const { accessToken, headers, ...rest } = init;
+  const adminOperatorId = await getAdminOperatorId();
 
   let res: Response;
   try {
@@ -28,6 +52,7 @@ async function request<T>(
       headers: {
         'Content-Type': 'application/json',
         ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+        ...(adminOperatorId ? { 'X-Admin-Operator-Id': adminOperatorId } : {}),
         ...headers,
       },
       cache: 'no-store',

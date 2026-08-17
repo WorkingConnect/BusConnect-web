@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
   ArrowLeft,
+  ArrowUpRight,
   Banknote,
   Building2,
   CalendarDays,
@@ -143,6 +144,15 @@ export default async function AdminOperatorDetailPage({
           <ShieldAlert size={14} className="mt-0.5 shrink-0" />
           {STATUS_CAPTION[operator.status] ?? ""}
         </p>
+
+        <a
+          href={`/operator/admin-enter?operatorId=${operator.id}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="ui mt-4 inline-flex items-center gap-1.5 rounded-lg border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50 dark:border-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-800"
+        >
+          Go to operator dashboard <ArrowUpRight size={14} />
+        </a>
       </div>
 
       {/* ── Application details ────────────────────────────────────────────── */}

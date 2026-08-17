@@ -1,6 +1,8 @@
+import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import { getMyRoles, getOperatorFleet, listPilots, ApiError } from "@/lib/api";
 import { OperatorNav } from "./operator-nav";
+import { AdminModeBanner } from "./admin-mode-banner";
 
 export default async function OperatorDashboardLayout({
   children,
@@ -12,13 +14,18 @@ export default async function OperatorDashboardLayout({
     data: { session },
   } = await supabase.auth.getSession();
 
+  const cookieStore = await cookies();
+  const adminOperatorId = cookieStore.get("admin_operator_id")?.value ?? null;
+
   let role: "owner" | "pilot" | null = null;
   let operatorStatus: string | null = null;
+  let operatorName: string | null = null;
   if (session) {
     try {
       const roles = await getMyRoles(session.access_token);
       role = roles.operatorRole;
       operatorStatus = roles.operatorStatus;
+      operatorName = roles.operatorName;
     } catch (e) {
       // Not linked to an operator, or the API is unreachable — the page
       // itself renders the right messaging; just skip the sidebar chrome.
@@ -51,15 +58,18 @@ export default async function OperatorDashboardLayout({
   }
 
   return (
-    <div className="flex w-full flex-1 flex-col gap-6 px-4 py-8 sm:px-6 lg:flex-row lg:gap-8 lg:px-8">
-      <aside className="w-full shrink-0 lg:w-52">
-        <p className="ui text-xs font-semibold uppercase tracking-wide text-slate-400 dark:text-zinc-600">
-          Operator
-        </p>
-        <p className="font-heading mb-4 text-base font-bold tracking-tight">Workspace</p>
-        <OperatorNav role={role} counts={{ fleet: fleetPending, pilots: pilotsPending }} />
-      </aside>
-      <div className="min-w-0 flex-1">{children}</div>
+    <div className="flex w-full flex-1 flex-col">
+      {adminOperatorId && <AdminModeBanner operatorName={operatorName} />}
+      <div className="flex flex-1 flex-col gap-6 px-4 py-8 sm:px-6 lg:flex-row lg:gap-8 lg:px-8">
+        <aside className="w-full shrink-0 lg:w-52">
+          <p className="ui text-xs font-semibold uppercase tracking-wide text-slate-400 dark:text-zinc-600">
+            Operator
+          </p>
+          <p className="font-heading mb-4 text-base font-bold tracking-tight">Workspace</p>
+          <OperatorNav role={role} counts={{ fleet: fleetPending, pilots: pilotsPending }} />
+        </aside>
+        <div className="min-w-0 flex-1">{children}</div>
+      </div>
     </div>
   );
 }
