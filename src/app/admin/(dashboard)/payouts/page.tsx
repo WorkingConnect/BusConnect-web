@@ -8,8 +8,6 @@ import { SettleModal } from "./settle-modal";
 import { PaidRowActions } from "./paid-row-actions";
 import { TripDetailModal } from "./trip-detail-modal";
 
-type Filter = "ready" | "paid";
-
 function money(n: number) {
   return `LKR ${Number(n).toLocaleString("en-LK", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 }
@@ -22,7 +20,6 @@ export default function AdminPayoutsPage() {
   const [rows, setRows] = useState<AdminPayoutRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [filter, setFilter] = useState<Filter>("ready");
   const [settleTrip, setSettleTrip] = useState<AdminPayoutRow | null>(null);
   const [viewTripId, setViewTripId] = useState<string | null>(null);
 
@@ -69,18 +66,15 @@ export default function AdminPayoutsPage() {
     );
   }
 
+  // Three mutually exclusive buckets, same split as operator Revenue:
+  // arrived-and-unpaid, not-yet-arrived (still provisional), already paid.
   const ready = rows.filter((r) => r.settleable);
+  const locked = rows.filter((r) => r.status !== "arrived" && r.status !== "cancelled" && r.payout_status !== "paid");
   const paid = rows.filter((r) => r.payout_status === "paid");
-  const pending = rows.filter((r) => r.payout_status === "pending");
-  const pendingTotal = pending.reduce((s, r) => s + r.net_amount, 0);
+
+  const readyTotal = ready.reduce((s, r) => s + r.net_amount, 0);
+  const lockedTotal = locked.reduce((s, r) => s + r.net_amount, 0);
   const paidTotal = paid.reduce((s, r) => s + r.net_amount, 0);
-
-  const shown = filter === "ready" ? ready : paid;
-
-  const tabs: { key: Filter; label: string; count: number }[] = [
-    { key: "ready", label: "Ready to settle", count: ready.length },
-    { key: "paid", label: "Paid", count: paid.length },
-  ];
 
   return (
     <div>
@@ -91,39 +85,96 @@ export default function AdminPayoutsPage() {
         <div>
           <h1 className="font-heading text-2xl font-bold tracking-tight">Payouts</h1>
           <p className="ui text-sm text-slate-500 dark:text-zinc-400">
-            Settle each departed trip with the operator that ran it.
+            Settle each arrived trip with the operator that ran it.
           </p>
         </div>
       </div>
 
-      <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3">
-        <Stat label="Ready to settle" value={String(ready.length)} />
-        <Stat label="Pending payout" value={money(pendingTotal)} />
+      <div className="mt-6 grid grid-cols-3 gap-3">
+        <Stat label="Ready payouts" value={money(readyTotal)} accent />
+        <Stat label="Locked payouts" value={money(lockedTotal)} />
         <Stat label="Paid out" value={money(paidTotal)} />
       </div>
 
-      <div className="mt-6 flex gap-2">
-        {tabs.map((t) => (
-          <button
-            key={t.key}
-            type="button"
-            onClick={() => setFilter(t.key)}
-            className={`ui rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
-              filter === t.key ? "bg-brand text-brand-fg" : "bg-slate-100 text-slate-600 dark:bg-zinc-900 dark:text-zinc-400"
-            }`}
-          >
-            {t.label} ({t.count})
-          </button>
-        ))}
-      </div>
+      <PayoutSection
+        title="Ready payouts"
+        subtitle="Arrived trips awaiting settlement."
+        rows={ready}
+        emptyMessage="No trips awaiting settlement."
+        token={token}
+        onView={setViewTripId}
+        onSettle={setSettleTrip}
+        onChange={load}
+      />
+      <PayoutSection
+        title="Locked payouts"
+        subtitle="Upcoming or in-progress trips — revenue is still provisional until the trip arrives."
+        rows={locked}
+        emptyMessage="No upcoming or in-progress trips."
+        token={token}
+        onView={setViewTripId}
+        onSettle={setSettleTrip}
+        onChange={load}
+      />
+      <PayoutSection
+        title="Paid out"
+        subtitle="Already settled."
+        rows={paid}
+        emptyMessage="Nothing settled yet."
+        token={token}
+        onView={setViewTripId}
+        onSettle={setSettleTrip}
+        onChange={load}
+      />
 
-      <div className="mt-4 flex flex-col gap-2">
-        {shown.length === 0 ? (
-          <div className="card p-10 text-center text-sm text-slate-500 dark:text-zinc-400">
-            Nothing here.
-          </div>
+      {settleTrip && (
+        <SettleModal
+          token={token}
+          tripId={settleTrip.id}
+          onClose={() => setSettleTrip(null)}
+          onSettled={() => {
+            setSettleTrip(null);
+            void load();
+          }}
+        />
+      )}
+
+      {viewTripId && <TripDetailModal token={token} tripId={viewTripId} onClose={() => setViewTripId(null)} />}
+    </div>
+  );
+}
+
+function PayoutSection({
+  title,
+  subtitle,
+  rows,
+  emptyMessage,
+  token,
+  onView,
+  onSettle,
+  onChange,
+}: {
+  title: string;
+  subtitle: string;
+  rows: AdminPayoutRow[];
+  emptyMessage: string;
+  token: string;
+  onView: (tripId: string) => void;
+  onSettle: (row: AdminPayoutRow) => void;
+  onChange: () => void;
+}) {
+  return (
+    <section className="mt-8">
+      <h2 className="font-heading text-lg font-semibold">
+        {title} <span className="ui text-sm font-normal text-slate-400 dark:text-zinc-500">({rows.length})</span>
+      </h2>
+      <p className="ui mt-0.5 text-xs text-slate-500 dark:text-zinc-500">{subtitle}</p>
+
+      <div className="mt-3 flex flex-col gap-2">
+        {rows.length === 0 ? (
+          <div className="card p-6 text-center text-sm text-slate-500 dark:text-zinc-400">{emptyMessage}</div>
         ) : (
-          shown.map((r) => (
+          rows.map((r) => (
             <div key={r.id} className="card p-4">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div className="min-w-0">
@@ -145,15 +196,15 @@ export default function AdminPayoutsPage() {
                   </div>
                   <button
                     type="button"
-                    onClick={() => setViewTripId(r.id)}
+                    onClick={() => onView(r.id)}
                     className="ui shrink-0 rounded-lg border border-slate-200 px-2.5 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 dark:border-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-800"
                   >
                     View
                   </button>
                   {r.payout_status === "paid" ? (
-                    <PaidRowActions token={token} tripId={r.id} reference={r.reference} onChange={load} />
+                    <PaidRowActions token={token} tripId={r.id} reference={r.reference} onChange={onChange} />
                   ) : r.settleable ? (
-                    <button type="button" onClick={() => setSettleTrip(r)} className="btn-primary shrink-0 py-2">
+                    <button type="button" onClick={() => onSettle(r)} className="btn-primary shrink-0 py-2">
                       Settle
                     </button>
                   ) : (
@@ -167,28 +218,16 @@ export default function AdminPayoutsPage() {
           ))
         )}
       </div>
-
-      {settleTrip && (
-        <SettleModal
-          token={token}
-          tripId={settleTrip.id}
-          onClose={() => setSettleTrip(null)}
-          onSettled={() => {
-            setSettleTrip(null);
-            void load();
-          }}
-        />
-      )}
-
-      {viewTripId && <TripDetailModal token={token} tripId={viewTripId} onClose={() => setViewTripId(null)} />}
-    </div>
+    </section>
   );
 }
 
-function Stat({ label, value }: { label: string; value: string }) {
+function Stat({ label, value, accent }: { label: string; value: string; accent?: boolean }) {
   return (
     <div className="card px-4 py-4 text-center">
-      <div className="font-heading text-lg font-bold text-brand dark:text-blue-400">{value}</div>
+      <div className={`font-heading text-lg font-bold ${accent ? "text-emerald-600 dark:text-emerald-400" : "text-brand dark:text-blue-400"}`}>
+        {value}
+      </div>
       <div className="ui mt-1 text-xs uppercase tracking-wide text-slate-500 dark:text-zinc-500">{label}</div>
     </div>
   );

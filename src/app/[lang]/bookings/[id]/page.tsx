@@ -56,15 +56,16 @@ export default async function BookingPage({
   const isConfirmed = booking.status === "confirmed";
   const isPayable = booking.status === "pending" || booking.status === "reserved_unpaid";
   const isCancelled = booking.status === "cancelled";
-  // Card and wallet payments both add a 2% convenience fee server-side
-  // (mpgs.service.ts checkout(), 0055_wallet_convenience_fee.sql) — show it
-  // up front so what's charged never surprises the payer, and once paid,
-  // show what was actually charged (the payments row) rather than
-  // recomputing, since a refund/adjustment could make that inaccurate.
-  const CONVENIENCE_FEE_PCT = 0.02;
+  // Card and wallet payments both add the operator's own convenience fee
+  // server-side (mpgs.service.ts checkout(), pay_booking_from_wallet()) —
+  // show it up front, at the operator's actual rate, so what's charged
+  // never surprises the payer. Once paid, show what was actually charged
+  // (the payments row) rather than recomputing, since a refund/adjustment
+  // could make that inaccurate, and the rate could have changed since.
+  const convenienceFeePct = booking.trip?.bus?.operator?.convenience_fee_pct ?? 2;
   const latestPayment = booking.payments?.[booking.payments.length - 1];
   const paidAmount = isConfirmed && latestPayment ? Number(latestPayment.amount) : null;
-  const totalWithFee = Number(booking.amount) * (1 + CONVENIENCE_FEE_PCT);
+  const totalWithFee = Number(booking.amount) * (1 + convenienceFeePct / 100);
   const hasDeparted = booking.trip
     ? new Date(booking.trip.depart_at).getTime() <= Date.now()
     : false;
@@ -167,10 +168,10 @@ export default async function BookingPage({
                 <dd>LKR {Number(booking.amount).toLocaleString("en-LK")}</dd>
               </div>
               <div className="flex justify-between">
-                <dt className="ui text-slate-500 dark:text-zinc-400">Convenience fee (2%)</dt>
+                <dt className="ui text-slate-500 dark:text-zinc-400">Convenience fee ({convenienceFeePct}%)</dt>
                 <dd>
                   LKR{" "}
-                  {(Number(booking.amount) * CONVENIENCE_FEE_PCT).toLocaleString("en-LK", {
+                  {(Number(booking.amount) * (convenienceFeePct / 100)).toLocaleString("en-LK", {
                     maximumFractionDigits: 2,
                   })}
                 </dd>

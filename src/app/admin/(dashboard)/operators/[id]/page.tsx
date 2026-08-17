@@ -22,6 +22,7 @@ import { StatusActions } from "../status-actions";
 import { ViewIdButton } from "../view-id-button";
 import { DeleteOperatorButton } from "./delete-operator-button";
 import { CommissionEditor } from "./commission-editor";
+import { ConvenienceFeeEditor } from "./convenience-fee-editor";
 
 const STATUS_STYLE: Record<string, string> = {
   active: "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300",
@@ -247,6 +248,18 @@ export default async function AdminOperatorDetailPage({
           trips keep their original rate.
         </p>
         <CommissionEditor operatorId={operator.id} initialPct={operator.commission_pct} />
+      </div>
+
+      {/* ── Convenience fee ─────────────────────────────────────────────────── */}
+      <div className="card-lg mt-4 p-6">
+        <h2 className="ui text-xs font-semibold uppercase tracking-wide text-slate-400 dark:text-zinc-600">
+          Convenience fee
+        </h2>
+        <p className="ui mt-1 text-xs text-slate-500 dark:text-zinc-500">
+          Added on top of the fare at checkout, card and wallet payments alike. Takes effect on the
+          very next booking — both the app and website read this rate live. Set to 0 to charge no fee.
+        </p>
+        <ConvenienceFeeEditor operatorId={operator.id} initialPct={operator.convenience_fee_pct} />
       </div>
 
       {/* ── Danger zone ─────────────────────────────────────────────────────── */}

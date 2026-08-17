@@ -211,7 +211,7 @@ export interface Booking {
     depart_at: string;
     bus?: {
       reg_no?: string | null;
-      operator?: { name: string; logo_url?: string | null } | null;
+      operator?: { name: string; logo_url?: string | null; convenience_fee_pct?: number } | null;
     } | null;
   };
   from_stop?: { location?: { name_en: string } | null } | null;
@@ -905,6 +905,7 @@ export interface AdminOperator {
   id_document_path: string | null;
   payout_account: OperatorPayoutAccount | null;
   commission_pct: number;
+  convenience_fee_pct: number;
   owner_email?: string | null;
 }
 
@@ -914,6 +915,17 @@ export function setOperatorCommission(accessToken: string, operatorId: string, c
     body: JSON.stringify({ commissionPct }),
     accessToken,
   });
+}
+
+export function setOperatorConvenienceFee(accessToken: string, operatorId: string, convenienceFeePct: number) {
+  return request<{ id: string; convenience_fee_pct: number }>(
+    `/admin/operators/${operatorId}/convenience-fee`,
+    {
+      method: 'PATCH',
+      body: JSON.stringify({ convenienceFeePct }),
+      accessToken,
+    },
+  );
 }
 
 export interface AdminRefund {
