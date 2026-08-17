@@ -26,9 +26,14 @@ export async function GET(request: NextRequest) {
     .select("user_id")
     .eq("user_id", user.id)
     .maybeSingle();
-  if (!adminRow) return NextResponse.redirect(new URL("/operator", request.url));
+  // On operator.busconnect.lk the clean root ("/") already resolves to the
+  // dashboard via proxy.ts's subdomain rewrite; off that subdomain (main
+  // domain or local dev) it needs the explicit /operator prefix.
+  const host = request.headers.get("host") ?? "";
+  const landing = host.startsWith("operator.") ? "/" : "/operator";
+  if (!adminRow) return NextResponse.redirect(new URL(landing, request.url));
 
-  const res = NextResponse.redirect(new URL("/operator", request.url));
+  const res = NextResponse.redirect(new URL(landing, request.url));
   res.cookies.set(ADMIN_OPERATOR_COOKIE, operatorId, {
     // Not httpOnly — client-side "use client" operator pages also read this
     // (via document.cookie in lib/api.ts) to attach the header themselves.

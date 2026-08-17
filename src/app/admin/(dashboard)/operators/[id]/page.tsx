@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { headers } from "next/headers";
 import {
   ArrowLeft,
   ArrowUpRight,
@@ -104,6 +105,19 @@ export default async function AdminOperatorDetailPage({
   }
   if (!operator) notFound();
 
+  // admin.busconnect.lk and operator.busconnect.lk are the same deployment,
+  // internally rewritten (proxy.ts) — a plain relative link from the admin
+  // subdomain would get "/admin" re-prepended to whatever path it's given,
+  // producing a nonexistent route. Crossing to the operator workspace needs
+  // a real absolute URL naming the other host explicitly. Off a workspace
+  // subdomain (main domain / local dev), same host, /operator prefix instead.
+  const host = (await headers()).get("host") ?? "";
+  const isAdminSubdomain = host.startsWith("admin.");
+  const protocol = host.includes("localhost") ? "http" : "https";
+  const targetHost = isAdminSubdomain ? host.replace(/^admin\./, "operator.") : host;
+  const targetPath = isAdminSubdomain ? "/admin-enter" : "/operator/admin-enter";
+  const goToOperatorHref = `${protocol}://${targetHost}${targetPath}?operatorId=${operator.id}`;
+
   return (
     <div className="mx-auto w-full max-w-2xl">
       <Link
@@ -146,7 +160,7 @@ export default async function AdminOperatorDetailPage({
         </p>
 
         <a
-          href={`/operator/admin-enter?operatorId=${operator.id}`}
+          href={goToOperatorHref}
           target="_blank"
           rel="noopener noreferrer"
           className="ui mt-4 inline-flex items-center gap-1.5 rounded-lg border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50 dark:border-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-800"
