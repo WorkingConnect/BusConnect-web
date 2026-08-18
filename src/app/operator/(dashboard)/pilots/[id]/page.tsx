@@ -9,6 +9,7 @@ import {
   ApiError,
   type OperatorPilotDetail,
 } from "@/lib/api";
+import { formatPhoneDisplay } from "@/lib/phone";
 import { AssignFleetButton } from "../assign-fleet-button";
 import { LinkAccountForm } from "./link-account-form";
 import { PilotIdentityCard } from "./pilot-identity-card";
@@ -110,7 +111,7 @@ export default async function OperatorPilotDetailPage({
           <div className="ui mt-3 flex items-center justify-between gap-3 rounded-xl bg-emerald-50 px-4 py-3 dark:bg-emerald-950/30">
             <div>
               <p className="text-sm font-medium text-emerald-700 dark:text-emerald-300">
-                {pilot.linked_email ?? "Linked account"}
+                {pilot.linked_phone ? formatPhoneDisplay(pilot.linked_phone) : "Linked account"}
               </p>
               <p className="mt-0.5 text-xs text-emerald-600/80 dark:text-emerald-400/70">
                 Can sign in and scan boarding tickets for their assigned trips.
@@ -122,7 +123,7 @@ export default async function OperatorPilotDetailPage({
           </div>
         ) : (
           <div className="mt-3">
-            <LinkAccountForm pilotId={pilot.id} />
+            <LinkAccountForm pilotId={pilot.id} defaultPhone={pilot.phone_no} />
           </div>
         )}
       </div>

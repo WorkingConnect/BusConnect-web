@@ -685,7 +685,7 @@ export interface OperatorPilot {
 export interface OperatorPilotDetail extends OperatorPilot {
   operator_id: string;
   bus: { reg_no: string; bus_type: { name: string; class: string } | null } | null;
-  linked_email: string | null;
+  linked_phone: string | null;
 }
 
 export interface MyRoles {
@@ -771,10 +771,10 @@ export function assignPilot(
   });
 }
 
-export function linkPilotAccount(accessToken: string, pilotId: string, email: string) {
+export function linkPilotAccount(accessToken: string, pilotId: string, phone: string) {
   return request<OperatorPilot>(`/operator/pilots/${pilotId}/link-account`, {
     method: 'POST',
-    body: JSON.stringify({ email }),
+    body: JSON.stringify({ phone }),
     accessToken,
   });
 }
