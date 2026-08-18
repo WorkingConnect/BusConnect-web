@@ -1030,6 +1030,17 @@ export interface AdminRoute {
   path: GeoJsonLineString | null;
   stops: AdminRouteStop[];
   created_at: string;
+  route_card_id: string | null;
+}
+
+/** A shared name+image template a route can link to, so physically different
+ *  routes (different stops/operators) can still display the same corridor
+ *  branding. Editing a card live-updates every route linked to it. */
+export interface AdminRouteCard {
+  id: string;
+  name: string;
+  image_url: string | null;
+  created_at: string;
 }
 
 /** One road-path option from Google Directions (via the preview endpoint). */
@@ -1330,6 +1341,9 @@ export interface UpsertRouteInput {
    *  the Directions best route when omitted. */
   pathCoordinates?: [number, number][];
   imageUrl?: string;
+  /** Route card to link this route to — name/image are then live-synced from
+   *  the card. Omit/null to leave this route on its own name/image. */
+  routeCardId?: string | null;
 }
 
 export function createAdminRoute(accessToken: string, body: UpsertRouteInput) {
@@ -1355,6 +1369,37 @@ export function deleteAdminRoute(accessToken: string, routeId: string) {
 /** Regenerates a route's real road path (Google Directions) from its current stops. */
 export function regenerateAdminRoutePath(accessToken: string, routeId: string) {
   return request<{ ok: true }>(`/admin/routes/${routeId}/path`, { method: 'POST', accessToken });
+}
+
+// ── Route cards (shared name+image templates a route can link to) ──────────
+
+export function listAdminRouteCards(accessToken: string) {
+  return request<AdminRouteCard[]>('/admin/route-cards', { accessToken });
+}
+
+export interface UpsertRouteCardInput {
+  name: string;
+  imageUrl?: string;
+}
+
+export function createAdminRouteCard(accessToken: string, body: UpsertRouteCardInput) {
+  return request<AdminRouteCard>('/admin/route-cards', {
+    method: 'POST',
+    body: JSON.stringify(body),
+    accessToken,
+  });
+}
+
+export function updateAdminRouteCard(accessToken: string, cardId: string, body: UpsertRouteCardInput) {
+  return request<AdminRouteCard>(`/admin/route-cards/${cardId}`, {
+    method: 'PATCH',
+    body: JSON.stringify(body),
+    accessToken,
+  });
+}
+
+export function deleteAdminRouteCard(accessToken: string, cardId: string) {
+  return request(`/admin/route-cards/${cardId}`, { method: 'DELETE', accessToken });
 }
 
 /** Previews the Google Directions road path(s) for a set of stops without

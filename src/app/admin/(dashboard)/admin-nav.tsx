@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Building2, Wallet, PiggyBank, Search, Bus, Route, IdCard, CalendarRange, HandCoins, TrendingUp, Users } from "lucide-react";
+import { LayoutDashboard, Building2, Wallet, PiggyBank, Search, Bus, Route, Images, IdCard, CalendarRange, HandCoins, TrendingUp, Users } from "lucide-react";
 
 const items = [
   { label: "Overview", href: "/admin", icon: LayoutDashboard },
@@ -14,6 +14,7 @@ const items = [
   { label: "Wallet", href: "/admin/wallet", icon: PiggyBank },
   { label: "Fleet", href: "/admin/fleet", icon: Bus },
   { label: "Routes", href: "/admin/routes", icon: Route },
+  { label: "Route Cards", href: "/admin/route-cards", icon: Images },
   { label: "Pilots", href: "/admin/pilots", icon: IdCard },
   { label: "Refunds", href: "/admin/refunds", icon: Wallet },
   { label: "Bookings", href: "/admin/bookings", icon: Search },

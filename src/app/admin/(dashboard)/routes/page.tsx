@@ -34,9 +34,11 @@ import {
   previewAdminRoutePath,
   listCandidateTripsForPath,
   previewPathFromTrip,
+  listAdminRouteCards,
   ApiError,
   type AdminLocation,
   type AdminRoute,
+  type AdminRouteCard,
   type RoutePathOption,
   type RouteStopInput,
   type RouteTripCandidate,
@@ -58,6 +60,7 @@ interface EditorState {
   id?: string;
   name: string;
   imageUrl?: string;
+  routeCardId: string | null;
   stops: EditorStop[];
   path: [number, number][] | null; // [lng,lat] chosen/saved road path
 }
@@ -71,6 +74,7 @@ function editorFromRoute(r: AdminRoute): EditorState {
     id: r.id,
     name: r.name,
     imageUrl: r.image_url ?? undefined,
+    routeCardId: r.route_card_id,
     stops: r.stops.map((s) => ({
       key: nextKey(),
       locationId: s.location_id,
@@ -87,6 +91,7 @@ export default function AdminRoutesPage() {
   const [token, setToken] = useState<string | null>(null);
   const [locations, setLocations] = useState<AdminLocation[]>([]);
   const [routes, setRoutes] = useState<AdminRoute[]>([]);
+  const [routeCards, setRouteCards] = useState<AdminRouteCard[]>([]);
   const [editor, setEditor] = useState<EditorState | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -101,12 +106,14 @@ export default function AdminRoutesPage() {
       } = await supabase.auth.getSession();
       if (!session) throw new ApiError(401, "Please sign in.");
       setToken(session.access_token);
-      const [locs, routeList] = await Promise.all([
+      const [locs, routeList, cardList] = await Promise.all([
         listAdminLocations(session.access_token),
         listAdminRoutes(session.access_token),
+        listAdminRouteCards(session.access_token),
       ]);
       setLocations(locs);
       setRoutes(routeList);
+      setRouteCards(cardList);
     } catch (e) {
       setError(
         e instanceof ApiError
@@ -162,7 +169,7 @@ export default function AdminRoutesPage() {
           <button
             type="button"
             onClick={() =>
-              setEditor({ name: "", stops: [emptyStop(), emptyStop()], path: null })
+              setEditor({ name: "", routeCardId: null, stops: [emptyStop(), emptyStop()], path: null })
             }
             className="btn-primary shrink-0"
           >
@@ -175,6 +182,7 @@ export default function AdminRoutesPage() {
         <RouteEditor
           token={token}
           locations={locations}
+          routeCards={routeCards}
           editor={editor}
           setEditor={setEditor}
           onCreateLocation={createLocation}
@@ -243,6 +251,7 @@ export default function AdminRoutesPage() {
 function RouteEditor({
   token,
   locations,
+  routeCards,
   editor,
   setEditor,
   onCreateLocation,
@@ -250,6 +259,7 @@ function RouteEditor({
 }: {
   token: string;
   locations: AdminLocation[];
+  routeCards: AdminRouteCard[];
   editor: EditorState;
   setEditor: (e: EditorState | null) => void;
   onCreateLocation: (name: string) => Promise<AdminLocation>;
@@ -285,6 +295,18 @@ function RouteEditor({
   function onImageChange(file: File | null) {
     setImageFile(file);
     setImagePreview(file ? URL.createObjectURL(file) : editor.imageUrl ?? null);
+  }
+
+  function selectCard(cardId: string) {
+    if (!cardId) {
+      setEditor({ ...editor, routeCardId: null });
+      return;
+    }
+    const card = routeCards.find((c) => c.id === cardId);
+    if (!card) return;
+    setImageFile(null);
+    setImagePreview(card.image_url ?? null);
+    setEditor({ ...editor, routeCardId: card.id, name: card.name, imageUrl: card.image_url ?? undefined });
   }
 
   function selectLocation(key: string, loc: AdminLocation) {
@@ -440,7 +462,7 @@ function RouteEditor({
     setBusy(true);
     try {
       let imageUrl = editor.imageUrl;
-      if (imageFile) {
+      if (imageFile && !editor.routeCardId) {
         const supabase = createClient();
         const {
           data: { session },
@@ -459,6 +481,7 @@ function RouteEditor({
         })),
         pathCoordinates: editor.path ?? undefined,
         imageUrl,
+        routeCardId: editor.routeCardId,
       };
       if (editor.id) await updateAdminRoute(token, editor.id, body);
       else await createAdminRoute(token, body);
@@ -484,17 +507,66 @@ function RouteEditor({
       </div>
 
       <label className="ui mt-4 flex flex-col gap-1.5 text-sm font-medium text-slate-700 dark:text-zinc-300">
+        Route card{" "}
+        <span className="font-normal text-slate-400 dark:text-zinc-500">
+          (optional — links this route&rsquo;s name/photo to a shared card so other operators&rsquo;
+          routes on the same corridor can display it identically)
+        </span>
+        <select
+          value={editor.routeCardId ?? ""}
+          onChange={(e) => selectCard(e.target.value)}
+          className="field text-sm"
+        >
+          <option value="">— Custom name & photo for this route —</option>
+          {routeCards.map((c) => (
+            <option key={c.id} value={c.id}>
+              {c.name}
+            </option>
+          ))}
+        </select>
+      </label>
+
+      <label className="ui mt-4 flex flex-col gap-1.5 text-sm font-medium text-slate-700 dark:text-zinc-300">
         Route name
         <input
           value={editor.name}
           onChange={(e) => setEditor({ ...editor, name: e.target.value })}
           placeholder="e.g. Colombo – Kandy via Kadugannawa"
-          className="field text-sm"
+          disabled={!!editor.routeCardId}
+          className="field text-sm disabled:cursor-not-allowed disabled:opacity-60"
         />
+        {editor.routeCardId && (
+          <span className="ui text-xs text-slate-400 dark:text-zinc-500">
+            Name comes from the linked route card — edit it there to update every route using it.
+          </span>
+        )}
       </label>
 
       <div className="mt-4">
-        <ImageSlot label="Route photo (optional)" preview={imagePreview} onChange={onImageChange} />
+        {editor.routeCardId ? (
+          <div className="ui flex flex-col gap-1.5 text-sm font-medium text-slate-700 dark:text-zinc-300">
+            Route photo
+            <div className="h-14 w-20">
+              {imagePreview ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={imagePreview}
+                  alt="Route card photo preview"
+                  className="h-14 w-20 rounded-lg border border-slate-200 object-cover dark:border-zinc-800"
+                />
+              ) : (
+                <div className="flex h-14 w-20 items-center justify-center rounded-lg border border-dashed border-slate-300 text-slate-400 dark:border-zinc-700 dark:text-zinc-600">
+                  <RouteIcon size={16} />
+                </div>
+              )}
+            </div>
+            <span className="ui text-xs text-slate-400 dark:text-zinc-500">
+              Photo comes from the linked route card — edit it there to update every route using it.
+            </span>
+          </div>
+        ) : (
+          <ImageSlot label="Route photo (optional)" preview={imagePreview} onChange={onImageChange} />
+        )}
       </div>
 
       <div className="mt-6 grid gap-6 lg:grid-cols-2">
