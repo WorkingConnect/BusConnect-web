@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Loader2, MapPin, X } from "lucide-react";
+import { ExternalLink, Loader2, MapPin, X } from "lucide-react";
 import { loadGoogleMapsScript } from "@/lib/google-maps";
 
 // Sri Lanka's rough center — every stop picker opens here until a
@@ -171,9 +171,23 @@ export function StopLocationPicker({
           <div ref={mapDivRef} className="h-full w-full" />
         </div>
 
-        <p className="ui mt-2 text-xs text-slate-500 dark:text-zinc-400">
-          {point ? `${point.lat.toFixed(6)}, ${point.lng.toFixed(6)}` : "No coordinates set yet."}
-        </p>
+        {point ? (
+          <p className="ui mt-2 flex flex-wrap items-center gap-2 text-xs text-slate-500 dark:text-zinc-400">
+            <span>
+              {point.lat.toFixed(6)}, {point.lng.toFixed(6)}
+            </span>
+            <a
+              href={`https://www.google.com/maps?q=${point.lat},${point.lng}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 font-medium text-brand hover:underline dark:text-blue-400"
+            >
+              <ExternalLink size={12} /> Open in Google Maps
+            </a>
+          </p>
+        ) : (
+          <p className="ui mt-2 text-xs text-slate-500 dark:text-zinc-400">No coordinates set yet.</p>
+        )}
 
         {saveError && <p className="ui mt-3 text-sm text-red-600 dark:text-red-400">{saveError}</p>}
 
