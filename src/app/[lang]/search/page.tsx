@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Star, ArrowRight, Bus } from "lucide-react";
-import { searchTrips, ApiError, type TripSearchResult } from "@/lib/api";
+import { searchTrips, searchTripsByRoute, ApiError, type TripSearchResult } from "@/lib/api";
 import { ImageCarousel } from "@/components/image-carousel";
 import { DateFilter } from "./date-filter";
 
@@ -155,11 +155,11 @@ function TripCard({ trip }: { trip: TripSearchResult }) {
 export default async function SearchResultsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ from?: string; to?: string; date?: string }>;
+  searchParams: Promise<{ from?: string; to?: string; routeCardId?: string; routeId?: string; date?: string }>;
 }) {
-  const { from, to, date } = await searchParams;
+  const { from, to, routeCardId, routeId, date } = await searchParams;
 
-  if (!from || !to) {
+  if (!(from && to) && !routeCardId && !routeId) {
     return (
       <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
         <p className="text-slate-600 dark:text-zinc-400">
@@ -173,13 +173,17 @@ export default async function SearchResultsPage({
     );
   }
 
-  // No date in the URL yet (e.g. a bookmarked from/to link) — default to today.
+  // No date in the URL yet (e.g. a bookmarked link) — default to today.
   const effectiveDate = date || todayIso();
+  const baseQuery = from && to ? `from=${from}&to=${to}` : routeCardId ? `routeCardId=${routeCardId}` : `routeId=${routeId}`;
 
   let trips: TripSearchResult[] = [];
   let error: string | null = null;
   try {
-    trips = await searchTrips({ from, to, date: effectiveDate });
+    trips =
+      from && to
+        ? await searchTrips({ from, to, date: effectiveDate })
+        : await searchTripsByRoute({ routeCardId, routeId, date: effectiveDate });
   } catch (e) {
     error = e instanceof ApiError ? e.message : "Could not reach BusConnect-api. Is it running?";
   }
@@ -190,7 +194,7 @@ export default async function SearchResultsPage({
         <h1 className="font-heading text-2xl font-bold tracking-tight">
           Available buses for {pageTitleDate(effectiveDate)}
         </h1>
-        <DateFilter from={from} to={to} date={effectiveDate} />
+        <DateFilter baseQuery={baseQuery} date={effectiveDate} />
       </div>
 
       {error && (

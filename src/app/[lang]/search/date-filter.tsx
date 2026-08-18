@@ -6,12 +6,12 @@ function todayIso() {
   return new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Colombo" });
 }
 
-export function DateFilter({ from, to, date }: { from: string; to: string; date: string }) {
+export function DateFilter({ baseQuery, date }: { baseQuery: string; date: string }) {
   const router = useRouter();
 
   function onChange(next: string) {
     if (!next) return;
-    router.push(`/search?from=${from}&to=${to}&date=${next}`);
+    router.push(`/search?${baseQuery}&date=${next}`);
   }
 
   return (

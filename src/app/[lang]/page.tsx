@@ -6,7 +6,6 @@ import {
   MapPinned,
   Languages,
   RefreshCw,
-  ArrowRight,
 } from "lucide-react";
 import { listLocations } from "@/lib/locations";
 import { listPopularRoutes, formatDuration } from "@/lib/popular-routes";
@@ -171,10 +170,11 @@ function PopularRoutes({
         <div className="scrollbar-none -mx-4 mt-9 flex snap-x snap-mandatory gap-5 overflow-x-auto px-4 pb-2 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8">
           {routes.map((r) => {
             const dur = formatDuration(r.durationMinutes);
+            const query = r.routeCardId ? `routeCardId=${r.routeCardId}` : `routeId=${r.routeId}`;
             return (
               <Link
-                key={`${r.originId}-${r.destId}`}
-                href={localizePath(locale, `/search?from=${r.originId}&to=${r.destId}&date=${today}`)}
+                key={r.routeCardId ?? r.routeId}
+                href={localizePath(locale, `/search?${query}&date=${today}`)}
                 className="card card-hover group w-[78vw] shrink-0 snap-start overflow-hidden sm:w-80"
               >
                 <div className="relative">
@@ -182,7 +182,7 @@ function PopularRoutes({
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
                       src={r.imageUrl}
-                      alt={`${r.originName} to ${r.destName}`}
+                      alt={r.name}
                       className="aspect-video w-full object-cover"
                     />
                   ) : (
@@ -204,11 +204,7 @@ function PopularRoutes({
                 </div>
 
                 <div className="p-4">
-                  <h3 className="flex items-center gap-1.5 font-heading text-lg font-bold tracking-tight">
-                    <span className="truncate">{r.originName}</span>
-                    <ArrowRight size={15} className="shrink-0 text-slate-400" />
-                    <span className="truncate">{r.destName}</span>
-                  </h3>
+                  <h3 className="truncate font-heading text-lg font-bold tracking-tight">{r.name}</h3>
                   <p className="ui mt-1 text-sm text-slate-500 dark:text-zinc-400">
                     {r.todayCount > 0
                       ? `${r.todayCount} ${r.todayCount === 1 ? "trip" : "trips"} today${dur ? ` · ${dur}` : ""}`
