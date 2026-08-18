@@ -38,6 +38,15 @@ async function getAdminOperatorId(): Promise<string | null> {
   return store.get(ADMIN_OPERATOR_COOKIE)?.value ?? null;
 }
 
+/** Synchronous, browser-only check for "use client" components that need to
+ *  branch on admin-context mode (e.g. offering an admin-only override on an
+ *  action a real operator would just see blocked) — the backend always
+ *  re-verifies independently, this is UI branching only, not auth. */
+export function isAdminOperatorContext(): boolean {
+  if (typeof window === 'undefined') return false;
+  return document.cookie.split('; ').some((c) => c.startsWith(`${ADMIN_OPERATOR_COOKIE}=`));
+}
+
 async function request<T>(
   path: string,
   init: RequestInit & { accessToken?: string } = {},
@@ -560,8 +569,13 @@ export function setJourneyStatus(accessToken: string, id: string, status: 'activ
   });
 }
 
-export function deleteJourney(accessToken: string, id: string) {
-  return request(`/operator/journeys/${id}`, { method: 'DELETE', accessToken });
+/** `force` only ever does anything for a platform admin in admin-context
+ *  mode — the backend re-checks that independently, this is not a client-
+ *  side permission. Force-deleting erases the journey's upcoming trips'
+ *  bookings/tickets/payments with no refund. */
+export function deleteJourney(accessToken: string, id: string, force = false) {
+  const qs = force ? '?force=true' : '';
+  return request(`/operator/journeys/${id}${qs}`, { method: 'DELETE', accessToken });
 }
 
 // ── Timetable — schedule dated trips from journeys ──────────────────────────
@@ -580,8 +594,13 @@ export function scheduleTrips(accessToken: string, input: { journeyId: string; d
   });
 }
 
-export function cancelOperatorTrip(accessToken: string, tripId: string) {
-  return request(`/operator/trips/${tripId}`, { method: 'DELETE', accessToken });
+/** `force` only ever does anything for a platform admin in admin-context
+ *  mode — the backend re-checks that independently, this is not a client-
+ *  side permission. Force-deleting erases the trip's bookings/tickets/
+ *  payments with no refund. */
+export function cancelOperatorTrip(accessToken: string, tripId: string, force = false) {
+  const qs = force ? '?force=true' : '';
+  return request(`/operator/trips/${tripId}${qs}`, { method: 'DELETE', accessToken });
 }
 
 export function getOperatorRouteCatalog(accessToken: string) {
