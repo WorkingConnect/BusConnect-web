@@ -183,8 +183,7 @@ export default function AdminRoutesPage() {
           <h1 className="font-heading text-2xl font-bold tracking-tight">Routes</h1>
           <p className="ui mt-1 text-sm text-slate-600 dark:text-zinc-400">
             Shared route catalog — each route is an ordered list of stops from origin to
-            destination. Any operator can run a journey on any route, unless restricted to
-            specific operators.
+            destination. A route is only usable by the operators explicitly assigned to it.
           </p>
         </div>
         {!editor && (
@@ -774,13 +773,17 @@ function RouteEditor({
       </div>
 
       <div>
-        <p className="ui text-sm font-semibold text-slate-900 dark:text-white">
-          Operators <span className="font-normal text-slate-400">(optional)</span>
-        </p>
+        <p className="ui text-sm font-semibold text-slate-900 dark:text-white">Operators</p>
         <p className="ui mt-0.5 text-xs text-slate-500 dark:text-zinc-400">
-          Leave none selected to allow every operator. Pick specific operators to restrict this
-          route to just them.
+          Only the operators picked here can use this route. Leave none selected and no operator
+          can use it yet.
         </p>
+        {editor.operatorIds.length === 0 && (
+          <p className="ui mt-1.5 text-xs font-medium text-amber-600 dark:text-amber-400">
+            No operators assigned — this route won&rsquo;t be usable by anyone until you pick at
+            least one.
+          </p>
+        )}
         <div className="mt-2">
           <OperatorMultiSelect
             operators={operators}
