@@ -513,6 +513,10 @@ export interface OperatorJourneyDetail extends Omit<OperatorJourney, 'route' | '
   driver: { id: string; name: string } | null;
   conductor: { id: string; name: string } | null;
   stops: JourneyStopDetail[];
+  /** True once any trip on this journey has a real booking — the route,
+   *  times, fare, and boarding/drop-off points then lock for a real
+   *  operator (not admin-context); only the bus stays changeable. */
+  has_booked_trips: boolean;
 }
 
 export interface JourneyStopInput {

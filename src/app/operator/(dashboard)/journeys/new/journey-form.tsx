@@ -10,6 +10,7 @@ import {
   listPilots,
   createJourney,
   updateJourney,
+  isAdminOperatorContext,
   ApiError,
   type RouteCatalogEntry,
   type OperatorBus,
@@ -47,6 +48,16 @@ function computeDayOffsets(times: string[]): number[] {
 export function JourneyForm({ initial }: { initial?: OperatorJourneyDetail }) {
   const router = useRouter();
   const editing = !!initial;
+
+  // Starts false on both server and client render (avoids a hydration
+  // mismatch — the cookie is browser-only) and flips right after mount if
+  // an admin is genuinely viewing this as "Go to operator dashboard". Admin
+  // context keeps every field exactly as editable as it is today; these
+  // new locks only ever apply to a real operator's own view.
+  const [adminMode, setAdminMode] = useState(false);
+  useEffect(() => setAdminMode(isAdminOperatorContext()), []);
+  const routeLocked = editing && !adminMode;
+  const bookingLocked = editing && !!initial?.has_booked_trips && !adminMode;
 
   const [routes, setRoutes] = useState<RouteCatalogEntry[]>([]);
   const [buses, setBuses] = useState<OperatorBus[]>([]);
@@ -246,13 +257,18 @@ export function JourneyForm({ initial }: { initial?: OperatorJourneyDetail }) {
         <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
           <label className={labelCls}>
             Route
-            <Select value={routeId} onChange={pickRoute} placeholder="Choose a route…">
+            <Select value={routeId} onChange={pickRoute} placeholder="Choose a route…" disabled={routeLocked}>
               {routes.map((r) => (
                 <option key={r.id} value={r.id}>
                   {r.name}
                 </option>
               ))}
             </Select>
+            {routeLocked && (
+              <span className="ui text-xs font-normal text-slate-400 dark:text-zinc-500">
+                Can&rsquo;t be changed after a journey is created.
+              </span>
+            )}
           </label>
           <label className={labelCls}>
             Bus
@@ -287,26 +303,29 @@ export function JourneyForm({ initial }: { initial?: OperatorJourneyDetail }) {
           Times
         </h2>
         <p className="ui mt-1 text-xs text-slate-500 dark:text-zinc-500">
-          The service&apos;s departure/arrival times. You choose which dates it runs later, from the
-          Timetable.
+          {bookingLocked
+            ? "This journey has bookings — times are locked until those trips run out."
+            : "The service's departure/arrival times. You choose which dates it runs later, from the Timetable."}
         </p>
         <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
           <label className={labelCls}>
             Departure time
-            <input type="time" value={departTime} onChange={(e) => changeDepartTime(e.target.value)} required className="field text-sm" />
+            <input type="time" value={departTime} onChange={(e) => changeDepartTime(e.target.value)} required disabled={bookingLocked} className="field text-sm" />
           </label>
           <label className={labelCls}>
             Arrival time
-            <input type="time" value={arriveTime} onChange={(e) => changeArriveTime(e.target.value)} required className="field text-sm" />
+            <input type="time" value={arriveTime} onChange={(e) => changeArriveTime(e.target.value)} required disabled={bookingLocked} className="field text-sm" />
           </label>
         </div>
         <label className="ui mt-3 flex items-center gap-2 text-sm text-slate-700 dark:text-zinc-300">
-          <input type="checkbox" checked={arriveNextDay} onChange={(e) => setArriveNextDay(e.target.checked)} className="h-4 w-4 rounded border-slate-300 text-brand focus:ring-brand dark:border-zinc-700" />
+          <input type="checkbox" checked={arriveNextDay} onChange={(e) => setArriveNextDay(e.target.checked)} disabled={bookingLocked} className="h-4 w-4 rounded border-slate-300 text-brand focus:ring-brand dark:border-zinc-700" />
           Arrives the next day (overnight)
         </label>
       </section>
 
-      {/* ── Departure & arrival locations ───────────────────────────────── */}
+      {/* ── Departure & arrival locations — admin-context only; a real
+          operator already sets these via the route's own stops. ────────── */}
+      {adminMode && (
       <section className="card-lg p-6">
         <h2 className="ui text-xs font-semibold uppercase tracking-wide text-slate-400 dark:text-zinc-600">
           Departure &amp; arrival points
@@ -330,15 +349,21 @@ export function JourneyForm({ initial }: { initial?: OperatorJourneyDetail }) {
           </label>
         </div>
       </section>
+      )}
 
       {/* ── Fare ────────────────────────────────────────────────────────── */}
       <section className="card-lg p-6">
         <h2 className="ui text-xs font-semibold uppercase tracking-wide text-slate-400 dark:text-zinc-600">
           Fare
         </h2>
+        {bookingLocked && (
+          <p className="ui mt-1 text-xs text-slate-500 dark:text-zinc-500">
+            This journey has bookings — fare is locked until those trips run out.
+          </p>
+        )}
         <label className={`${labelCls} mt-4 max-w-xs`}>
           Base fare (LKR)
-          <input type="number" min={0} value={baseFare} onChange={(e) => setBaseFare(e.target.value)} placeholder="e.g. 2147" required className="field text-sm" />
+          <input type="number" min={0} value={baseFare} onChange={(e) => setBaseFare(e.target.value)} placeholder="e.g. 2147" required disabled={bookingLocked} className="field text-sm" />
         </label>
       </section>
 
@@ -352,7 +377,9 @@ export function JourneyForm({ initial }: { initial?: OperatorJourneyDetail }) {
         ) : (
           <>
             <p className="ui mt-1 text-xs text-slate-500 dark:text-zinc-500">
-              Set the time the bus is at each stop, and whether passengers can board and/or be dropped there.
+              {bookingLocked
+                ? "This journey has bookings — boarding/drop-off points are locked until those trips run out."
+                : "Set the time the bus is at each stop, and whether passengers can board and/or be dropped there."}
             </p>
             <div className="mt-4 flex flex-col gap-2">
               <div className="ui hidden grid-cols-[1.5rem_1fr_7rem_auto] items-center gap-3 px-1 text-xs font-medium text-slate-400 sm:grid dark:text-zinc-600">
@@ -372,15 +399,16 @@ export function JourneyForm({ initial }: { initial?: OperatorJourneyDetail }) {
                     type="time"
                     value={s.time}
                     onChange={(e) => setStop(i, { time: e.target.value })}
+                    disabled={bookingLocked}
                     className="field py-1.5 text-sm"
                   />
                   <div className="flex items-center justify-end gap-3 text-xs">
                     <label className="ui flex items-center gap-1.5 text-slate-600 dark:text-zinc-400">
-                      <input type="checkbox" checked={s.canBoard} onChange={(e) => setStop(i, { canBoard: e.target.checked })} className="h-3.5 w-3.5 rounded border-slate-300 text-brand focus:ring-brand dark:border-zinc-700" />
+                      <input type="checkbox" checked={s.canBoard} onChange={(e) => setStop(i, { canBoard: e.target.checked })} disabled={bookingLocked} className="h-3.5 w-3.5 rounded border-slate-300 text-brand focus:ring-brand dark:border-zinc-700" />
                       Board
                     </label>
                     <label className="ui flex items-center gap-1.5 text-slate-600 dark:text-zinc-400">
-                      <input type="checkbox" checked={s.canDrop} onChange={(e) => setStop(i, { canDrop: e.target.checked })} className="h-3.5 w-3.5 rounded border-slate-300 text-brand focus:ring-brand dark:border-zinc-700" />
+                      <input type="checkbox" checked={s.canDrop} onChange={(e) => setStop(i, { canDrop: e.target.checked })} disabled={bookingLocked} className="h-3.5 w-3.5 rounded border-slate-300 text-brand focus:ring-brand dark:border-zinc-700" />
                       Drop
                     </label>
                   </div>
@@ -411,11 +439,13 @@ function Select({
   value,
   onChange,
   placeholder,
+  disabled,
   children,
 }: {
   value: string;
   onChange: (v: string) => void;
   placeholder: string;
+  disabled?: boolean;
   children: React.ReactNode;
 }) {
   return (
@@ -423,7 +453,8 @@ function Select({
       <select
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="field appearance-none pr-9 text-sm"
+        disabled={disabled}
+        className="field appearance-none pr-9 text-sm disabled:cursor-not-allowed disabled:opacity-60"
       >
         <option value="" disabled>
           {placeholder}
