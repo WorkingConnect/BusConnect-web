@@ -1543,3 +1543,12 @@ export function getOperatorRevenue(accessToken: string) {
 export function getOperatorPayoutSlipUrl(accessToken: string, tripId: string) {
   return request<{ url: string }>(`/operator/revenue/${tripId}/slip-url`, { accessToken });
 }
+
+/** Dismisses a Paid Out row from the operator's own Revenue page — display
+ *  only; the payout/trip records are untouched and admin's view is unaffected. */
+export function hideOperatorRevenueRow(accessToken: string, tripId: string) {
+  return request<{ ok: true }>(`/operator/revenue/${tripId}/hide`, {
+    method: 'POST',
+    accessToken,
+  });
+}

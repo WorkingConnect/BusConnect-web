@@ -1,9 +1,9 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Users, ChevronDown } from "lucide-react";
-import type { OperatorRevenueRow } from "@/lib/api";
-import { ViewSlipButton } from "./view-slip-button";
+import { Users, ChevronDown, Loader2, Trash2 } from "lucide-react";
+import { createClient } from "@/lib/supabase/client";
+import { hideOperatorRevenueRow, ApiError, type OperatorRevenueRow } from "@/lib/api";
 
 const TRIP_STATUS_STYLE: Record<string, string> = {
   scheduled: "bg-slate-100 text-slate-600 dark:bg-zinc-800 dark:text-zinc-400",
@@ -23,11 +23,16 @@ function localDateIso(iso: string) {
 
 type Bucket = "ready" | "locked" | "paid";
 
-export function RevenueView({ rows }: { rows: OperatorRevenueRow[] }) {
+export function RevenueView({ rows: initialRows }: { rows: OperatorRevenueRow[] }) {
+  const [rows, setRows] = useState(initialRows);
   const [routeId, setRouteId] = useState("");
   const [busRegNo, setBusRegNo] = useState("");
   const [date, setDate] = useState("");
   const [selected, setSelected] = useState<Bucket>("ready");
+
+  function handleHidden(tripId: string) {
+    setRows((prev) => prev.filter((r) => r.trip_id !== tripId));
+  }
 
   const routeOptions = useMemo(() => {
     const map = new Map<string, string>();
@@ -140,7 +145,7 @@ export function RevenueView({ rows }: { rows: OperatorRevenueRow[] }) {
         )}
       </div>
 
-      <RevenueSection sections={sections} selected={selected} onSelect={setSelected} />
+      <RevenueSection sections={sections} selected={selected} onSelect={setSelected} onHidden={handleHidden} />
     </div>
   );
 }
@@ -149,10 +154,12 @@ function RevenueSection({
   sections,
   selected,
   onSelect,
+  onHidden,
 }: {
   sections: Record<Bucket, { title: string; subtitle: string; rows: OperatorRevenueRow[]; emptyMessage: string }>;
   selected: Bucket;
   onSelect: (b: Bucket) => void;
+  onHidden: (tripId: string) => void;
 }) {
   const active = sections[selected];
   const order: Bucket[] = ["ready", "locked", "paid"];
@@ -220,7 +227,7 @@ function RevenueSection({
                     </p>
                     <p className="font-heading text-lg font-bold text-brand dark:text-blue-400">{money(r.net_amount)}</p>
                   </div>
-                  {r.payout_status === "paid" && r.has_slip && <ViewSlipButton tripId={r.trip_id} />}
+                  {r.payout_status === "paid" && <DeleteRevenueRowButton tripId={r.trip_id} onHidden={() => onHidden(r.trip_id)} />}
                 </div>
               </div>
             </div>
@@ -228,6 +235,68 @@ function RevenueSection({
         )}
       </div>
     </section>
+  );
+}
+
+function DeleteRevenueRowButton({ tripId, onHidden }: { tripId: string; onHidden: () => void }) {
+  const [confirming, setConfirming] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function confirmHide() {
+    setError(null);
+    setBusy(true);
+    try {
+      const supabase = createClient();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (!session) return;
+      await hideOperatorRevenueRow(session.access_token, tripId);
+      onHidden();
+    } catch (e) {
+      setError(e instanceof ApiError ? e.message : "Could not remove this row.");
+      setBusy(false);
+      setConfirming(false);
+    }
+  }
+
+  if (confirming) {
+    return (
+      <div className="flex flex-col items-end gap-1">
+        <div className="flex items-center gap-1.5">
+          <button
+            type="button"
+            onClick={() => setConfirming(false)}
+            disabled={busy}
+            className="ui rounded-lg border border-slate-200 px-2 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-60 dark:border-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-800"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            onClick={confirmHide}
+            disabled={busy}
+            className="ui inline-flex items-center gap-1 rounded-lg bg-red-600 px-2 py-1 text-xs font-semibold text-white hover:bg-red-700 disabled:opacity-60"
+          >
+            {busy ? <Loader2 size={12} className="animate-spin" /> : <Trash2 size={12} />}
+            Remove
+          </button>
+        </div>
+        {error && <span className="ui text-[11px] text-red-600 dark:text-red-400">{error}</span>}
+      </div>
+    );
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={() => setConfirming(true)}
+      aria-label="Remove this row"
+      className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/30"
+    >
+      <Trash2 size={14} />
+    </button>
   );
 }
 
