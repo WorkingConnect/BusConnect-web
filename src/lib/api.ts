@@ -450,7 +450,7 @@ export interface OperatorBus {
   side_image_urls: string[] | null;
   interior_image_url: string | null;
   seat_layout_image_url: string | null;
-  bus_type: { name: string; class: string; seat_count: number } | null;
+  bus_type: { name: string; class: string; seat_count: number; layout_json: SeatLayout | null } | null;
 }
 
 export interface RouteStopEntry {
@@ -1295,6 +1295,34 @@ export function setAdminBusStatus(
   return request<AdminBus>(`/admin/buses/${busId}/status`, {
     method: 'PATCH',
     body: JSON.stringify({ status }),
+    accessToken,
+  });
+}
+
+export interface AdminBusDetail extends AdminBus {
+  bus_type_id: string;
+  created_at: string;
+}
+
+export function getAdminBus(accessToken: string, busId: string) {
+  return request<AdminBusDetail>(`/admin/buses/${busId}`, { accessToken });
+}
+
+export interface UpdateAdminBusInput {
+  regNo?: string;
+  busTypeId?: string;
+  amenities?: string[];
+  notes?: string;
+  frontImageUrl?: string;
+  sideImageUrls?: string[];
+  interiorImageUrl?: string;
+  seatLayoutImageUrl?: string;
+}
+
+export function updateAdminBus(accessToken: string, busId: string, input: UpdateAdminBusInput) {
+  return request<AdminBusDetail>(`/admin/buses/${busId}`, {
+    method: 'PATCH',
+    body: JSON.stringify(input),
     accessToken,
   });
 }

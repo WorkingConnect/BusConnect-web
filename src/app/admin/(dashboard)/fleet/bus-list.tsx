@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { Search, LayoutGrid } from "lucide-react";
+import { ChevronRight, Search } from "lucide-react";
 import type { AdminBus } from "@/lib/api";
 import { StatusActions } from "./status-actions";
 
@@ -61,8 +61,8 @@ function BusRow({ bus: b }: { bus: AdminBus }) {
   ];
 
   return (
-    <div className="card flex items-start justify-between gap-4 p-4">
-      <div className="flex items-start gap-3">
+    <div className="card card-hover flex items-start justify-between gap-4 p-4">
+      <Link href={`/admin/fleet/${b.id}`} className="flex flex-1 items-start gap-3">
         {b.front_image_url ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
@@ -87,31 +87,31 @@ function BusRow({ bus: b }: { bus: AdminBus }) {
             <p className="ui mt-1 text-xs text-slate-500 dark:text-zinc-500">{b.amenities.join(", ")}</p>
           )}
           {b.notes && <p className="ui mt-1 text-xs italic text-slate-500 dark:text-zinc-500">&ldquo;{b.notes}&rdquo;</p>}
-          <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-xs">
-            {photos.map(([label, url]) =>
-              url ? (
-                <a
-                  key={label}
-                  href={url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-brand underline dark:text-blue-400"
-                >
-                  {label}
-                </a>
-              ) : null,
-            )}
-          </div>
         </div>
-      </div>
+      </Link>
       <div className="flex shrink-0 flex-col items-end gap-2">
-        <Link
-          href={`/admin/fleet/${b.id}/seat-map`}
-          className="ui flex items-center gap-1.5 rounded-lg border border-slate-200 px-2.5 py-1.5 text-xs font-medium text-slate-600 transition-colors hover:border-brand hover:text-brand dark:border-zinc-700 dark:text-zinc-400 dark:hover:border-blue-400 dark:hover:text-blue-300"
-        >
-          <LayoutGrid size={13} /> Seat map
-        </Link>
         <StatusActions busId={b.id} status={b.status} />
+        <div className="flex flex-wrap justify-end gap-x-3 gap-y-1 text-xs">
+          {photos.map(([label, url]) =>
+            url ? (
+              <a
+                key={label}
+                href={url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-brand underline dark:text-blue-400"
+              >
+                {label}
+              </a>
+            ) : null,
+          )}
+        </div>
+        <Link
+          href={`/admin/fleet/${b.id}`}
+          className="ui mt-1 flex items-center gap-0.5 text-xs font-medium text-slate-500 transition-colors hover:text-slate-900 dark:text-zinc-400 dark:hover:text-white"
+        >
+          Details <ChevronRight size={13} />
+        </Link>
       </div>
     </div>
   );
