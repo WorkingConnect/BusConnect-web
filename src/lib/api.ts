@@ -1410,12 +1410,39 @@ export function deleteAdminRouteCard(accessToken: string, cardId: string) {
   return request(`/admin/route-cards/${cardId}`, { method: 'DELETE', accessToken });
 }
 
+/** Pure geometry, no location identity needed — lets the map preview a path
+ *  for points that haven't been matched to a saved Location yet (e.g. right
+ *  after parsing a pasted route link). */
+export interface PreviewStopInput {
+  lat: number;
+  lng: number;
+  isWaypoint?: boolean;
+}
+
 /** Previews the Google Directions road path(s) for a set of stops without
  *  saving — powers the editor's "Preview path" button and alternatives picker. */
-export function previewAdminRoutePath(accessToken: string, stops: RouteStopInput[]) {
+export function previewAdminRoutePath(accessToken: string, stops: PreviewStopInput[]) {
   return request<{ options: RoutePathOption[] }>('/admin/routes/preview-path', {
     method: 'POST',
     body: JSON.stringify({ stops }),
+    accessToken,
+  });
+}
+
+/** A point parsed out of a pasted Google Maps directions link. */
+export interface RouteLinkPoint {
+  lat: number;
+  lng: number;
+  /** Resolved place name/address — null when the link segment was already a raw coordinate. */
+  label: string | null;
+}
+
+/** Parses a pasted Google Maps directions link (a route planned in Google
+ *  Maps — origin, waypoints, destination) into an ordered list of points. */
+export function resolveAdminRouteLink(accessToken: string, url: string) {
+  return request<RouteLinkPoint[]>('/admin/routes/resolve-route-link', {
+    method: 'POST',
+    body: JSON.stringify({ url }),
     accessToken,
   });
 }

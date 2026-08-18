@@ -25,6 +25,7 @@ import {
   listAdminLocations,
   createAdminLocation,
   resolveMapsLink,
+  resolveAdminRouteLink,
   listAdminRoutes,
   createAdminRoute,
   updateAdminRoute,
@@ -39,7 +40,7 @@ import {
   type AdminRoute,
   type AdminRouteCard,
   type RoutePathOption,
-  type RouteStopInput,
+  type PreviewStopInput,
   type RouteTripCandidate,
 } from "@/lib/api";
 
@@ -268,6 +269,14 @@ function RouteEditor({
   const [error, setError] = useState<string | null>(null);
   const [locatingKey, setLocatingKey] = useState<string | null>(null);
 
+  // Paste-a-route-link state
+  const [linkUrl, setLinkUrl] = useState("");
+  const [linkBusy, setLinkBusy] = useState(false);
+  const [linkError, setLinkError] = useState<string | null>(null);
+
+  // Click-map-to-add-a-waypoint state
+  const [waypointClickMode, setWaypointClickMode] = useState(false);
+
   // Preview-path state
   const [previewing, setPreviewing] = useState(false);
   const [previewError, setPreviewError] = useState<string | null>(null);
@@ -345,17 +354,19 @@ function RouteEditor({
       label: s.isWaypoint ? "W" : String(i + 1),
     }));
 
-  async function previewPath() {
+  // Takes an explicit stop list (rather than always reading the `stops`
+  // closure) so a freshly-parsed route link can trigger a preview
+  // immediately, without waiting a render for state to catch up.
+  async function previewPathFor(pinnedStops: EditorStop[]) {
     setPreviewError(null);
-    const pinned = stops.filter((s) => s.lat != null && s.lng != null);
+    const pinned = pinnedStops.filter((s) => s.lat != null && s.lng != null);
     if (pinned.length < 2) {
       setPreviewError("Pin at least two stops on the map before previewing the path.");
       return;
     }
     setPreviewing(true);
     try {
-      const payload: RouteStopInput[] = stops.map((s) => ({
-        locationId: s.isWaypoint ? null : s.locationId,
+      const payload: PreviewStopInput[] = pinnedStops.map((s) => ({
         lat: s.lat as number,
         lng: s.lng as number,
         isWaypoint: s.isWaypoint,
@@ -369,12 +380,62 @@ function RouteEditor({
       setOptions(opts);
       setSelectedOption(0);
       setUsedTripId(null);
-      setEditor({ ...editor, stops, path: opts[0].coordinates });
+      setEditor({ ...editor, stops: pinnedStops, path: opts[0].coordinates });
     } catch (e) {
       setPreviewError(e instanceof ApiError ? e.message : "Could not preview the path.");
     } finally {
       setPreviewing(false);
     }
+  }
+
+  async function previewPath() {
+    await previewPathFor(stops);
+  }
+
+  async function loadRouteLink() {
+    setLinkError(null);
+    const url = linkUrl.trim();
+    if (!url) return;
+    setLinkBusy(true);
+    try {
+      const points = await resolveAdminRouteLink(token, url);
+      const newStops: EditorStop[] = points.map((p) => {
+        // Best-effort match to an existing Location by name, so a resolved
+        // place doesn't need re-searching — falls through to unresolved
+        // (locationId null) when nothing matches; the admin then searches/
+        // adds it via the stop picker same as any manually-added stop.
+        const match = p.label
+          ? locations.find(
+              (l) =>
+                l.name_en.toLowerCase() === p.label!.toLowerCase() ||
+                p.label!.toLowerCase().startsWith(l.name_en.toLowerCase()),
+            )
+          : undefined;
+        return {
+          key: nextKey(),
+          locationId: match?.id ?? null,
+          name: match?.name_en ?? p.label,
+          lat: p.lat,
+          lng: p.lng,
+          isWaypoint: false,
+        };
+      });
+      setEditor({ ...editor, stops: newStops, path: null });
+      setOptions(null);
+      setUsedTripId(null);
+      setLinkUrl("");
+      await previewPathFor(newStops);
+    } catch (e) {
+      setLinkError(e instanceof ApiError ? e.message : "Could not load that route link.");
+    } finally {
+      setLinkBusy(false);
+    }
+  }
+
+  function handleMapClick(point: { lat: number; lng: number }) {
+    if (!waypointClickMode) return;
+    setStops([...stops, { key: nextKey(), locationId: null, name: null, lat: point.lat, lng: point.lng, isWaypoint: true }]);
+    setWaypointClickMode(false);
   }
 
   function chooseOption(i: number) {
@@ -480,6 +541,41 @@ function RouteEditor({
         >
           <X size={16} />
         </button>
+      </div>
+
+      <div className="ui mt-4 rounded-xl border border-dashed border-slate-300 p-3 dark:border-zinc-700">
+        <label className="flex flex-col gap-1.5 text-sm font-medium text-slate-700 dark:text-zinc-300">
+          Start from a Google Maps route (optional)
+          <span className="font-normal text-slate-400 dark:text-zinc-500">
+            Plan the route in Google Maps, copy its share link, and paste it here — stops and the
+            road path fill in automatically. You can still add stops, mark waypoints, and adjust
+            the drawn line afterward.
+          </span>
+        </label>
+        <div className="mt-2 flex gap-2">
+          <input
+            value={linkUrl}
+            onChange={(e) => setLinkUrl(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                void loadRouteLink();
+              }
+            }}
+            placeholder="Paste a Google Maps directions link…"
+            className="field flex-1 text-sm"
+          />
+          <button
+            type="button"
+            onClick={() => void loadRouteLink()}
+            disabled={linkBusy || !linkUrl.trim()}
+            className="btn-secondary shrink-0 py-2 text-sm"
+          >
+            {linkBusy ? <Loader2 size={15} className="animate-spin" /> : <RouteIcon size={15} />}
+            Load route
+          </button>
+        </div>
+        {linkError && <p className="ui mt-2 text-xs text-red-600 dark:text-red-400">{linkError}</p>}
       </div>
 
       <label className="ui mt-4 flex flex-col gap-1.5 text-sm font-medium text-slate-700 dark:text-zinc-300">
@@ -648,18 +744,47 @@ function RouteEditor({
         <div>
           <div className="mb-2 flex items-center justify-between gap-2">
             <p className="ui text-sm font-medium text-slate-700 dark:text-zinc-300">Route map</p>
-            <button
-              type="button"
-              onClick={() => void previewPath()}
-              disabled={previewing}
-              className="ui inline-flex items-center gap-1.5 rounded-lg border border-slate-200 px-2.5 py-1.5 text-xs font-semibold text-slate-700 transition-colors hover:bg-slate-50 disabled:opacity-60 dark:border-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-800"
-            >
-              {previewing ? <Loader2 size={13} className="animate-spin" /> : <RefreshCw size={13} />}
-              Preview path
-            </button>
+            <div className="flex gap-1.5">
+              <button
+                type="button"
+                onClick={() => setWaypointClickMode((v) => !v)}
+                className={`ui inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-xs font-semibold transition-colors ${
+                  waypointClickMode
+                    ? "border-purple-400 bg-purple-50 text-purple-700 dark:border-purple-700 dark:bg-purple-950/30 dark:text-purple-300"
+                    : "border-slate-200 text-slate-700 hover:bg-slate-50 dark:border-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-800"
+                }`}
+              >
+                <Waypoints size={13} />
+                {waypointClickMode ? "Click the map…" : "Add waypoint on map"}
+              </button>
+              <button
+                type="button"
+                onClick={() => void previewPath()}
+                disabled={previewing}
+                className="ui inline-flex items-center gap-1.5 rounded-lg border border-slate-200 px-2.5 py-1.5 text-xs font-semibold text-slate-700 transition-colors hover:bg-slate-50 disabled:opacity-60 dark:border-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-800"
+              >
+                {previewing ? <Loader2 size={13} className="animate-spin" /> : <RefreshCw size={13} />}
+                Preview path
+              </button>
+            </div>
           </div>
-          <RoutePreviewMap stops={mapStops} path={editor.path} />
+          <RoutePreviewMap
+            stops={mapStops}
+            path={editor.path}
+            onMapClick={handleMapClick}
+            editablePath
+            onPathEdited={(coordinates) => setEditor({ ...editor, path: coordinates })}
+          />
+          {waypointClickMode && (
+            <p className="ui mt-2 text-xs text-purple-600 dark:text-purple-400">
+              Click anywhere on the map to drop a hidden waypoint there.
+            </p>
+          )}
           {previewError && <p className="ui mt-2 text-xs text-red-600 dark:text-red-400">{previewError}</p>}
+          <p className="ui mt-2 text-xs text-slate-400 dark:text-zinc-500">
+            Drag a point on the drawn line to reshape it, or click along the line to add a bend —
+            this only adjusts the drawn road path, not the stop list.
+          </p>
 
           {options && options.length > 1 && (
             <div className="mt-3">
