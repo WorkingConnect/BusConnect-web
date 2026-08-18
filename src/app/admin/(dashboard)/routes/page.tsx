@@ -768,8 +768,8 @@ function RouteEditor({
       )}
       {previewError && <p className="ui mt-2 text-xs text-red-600 dark:text-red-400">{previewError}</p>}
       <p className="ui mt-2 text-xs text-slate-400 dark:text-zinc-500">
-        Drag a point on the drawn line to reshape it, or click along the line to add a bend — this
-        only adjusts the drawn road path, not the stop list.
+        Path takes a wrong turn? Add a waypoint (via the stop list or &ldquo;Add waypoint on
+        map&rdquo;) where it should bend, then hit Preview path again.
       </p>
     </>
   );
@@ -943,8 +943,6 @@ function RouteEditor({
             stops={mapStops}
             path={editor.path}
             onMapClick={handleMapClick}
-            editablePath
-            onPathEdited={(coordinates) => setEditor({ ...editor, path: coordinates })}
             className="absolute inset-0"
           />
         </div>
@@ -991,13 +989,7 @@ function RouteEditor({
               </button>
             </div>
           </div>
-          <RoutePreviewMap
-            stops={mapStops}
-            path={editor.path}
-            onMapClick={handleMapClick}
-            editablePath
-            onPathEdited={(coordinates) => setEditor({ ...editor, path: coordinates })}
-          />
+          <RoutePreviewMap stops={mapStops} path={editor.path} onMapClick={handleMapClick} />
           {mapHints}
           {pathOptionsPanel}
         </div>

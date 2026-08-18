@@ -18,36 +18,25 @@ export interface RouteMapStop {
 
 /**
  * Draws a route's stops (numbered pins; waypoints in a distinct colour) and
- * its currently-selected road path. Used in the admin route editor so the
- * admin can see the actual road the generated path follows and spot where
- * it needs a waypoint. `path` is [lng, lat] pairs (GeoJSON order), matching
- * the preview/Directions output.
+ * its currently-selected road path (read-only — Google's public Polyline
+ * API doesn't support live-recalculating drag editing for a dense,
+ * 100+ point road-snapped line the way maps.google.com's own proprietary
+ * route editor does; reshaping the path is done by adding a waypoint and
+ * re-running the Directions preview instead). `path` is [lng, lat] pairs
+ * (GeoJSON order), matching the preview/Directions output.
  *
- * Two optional interactive modes, both opt-in:
- * - `onMapClick` — reports every map click, e.g. to drop a waypoint where
- *   clicked.
- * - `editablePath` — turns the drawn line into a native Google Maps
- *   editable polyline (drag a vertex to move it, click a segment to insert
- *   a new one); `onPathEdited` fires with the updated coordinates. This
- *   only reshapes the visual line — it never touches `stops`. To avoid
- *   fighting an in-progress drag, a path update that matches what this
- *   component itself just emitted is recognised as a self-edit and doesn't
- *   trigger a full polyline rebuild — only a genuinely new path (a
- *   different Directions option, a re-pasted link, etc.) does.
+ * `onMapClick` reports every map click, e.g. to drop a waypoint where
+ * clicked.
  */
 export function RoutePreviewMap({
   stops,
   path,
   onMapClick,
-  editablePath,
-  onPathEdited,
   className,
 }: {
   stops: RouteMapStop[];
   path: [number, number][] | null;
   onMapClick?: (point: { lat: number; lng: number }) => void;
-  editablePath?: boolean;
-  onPathEdited?: (coordinates: [number, number][]) => void;
   /** Overrides the wrapper's default `h-80 w-full rounded-xl border` sizing —
    *  e.g. `"absolute inset-0"` to fill a fullscreen container. */
   className?: string;
@@ -56,7 +45,6 @@ export function RoutePreviewMap({
   const mapRef = useRef<google.maps.Map | null>(null);
   const markersRef = useRef<google.maps.Marker[]>([]);
   const polylineRef = useRef<google.maps.Polyline | null>(null);
-  const lastEmittedPathRef = useRef<string | null>(null);
   const [ready, setReady] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -64,10 +52,6 @@ export function RoutePreviewMap({
   useEffect(() => {
     onMapClickRef.current = onMapClick;
   }, [onMapClick]);
-  const onPathEditedRef = useRef(onPathEdited);
-  useEffect(() => {
-    onPathEditedRef.current = onPathEdited;
-  }, [onPathEdited]);
 
   useEffect(() => {
     let cancelled = false;
@@ -96,10 +80,11 @@ export function RoutePreviewMap({
   useEffect(() => {
     const map = mapRef.current;
     if (!ready || !map) return;
-    const cleanupTimers: number[] = [];
 
     markersRef.current.forEach((m) => m.setMap(null));
     markersRef.current = [];
+    polylineRef.current?.setMap(null);
+    polylineRef.current = null;
 
     const bounds = new google.maps.LatLngBounds();
     let has = false;
@@ -123,67 +108,17 @@ export function RoutePreviewMap({
       has = true;
     });
 
-    // A path update that exactly matches what we just emitted from a drag/
-    // insert is our own edit echoing back through props — leave the live
-    // polyline (and any in-progress drag) alone rather than tearing it down.
-    const pathKey = path ? JSON.stringify(path) : null;
-    const isSelfEdit = !!editablePath && pathKey !== null && pathKey === lastEmittedPathRef.current;
-
-    if (!isSelfEdit) {
-      polylineRef.current?.setMap(null);
-      polylineRef.current = null;
-
-      if (path && path.length > 1) {
-        const coords = path.map(([lng, lat]) => ({ lat, lng }));
-        polylineRef.current = new google.maps.Polyline({
-          map,
-          path: coords,
-          strokeColor: BRAND,
-          strokeOpacity: 0.9,
-          strokeWeight: 5,
-          editable: !!editablePath,
-        });
-        if (editablePath) {
-          const thisPolyline = polylineRef.current;
-          const mvcPath = thisPolyline.getPath();
-          let lastKnownLength = mvcPath.getLength();
-          const emit = () => {
-            const arr = mvcPath.getArray();
-            // A real drag/insert/remove changes the point count by at most
-            // 1 per event — a bigger jump means something else touched the
-            // array, not a genuine edit, so ignore it rather than risk
-            // silently replacing a good (possibly 100+ point) path with a
-            // broken one.
-            if (Math.abs(arr.length - lastKnownLength) > 1) {
-              lastKnownLength = arr.length;
-              return;
-            }
-            lastKnownLength = arr.length;
-            const edited = arr.map((ll): [number, number] => [ll.lng(), ll.lat()]);
-            lastEmittedPathRef.current = JSON.stringify(edited);
-            onPathEditedRef.current?.(edited);
-          };
-          // Defer attaching listeners until this polyline's own construction
-          // has fully settled — Google Maps can fire internal set_at/
-          // insert_at events while wiring up editable drag handles for a
-          // large point count (a dense Directions-decoded path routinely
-          // has 100+ points), and treating those as real user edits would
-          // silently overwrite the correct path with an incomplete
-          // mid-setup snapshot.
-          const timer = window.setTimeout(() => {
-            if (polylineRef.current !== thisPolyline) return; // redrawn before we attached
-            google.maps.event.addListener(mvcPath, "insert_at", emit);
-            google.maps.event.addListener(mvcPath, "set_at", emit);
-            google.maps.event.addListener(mvcPath, "remove_at", emit);
-          }, 0);
-          cleanupTimers.push(timer);
-        }
-      }
-    }
-
     if (path && path.length > 1) {
-      path.forEach(([lng, lat]) => {
-        bounds.extend({ lat, lng });
+      const coords = path.map(([lng, lat]) => ({ lat, lng }));
+      polylineRef.current = new google.maps.Polyline({
+        map,
+        path: coords,
+        strokeColor: BRAND,
+        strokeOpacity: 0.9,
+        strokeWeight: 5,
+      });
+      coords.forEach((c) => {
+        bounds.extend(c);
         has = true;
       });
     }
@@ -192,11 +127,7 @@ export function RoutePreviewMap({
       map.fitBounds(bounds, 48);
       if (stops.length === 1 && !path) map.setZoom(15);
     }
-
-    return () => {
-      cleanupTimers.forEach((t) => window.clearTimeout(t));
-    };
-  }, [ready, stops, path, editablePath]);
+  }, [ready, stops, path]);
 
   return (
     <div className={className ?? "relative h-80 w-full overflow-hidden rounded-xl border border-slate-200 dark:border-zinc-800"}>
