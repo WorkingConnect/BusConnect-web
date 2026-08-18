@@ -781,39 +781,12 @@ function RouteEditor({
           Leave none selected to allow every operator. Pick specific operators to restrict this
           route to just them.
         </p>
-        <div className="mt-2 flex max-h-44 flex-col gap-0.5 overflow-y-auto rounded-xl border border-slate-200 p-1.5 dark:border-zinc-800">
-          {operators.length === 0 ? (
-            <p className="ui px-1.5 py-1 text-xs text-slate-400 dark:text-zinc-500">No operators yet.</p>
-          ) : (
-            operators.map((op) => {
-              const checked = editor.operatorIds.includes(op.id);
-              return (
-                <label
-                  key={op.id}
-                  className="ui flex cursor-pointer items-center gap-2 rounded-lg px-1.5 py-1.5 text-sm hover:bg-slate-50 dark:hover:bg-zinc-800"
-                >
-                  <input
-                    type="checkbox"
-                    checked={checked}
-                    onChange={() => toggleOperator(op.id)}
-                    className="h-3.5 w-3.5 shrink-0 accent-brand"
-                  />
-                  <span className="flex-1 truncate">{op.name}</span>
-                  {op.status !== "active" && (
-                    <span
-                      className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium ${
-                        op.status === "pending"
-                          ? "bg-amber-100 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300"
-                          : "bg-red-100 text-red-700 dark:bg-red-950/50 dark:text-red-300"
-                      }`}
-                    >
-                      {op.status === "pending" ? "Pending" : "On hold"}
-                    </span>
-                  )}
-                </label>
-              );
-            })
-          )}
+        <div className="mt-2">
+          <OperatorMultiSelect
+            operators={operators}
+            selectedIds={editor.operatorIds}
+            onToggle={toggleOperator}
+          />
         </div>
       </div>
     </div>
@@ -1135,6 +1108,102 @@ function RegeneratePathButton({
         </span>
       )}
     </span>
+  );
+}
+
+const OPERATOR_STATUS_STYLE: Record<string, string> = {
+  pending: "bg-amber-100 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300",
+  suspended: "bg-red-100 text-red-700 dark:bg-red-950/50 dark:text-red-300",
+};
+const OPERATOR_STATUS_LABEL: Record<string, string> = {
+  pending: "Pending",
+  suspended: "On hold",
+};
+
+function OperatorMultiSelect({
+  operators,
+  selectedIds,
+  onToggle,
+}: {
+  operators: AdminOperator[];
+  selectedIds: string[];
+  onToggle: (operatorId: string) => void;
+}) {
+  const [query, setQuery] = useState("");
+  const [open, setOpen] = useState(false);
+
+  const selected = operators.filter((op) => selectedIds.includes(op.id));
+  const q = query.trim().toLowerCase();
+  const matches = operators.filter(
+    (op) => !selectedIds.includes(op.id) && (!q || op.name.toLowerCase().includes(q)),
+  );
+
+  return (
+    <div>
+      {selected.length > 0 && (
+        <div className="mb-2 flex flex-wrap gap-1.5">
+          {selected.map((op) => (
+            <span
+              key={op.id}
+              className="ui inline-flex items-center gap-1 rounded-full bg-brand-soft px-2.5 py-1 text-xs font-medium text-brand dark:bg-brand-soft-dark dark:text-blue-300"
+            >
+              {op.name}
+              <button
+                type="button"
+                onClick={() => onToggle(op.id)}
+                className="rounded-full hover:bg-black/10 dark:hover:bg-white/10"
+                aria-label={`Remove ${op.name}`}
+              >
+                <X size={11} />
+              </button>
+            </span>
+          ))}
+        </div>
+      )}
+      <div className="relative">
+        <input
+          value={query}
+          onChange={(e) => {
+            setQuery(e.target.value);
+            setOpen(true);
+          }}
+          onFocus={() => setOpen(true)}
+          onBlur={() => setTimeout(() => setOpen(false), 150)}
+          placeholder="Search operators…"
+          className="field text-sm"
+        />
+        {open && (
+          <div className="absolute z-20 mt-1 max-h-56 w-full overflow-auto rounded-xl border border-slate-200 bg-white p-1 shadow-lg dark:border-zinc-800 dark:bg-zinc-900">
+            {matches.length === 0 ? (
+              <p className="ui px-3 py-2 text-xs text-slate-400 dark:text-zinc-500">
+                {operators.length === 0 ? "No operators yet." : "No matches."}
+              </p>
+            ) : (
+              matches.map((op) => (
+                <button
+                  key={op.id}
+                  type="button"
+                  onMouseDown={() => {
+                    onToggle(op.id);
+                    setQuery("");
+                  }}
+                  className="ui flex w-full items-center justify-between gap-2 rounded-lg px-3 py-1.5 text-left text-sm text-slate-700 hover:bg-slate-100 dark:text-zinc-200 dark:hover:bg-zinc-800"
+                >
+                  <span className="truncate">{op.name}</span>
+                  {op.status !== "active" && (
+                    <span
+                      className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium ${OPERATOR_STATUS_STYLE[op.status]}`}
+                    >
+                      {OPERATOR_STATUS_LABEL[op.status]}
+                    </span>
+                  )}
+                </button>
+              ))
+            )}
+          </div>
+        )}
+      </div>
+    </div>
   );
 }
 
