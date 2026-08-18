@@ -41,12 +41,16 @@ export function RoutePreviewMap({
   onMapClick,
   editablePath,
   onPathEdited,
+  className,
 }: {
   stops: RouteMapStop[];
   path: [number, number][] | null;
   onMapClick?: (point: { lat: number; lng: number }) => void;
   editablePath?: boolean;
   onPathEdited?: (coordinates: [number, number][]) => void;
+  /** Overrides the wrapper's default `h-80 w-full rounded-xl border` sizing —
+   *  e.g. `"absolute inset-0"` to fill a fullscreen container. */
+  className?: string;
 }) {
   const mapDivRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<google.maps.Map | null>(null);
@@ -166,7 +170,9 @@ export function RoutePreviewMap({
   }, [ready, stops, path, editablePath]);
 
   return (
-    <div className="relative h-80 w-full overflow-hidden rounded-xl border border-slate-200 dark:border-zinc-800">
+    <div
+      className={`relative overflow-hidden ${className ?? "h-80 w-full rounded-xl border border-slate-200 dark:border-zinc-800"}`}
+    >
       {error ? (
         <div className="flex h-full items-center justify-center p-4 text-center text-sm text-red-600 dark:text-red-400">
           {error}

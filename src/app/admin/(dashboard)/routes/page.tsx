@@ -9,6 +9,8 @@ import {
   EyeOff,
   Loader2,
   MapPin,
+  Maximize2,
+  Minimize2,
   Plus,
   PlusCircle,
   RefreshCw,
@@ -268,6 +270,7 @@ function RouteEditor({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [locatingKey, setLocatingKey] = useState<string | null>(null);
+  const [fullscreen, setFullscreen] = useState(false);
 
   // Paste-a-route-link state
   const [linkUrl, setLinkUrl] = useState("");
@@ -529,21 +532,128 @@ function RouteEditor({
     }
   }
 
-  return (
-    <div className="card-lg mt-6 p-6">
-      <div className="flex items-center justify-between">
-        <h2 className="font-heading text-lg font-semibold">{editor.id ? "Edit route" : "New route"}</h2>
-        <button
-          type="button"
-          onClick={() => setEditor(null)}
-          className="rounded-lg p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:text-zinc-500 dark:hover:bg-zinc-800 dark:hover:text-zinc-300"
-          aria-label="Close"
-        >
-          <X size={16} />
-        </button>
+  const stopsPanel = (
+    <>
+      <p className="ui mb-2 text-sm font-medium text-slate-700 dark:text-zinc-300">
+        Stops{" "}
+        <span className="font-normal text-slate-400 dark:text-zinc-500">
+          (origin first → destination last)
+        </span>
+      </p>
+      <div className="flex flex-col gap-2">
+        {stops.map((s, i) => {
+          const isEndpoint = i === 0 || i === stops.length - 1;
+          return (
+            <div key={s.key} className="flex items-center gap-2">
+              <span
+                className={`ui w-6 shrink-0 text-center text-xs font-semibold ${
+                  s.isWaypoint ? "text-purple-500" : "text-slate-400 dark:text-zinc-500"
+                }`}
+              >
+                {s.isWaypoint ? "W" : i + 1}
+              </span>
+
+              {s.isWaypoint ? (
+                <span className="ui flex-1 rounded-lg border border-dashed border-purple-300 bg-purple-50/50 px-3 py-2 text-sm text-purple-700 dark:border-purple-900/50 dark:bg-purple-950/20 dark:text-purple-300">
+                  {s.lat != null && s.lng != null
+                    ? `Hidden waypoint · ${s.lat.toFixed(5)}, ${s.lng.toFixed(5)}`
+                    : "Hidden waypoint · pin it on the map →"}
+                </span>
+              ) : (
+                <StopPicker
+                  locations={locations}
+                  valueId={s.locationId}
+                  onSelect={(loc) => selectLocation(s.key, loc)}
+                  onCreate={onCreateLocation}
+                />
+              )}
+
+              <div className="flex shrink-0 items-center gap-0.5">
+                <button
+                  type="button"
+                  onClick={() => setLocatingKey(s.key)}
+                  disabled={!s.isWaypoint && !s.locationId}
+                  className={`rounded-md p-1.5 disabled:opacity-30 ${
+                    s.lat != null
+                      ? "text-brand hover:bg-brand-soft dark:text-blue-400"
+                      : "text-slate-400 hover:bg-slate-100 dark:hover:bg-zinc-800"
+                  }`}
+                  aria-label="Set location on map"
+                  title={s.lat != null ? "Pinned — click to move" : "Set location on map"}
+                >
+                  <MapPin size={14} />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => toggleWaypoint(s.key)}
+                  disabled={isEndpoint}
+                  className={`rounded-md p-1.5 disabled:opacity-20 ${
+                    s.isWaypoint
+                      ? "text-purple-500 hover:bg-purple-50 dark:hover:bg-purple-950/30"
+                      : "text-slate-400 hover:bg-slate-100 dark:hover:bg-zinc-800"
+                  }`}
+                  aria-label={s.isWaypoint ? "Make a visible stop" : "Make a hidden waypoint"}
+                  title={
+                    isEndpoint
+                      ? "Origin and destination can't be waypoints"
+                      : s.isWaypoint
+                        ? "Hidden from passengers — click to make it a visible stop"
+                        : "Visible to passengers — click to make it a hidden shaping waypoint"
+                  }
+                >
+                  {s.isWaypoint ? <EyeOff size={14} /> : <Eye size={14} />}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => move(i, -1)}
+                  disabled={i === 0}
+                  className="rounded-md p-1.5 text-slate-400 hover:bg-slate-100 disabled:opacity-30 dark:hover:bg-zinc-800"
+                  aria-label="Move up"
+                >
+                  <ArrowUp size={14} />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => move(i, 1)}
+                  disabled={i === stops.length - 1}
+                  className="rounded-md p-1.5 text-slate-400 hover:bg-slate-100 disabled:opacity-30 dark:hover:bg-zinc-800"
+                  aria-label="Move down"
+                >
+                  <ArrowDown size={14} />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => removeStop(s.key)}
+                  disabled={stops.length <= 2}
+                  className="rounded-md p-1.5 text-red-500 hover:bg-red-50 disabled:opacity-30 dark:hover:bg-red-950/30"
+                  aria-label="Remove stop"
+                >
+                  <Trash2 size={14} />
+                </button>
+              </div>
+            </div>
+          );
+        })}
       </div>
 
-      <div className="ui mt-4 rounded-xl border border-dashed border-slate-300 p-3 dark:border-zinc-700">
+      <div className="mt-3 flex gap-2">
+        <button type="button" onClick={addStop} className="btn-secondary py-2 text-sm">
+          <Plus size={15} /> Add stop
+        </button>
+        <button type="button" onClick={addWaypoint} className="btn-secondary py-2 text-sm">
+          <Waypoints size={15} /> Add waypoint
+        </button>
+      </div>
+      <p className="ui mt-2 text-xs text-slate-400 dark:text-zinc-500">
+        A hidden waypoint bends the road path onto the correct road but is never shown to
+        passengers — use it when the generated path takes a wrong turn.
+      </p>
+    </>
+  );
+
+  const routeCardPanel = (
+    <>
+      <div className="ui rounded-xl border border-dashed border-slate-300 p-3 dark:border-zinc-700">
         <label className="flex flex-col gap-1.5 text-sm font-medium text-slate-700 dark:text-zinc-300">
           Start from a Google Maps route (optional)
           <span className="font-normal text-slate-400 dark:text-zinc-500">
@@ -620,151 +730,269 @@ function RouteEditor({
           <p className="text-sm font-medium">{editor.name}</p>
         </div>
       )}
+    </>
+  );
+
+  const mapActionButtons = (
+    <>
+      <button
+        type="button"
+        onClick={() => setWaypointClickMode((v) => !v)}
+        className={`ui inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-xs font-semibold transition-colors ${
+          waypointClickMode
+            ? "border-purple-400 bg-purple-50 text-purple-700 dark:border-purple-700 dark:bg-purple-950/30 dark:text-purple-300"
+            : "border-slate-200 text-slate-700 hover:bg-slate-50 dark:border-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-800"
+        }`}
+      >
+        <Waypoints size={13} />
+        {waypointClickMode ? "Click the map…" : "Add waypoint on map"}
+      </button>
+      <button
+        type="button"
+        onClick={() => void previewPath()}
+        disabled={previewing}
+        className="ui inline-flex items-center gap-1.5 rounded-lg border border-slate-200 px-2.5 py-1.5 text-xs font-semibold text-slate-700 transition-colors hover:bg-slate-50 disabled:opacity-60 dark:border-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-800"
+      >
+        {previewing ? <Loader2 size={13} className="animate-spin" /> : <RefreshCw size={13} />}
+        Preview path
+      </button>
+    </>
+  );
+
+  const mapHints = (
+    <>
+      {waypointClickMode && (
+        <p className="ui mt-2 text-xs text-purple-600 dark:text-purple-400">
+          Click anywhere on the map to drop a hidden waypoint there.
+        </p>
+      )}
+      {previewError && <p className="ui mt-2 text-xs text-red-600 dark:text-red-400">{previewError}</p>}
+      <p className="ui mt-2 text-xs text-slate-400 dark:text-zinc-500">
+        Drag a point on the drawn line to reshape it, or click along the line to add a bend — this
+        only adjusts the drawn road path, not the stop list.
+      </p>
+    </>
+  );
+
+  const pathOptionsPanel = (
+    <>
+      {options && options.length > 1 && (
+        <div>
+          <p className="ui mb-1.5 text-xs font-medium text-slate-600 dark:text-zinc-400">
+            Google offered {options.length} routes — pick the one that matches the real road:
+          </p>
+          <div className="flex flex-col gap-1.5">
+            {options.map((o, i) => (
+              <button
+                key={i}
+                type="button"
+                onClick={() => chooseOption(i)}
+                className={`ui flex items-center justify-between rounded-lg border px-3 py-1.5 text-left text-xs transition-colors ${
+                  i === selectedOption
+                    ? "border-brand bg-brand-soft text-brand dark:border-blue-500 dark:bg-brand-soft-dark dark:text-blue-300"
+                    : "border-slate-200 text-slate-600 hover:bg-slate-50 dark:border-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                }`}
+              >
+                <span className="font-medium">{o.summary || `Route ${i + 1}`}</span>
+                <span>
+                  {(o.distanceM / 1000).toFixed(1)} km · {Math.round(o.durationS / 60)} min
+                </span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+      {editor.path && (
+        <p className="ui mt-2 text-xs text-slate-400 dark:text-zinc-500">
+          {usedTripId
+            ? "Using a real recorded trip's driven path — it saves with the route."
+            : "Road path set — it saves with the route."}
+        </p>
+      )}
+
+      {editor.id && (
+        <div className="mt-4 border-t border-slate-100 pt-3 dark:border-zinc-800">
+          <button
+            type="button"
+            onClick={() => void openTripSection()}
+            className="ui flex w-full items-center justify-between text-left text-xs font-medium text-slate-600 hover:text-slate-800 dark:text-zinc-400 dark:hover:text-zinc-200"
+          >
+            <span>Optional: use a real recorded trip&rsquo;s driven path instead</span>
+            <ArrowDown
+              size={13}
+              className={`shrink-0 transition-transform ${tripSectionOpen ? "rotate-180" : ""}`}
+            />
+          </button>
+          {tripSectionOpen && (
+            <div className="mt-2">
+              <p className="ui mb-2 text-xs text-slate-400 dark:text-zinc-500">
+                If a bus has actually run this route with live tracking on, its recorded GPS trace
+                can become the route&rsquo;s official path (snapped to roads) — more accurate than
+                a Directions guess since it&rsquo;s the exact road the bus took.
+              </p>
+              {loadingTrips ? (
+                <div className="flex items-center gap-2 text-xs text-slate-400 dark:text-zinc-500">
+                  <Loader2 size={13} className="animate-spin" /> Loading trips…
+                </div>
+              ) : !candidateTrips?.length ? (
+                <p className="ui text-xs text-slate-400 dark:text-zinc-500">
+                  No trips on this route have a recorded GPS trace yet.
+                </p>
+              ) : (
+                <div className="flex flex-col gap-1.5">
+                  {candidateTrips.map((t) => (
+                    <div
+                      key={t.trip_id}
+                      className={`ui flex items-center justify-between rounded-lg border px-3 py-1.5 text-xs ${
+                        usedTripId === t.trip_id
+                          ? "border-brand bg-brand-soft text-brand dark:border-blue-500 dark:bg-brand-soft-dark dark:text-blue-300"
+                          : "border-slate-200 text-slate-600 dark:border-zinc-800 dark:text-zinc-300"
+                      }`}
+                    >
+                      <span>
+                        {new Date(t.depart_at).toLocaleDateString()} · {t.operator_name} ·{" "}
+                        {t.bus_reg_no} · {(t.distance_m / 1000).toFixed(1)} km · {t.gps_points} pts
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => void applyTripPath(t.trip_id)}
+                        disabled={tripPathBusy === t.trip_id}
+                        className="ui shrink-0 font-semibold text-brand hover:underline disabled:opacity-60 dark:text-blue-400"
+                      >
+                        {tripPathBusy === t.trip_id ? (
+                          <Loader2 size={12} className="animate-spin" />
+                        ) : usedTripId === t.trip_id ? (
+                          "Using this"
+                        ) : (
+                          "Use this trip"
+                        )}
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {tripPathError && (
+                <p className="ui mt-2 text-xs text-red-600 dark:text-red-400">{tripPathError}</p>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+    </>
+  );
+
+  const saveCancelButtons = (
+    <>
+      <button type="button" onClick={() => setEditor(null)} disabled={busy} className="btn-secondary">
+        Cancel
+      </button>
+      <button type="button" onClick={save} disabled={busy} className="btn-primary">
+        {busy ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
+        {busy ? "Saving…" : "Save route"}
+      </button>
+    </>
+  );
+
+  const stopLocationPickerModal = locatingKey && (
+    <StopLocationPicker
+      stopName={stops.find((s) => s.key === locatingKey)?.name ?? "Waypoint"}
+      initial={(() => {
+        const s = stops.find((x) => x.key === locatingKey);
+        return s?.lat != null && s?.lng != null ? { lat: s.lat, lng: s.lng } : null;
+      })()}
+      onResolveLink={(url) => resolveMapsLink(token, url)}
+      onSave={async (point) => {
+        patchStop(locatingKey, { lat: point.lat, lng: point.lng });
+      }}
+      onClose={() => setLocatingKey(null)}
+    />
+  );
+
+  if (fullscreen) {
+    const floatingPanel =
+      "pointer-events-auto max-h-[42vh] w-80 overflow-y-auto rounded-xl border border-slate-200 bg-white/95 p-3 shadow-lg backdrop-blur dark:border-zinc-800 dark:bg-zinc-900/95";
+    return (
+      <div className="fixed inset-0 z-50 bg-slate-900">
+        <RoutePreviewMap
+          stops={mapStops}
+          path={editor.path}
+          onMapClick={handleMapClick}
+          editablePath
+          onPathEdited={(coordinates) => setEditor({ ...editor, path: coordinates })}
+          className="absolute inset-0"
+        />
+
+        <div className="pointer-events-none absolute inset-4 flex flex-col justify-between gap-4">
+          <div className="flex items-start justify-between gap-4">
+            <div className={floatingPanel}>{stopsPanel}</div>
+            <div className={floatingPanel}>
+              <div className="mb-2 flex items-center justify-between gap-2">
+                <p className="font-heading text-sm font-semibold">
+                  {editor.id ? "Edit route" : "New route"}
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setFullscreen(false)}
+                  className="rounded-lg p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:text-zinc-500 dark:hover:bg-zinc-800 dark:hover:text-zinc-300"
+                  aria-label="Exit fullscreen"
+                >
+                  <Minimize2 size={16} />
+                </button>
+              </div>
+              {routeCardPanel}
+            </div>
+          </div>
+
+          <div className="flex items-end justify-between gap-4">
+            <div className={floatingPanel}>{pathOptionsPanel}</div>
+            <div className={`${floatingPanel} w-72`}>
+              <div className="flex gap-1.5">{mapActionButtons}</div>
+              {mapHints}
+              {error && <p className="ui mt-2 text-sm text-red-600 dark:text-red-400">{error}</p>}
+              <div className="mt-3 flex gap-2">{saveCancelButtons}</div>
+            </div>
+          </div>
+        </div>
+
+        {stopLocationPickerModal}
+      </div>
+    );
+  }
+
+  return (
+    <div className="card-lg mt-6 p-6">
+      <div className="flex items-center justify-between">
+        <h2 className="font-heading text-lg font-semibold">{editor.id ? "Edit route" : "New route"}</h2>
+        <button
+          type="button"
+          onClick={() => setEditor(null)}
+          className="rounded-lg p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:text-zinc-500 dark:hover:bg-zinc-800 dark:hover:text-zinc-300"
+          aria-label="Close"
+        >
+          <X size={16} />
+        </button>
+      </div>
+
+      <div className="mt-4">{routeCardPanel}</div>
 
       <div className="mt-6 grid gap-6 lg:grid-cols-2">
         {/* ── Stop list ─────────────────────────────────────────────── */}
-        <div>
-          <p className="ui mb-2 text-sm font-medium text-slate-700 dark:text-zinc-300">
-            Stops{" "}
-            <span className="font-normal text-slate-400 dark:text-zinc-500">
-              (origin first → destination last)
-            </span>
-          </p>
-          <div className="flex flex-col gap-2">
-            {stops.map((s, i) => {
-              const isEndpoint = i === 0 || i === stops.length - 1;
-              return (
-                <div key={s.key} className="flex items-center gap-2">
-                  <span
-                    className={`ui w-6 shrink-0 text-center text-xs font-semibold ${
-                      s.isWaypoint ? "text-purple-500" : "text-slate-400 dark:text-zinc-500"
-                    }`}
-                  >
-                    {s.isWaypoint ? "W" : i + 1}
-                  </span>
-
-                  {s.isWaypoint ? (
-                    <span className="ui flex-1 rounded-lg border border-dashed border-purple-300 bg-purple-50/50 px-3 py-2 text-sm text-purple-700 dark:border-purple-900/50 dark:bg-purple-950/20 dark:text-purple-300">
-                      {s.lat != null && s.lng != null
-                        ? `Hidden waypoint · ${s.lat.toFixed(5)}, ${s.lng.toFixed(5)}`
-                        : "Hidden waypoint · pin it on the map →"}
-                    </span>
-                  ) : (
-                    <StopPicker
-                      locations={locations}
-                      valueId={s.locationId}
-                      onSelect={(loc) => selectLocation(s.key, loc)}
-                      onCreate={onCreateLocation}
-                    />
-                  )}
-
-                  <div className="flex shrink-0 items-center gap-0.5">
-                    <button
-                      type="button"
-                      onClick={() => setLocatingKey(s.key)}
-                      disabled={!s.isWaypoint && !s.locationId}
-                      className={`rounded-md p-1.5 disabled:opacity-30 ${
-                        s.lat != null
-                          ? "text-brand hover:bg-brand-soft dark:text-blue-400"
-                          : "text-slate-400 hover:bg-slate-100 dark:hover:bg-zinc-800"
-                      }`}
-                      aria-label="Set location on map"
-                      title={s.lat != null ? "Pinned — click to move" : "Set location on map"}
-                    >
-                      <MapPin size={14} />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => toggleWaypoint(s.key)}
-                      disabled={isEndpoint}
-                      className={`rounded-md p-1.5 disabled:opacity-20 ${
-                        s.isWaypoint
-                          ? "text-purple-500 hover:bg-purple-50 dark:hover:bg-purple-950/30"
-                          : "text-slate-400 hover:bg-slate-100 dark:hover:bg-zinc-800"
-                      }`}
-                      aria-label={s.isWaypoint ? "Make a visible stop" : "Make a hidden waypoint"}
-                      title={
-                        isEndpoint
-                          ? "Origin and destination can't be waypoints"
-                          : s.isWaypoint
-                            ? "Hidden from passengers — click to make it a visible stop"
-                            : "Visible to passengers — click to make it a hidden shaping waypoint"
-                      }
-                    >
-                      {s.isWaypoint ? <EyeOff size={14} /> : <Eye size={14} />}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => move(i, -1)}
-                      disabled={i === 0}
-                      className="rounded-md p-1.5 text-slate-400 hover:bg-slate-100 disabled:opacity-30 dark:hover:bg-zinc-800"
-                      aria-label="Move up"
-                    >
-                      <ArrowUp size={14} />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => move(i, 1)}
-                      disabled={i === stops.length - 1}
-                      className="rounded-md p-1.5 text-slate-400 hover:bg-slate-100 disabled:opacity-30 dark:hover:bg-zinc-800"
-                      aria-label="Move down"
-                    >
-                      <ArrowDown size={14} />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => removeStop(s.key)}
-                      disabled={stops.length <= 2}
-                      className="rounded-md p-1.5 text-red-500 hover:bg-red-50 disabled:opacity-30 dark:hover:bg-red-950/30"
-                      aria-label="Remove stop"
-                    >
-                      <Trash2 size={14} />
-                    </button>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-
-          <div className="mt-3 flex gap-2">
-            <button type="button" onClick={addStop} className="btn-secondary py-2 text-sm">
-              <Plus size={15} /> Add stop
-            </button>
-            <button type="button" onClick={addWaypoint} className="btn-secondary py-2 text-sm">
-              <Waypoints size={15} /> Add waypoint
-            </button>
-          </div>
-          <p className="ui mt-2 text-xs text-slate-400 dark:text-zinc-500">
-            A hidden waypoint bends the road path onto the correct road but is never shown to
-            passengers — use it when the generated path takes a wrong turn.
-          </p>
-        </div>
+        <div>{stopsPanel}</div>
 
         {/* ── Map + path preview ────────────────────────────────────── */}
         <div>
           <div className="mb-2 flex items-center justify-between gap-2">
             <p className="ui text-sm font-medium text-slate-700 dark:text-zinc-300">Route map</p>
-            <div className="flex gap-1.5">
+            <div className="flex items-center gap-1.5">
+              {mapActionButtons}
               <button
                 type="button"
-                onClick={() => setWaypointClickMode((v) => !v)}
-                className={`ui inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-xs font-semibold transition-colors ${
-                  waypointClickMode
-                    ? "border-purple-400 bg-purple-50 text-purple-700 dark:border-purple-700 dark:bg-purple-950/30 dark:text-purple-300"
-                    : "border-slate-200 text-slate-700 hover:bg-slate-50 dark:border-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-800"
-                }`}
+                onClick={() => setFullscreen(true)}
+                className="ui rounded-lg border border-slate-200 p-1.5 text-slate-700 transition-colors hover:bg-slate-50 dark:border-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-800"
+                aria-label="Expand map to fullscreen"
+                title="Expand to fullscreen"
               >
-                <Waypoints size={13} />
-                {waypointClickMode ? "Click the map…" : "Add waypoint on map"}
-              </button>
-              <button
-                type="button"
-                onClick={() => void previewPath()}
-                disabled={previewing}
-                className="ui inline-flex items-center gap-1.5 rounded-lg border border-slate-200 px-2.5 py-1.5 text-xs font-semibold text-slate-700 transition-colors hover:bg-slate-50 disabled:opacity-60 dark:border-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-800"
-              >
-                {previewing ? <Loader2 size={13} className="animate-spin" /> : <RefreshCw size={13} />}
-                Preview path
+                <Maximize2 size={13} />
               </button>
             </div>
           </div>
@@ -775,148 +1003,16 @@ function RouteEditor({
             editablePath
             onPathEdited={(coordinates) => setEditor({ ...editor, path: coordinates })}
           />
-          {waypointClickMode && (
-            <p className="ui mt-2 text-xs text-purple-600 dark:text-purple-400">
-              Click anywhere on the map to drop a hidden waypoint there.
-            </p>
-          )}
-          {previewError && <p className="ui mt-2 text-xs text-red-600 dark:text-red-400">{previewError}</p>}
-          <p className="ui mt-2 text-xs text-slate-400 dark:text-zinc-500">
-            Drag a point on the drawn line to reshape it, or click along the line to add a bend —
-            this only adjusts the drawn road path, not the stop list.
-          </p>
-
-          {options && options.length > 1 && (
-            <div className="mt-3">
-              <p className="ui mb-1.5 text-xs font-medium text-slate-600 dark:text-zinc-400">
-                Google offered {options.length} routes — pick the one that matches the real road:
-              </p>
-              <div className="flex flex-col gap-1.5">
-                {options.map((o, i) => (
-                  <button
-                    key={i}
-                    type="button"
-                    onClick={() => chooseOption(i)}
-                    className={`ui flex items-center justify-between rounded-lg border px-3 py-1.5 text-left text-xs transition-colors ${
-                      i === selectedOption
-                        ? "border-brand bg-brand-soft text-brand dark:border-blue-500 dark:bg-brand-soft-dark dark:text-blue-300"
-                        : "border-slate-200 text-slate-600 hover:bg-slate-50 dark:border-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-800"
-                    }`}
-                  >
-                    <span className="font-medium">{o.summary || `Route ${i + 1}`}</span>
-                    <span>
-                      {(o.distanceM / 1000).toFixed(1)} km · {Math.round(o.durationS / 60)} min
-                    </span>
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-          {editor.path && (
-            <p className="ui mt-2 text-xs text-slate-400 dark:text-zinc-500">
-              {usedTripId
-                ? "Using a real recorded trip's driven path — it saves with the route."
-                : "Road path set — it saves with the route."}
-            </p>
-          )}
-
-          {editor.id && (
-            <div className="mt-4 border-t border-slate-100 pt-3 dark:border-zinc-800">
-              <button
-                type="button"
-                onClick={() => void openTripSection()}
-                className="ui flex w-full items-center justify-between text-left text-xs font-medium text-slate-600 hover:text-slate-800 dark:text-zinc-400 dark:hover:text-zinc-200"
-              >
-                <span>Optional: use a real recorded trip&rsquo;s driven path instead</span>
-                <ArrowDown
-                  size={13}
-                  className={`shrink-0 transition-transform ${tripSectionOpen ? "rotate-180" : ""}`}
-                />
-              </button>
-              {tripSectionOpen && (
-                <div className="mt-2">
-                  <p className="ui mb-2 text-xs text-slate-400 dark:text-zinc-500">
-                    If a bus has actually run this route with live tracking on, its recorded GPS
-                    trace can become the route&rsquo;s official path (snapped to roads) — more
-                    accurate than a Directions guess since it&rsquo;s the exact road the bus took.
-                  </p>
-                  {loadingTrips ? (
-                    <div className="flex items-center gap-2 text-xs text-slate-400 dark:text-zinc-500">
-                      <Loader2 size={13} className="animate-spin" /> Loading trips…
-                    </div>
-                  ) : !candidateTrips?.length ? (
-                    <p className="ui text-xs text-slate-400 dark:text-zinc-500">
-                      No trips on this route have a recorded GPS trace yet.
-                    </p>
-                  ) : (
-                    <div className="flex flex-col gap-1.5">
-                      {candidateTrips.map((t) => (
-                        <div
-                          key={t.trip_id}
-                          className={`ui flex items-center justify-between rounded-lg border px-3 py-1.5 text-xs ${
-                            usedTripId === t.trip_id
-                              ? "border-brand bg-brand-soft text-brand dark:border-blue-500 dark:bg-brand-soft-dark dark:text-blue-300"
-                              : "border-slate-200 text-slate-600 dark:border-zinc-800 dark:text-zinc-300"
-                          }`}
-                        >
-                          <span>
-                            {new Date(t.depart_at).toLocaleDateString()} · {t.operator_name} ·{" "}
-                            {t.bus_reg_no} · {(t.distance_m / 1000).toFixed(1)} km · {t.gps_points} pts
-                          </span>
-                          <button
-                            type="button"
-                            onClick={() => void applyTripPath(t.trip_id)}
-                            disabled={tripPathBusy === t.trip_id}
-                            className="ui shrink-0 font-semibold text-brand hover:underline disabled:opacity-60 dark:text-blue-400"
-                          >
-                            {tripPathBusy === t.trip_id ? (
-                              <Loader2 size={12} className="animate-spin" />
-                            ) : usedTripId === t.trip_id ? (
-                              "Using this"
-                            ) : (
-                              "Use this trip"
-                            )}
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                  {tripPathError && (
-                    <p className="ui mt-2 text-xs text-red-600 dark:text-red-400">{tripPathError}</p>
-                  )}
-                </div>
-              )}
-            </div>
-          )}
+          {mapHints}
+          {pathOptionsPanel}
         </div>
       </div>
 
       {error && <p className="ui mt-4 text-sm text-red-600 dark:text-red-400">{error}</p>}
 
-      <div className="mt-5 flex gap-2">
-        <button type="button" onClick={() => setEditor(null)} disabled={busy} className="btn-secondary">
-          Cancel
-        </button>
-        <button type="button" onClick={save} disabled={busy} className="btn-primary">
-          {busy ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
-          {busy ? "Saving…" : "Save route"}
-        </button>
-      </div>
+      <div className="mt-5 flex gap-2">{saveCancelButtons}</div>
 
-      {locatingKey && (
-        <StopLocationPicker
-          stopName={stops.find((s) => s.key === locatingKey)?.name ?? "Waypoint"}
-          initial={(() => {
-            const s = stops.find((x) => x.key === locatingKey);
-            return s?.lat != null && s?.lng != null ? { lat: s.lat, lng: s.lng } : null;
-          })()}
-          onResolveLink={(url) => resolveMapsLink(token, url)}
-          onSave={async (point) => {
-            patchStop(locatingKey, { lat: point.lat, lng: point.lng });
-          }}
-          onClose={() => setLocatingKey(null)}
-        />
-      )}
+      {stopLocationPickerModal}
     </div>
   );
 }
