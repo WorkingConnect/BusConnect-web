@@ -545,13 +545,10 @@ function RouteEditor({
 
   const stopsPanel = (
     <>
-      <p className="ui mb-2 text-sm font-medium text-slate-700 dark:text-zinc-300">
-        Stops{" "}
-        <span className="font-normal text-slate-400 dark:text-zinc-500">
-          (origin first → destination last)
-        </span>
+      <p className="ui text-sm font-semibold text-slate-900 dark:text-white">
+        Stops <span className="font-normal text-slate-400">(origin first → destination last)</span>
       </p>
-      <div className="flex flex-col gap-2">
+      <div className="mt-2 flex flex-col gap-2 rounded-xl border border-slate-200 p-2.5 dark:border-zinc-800">
         {stops.map((s, i) => {
           const isEndpoint = i === 0 || i === stops.length - 1;
           return (
@@ -665,16 +662,11 @@ function RouteEditor({
   const currentRouteUrl = googleMapsDirUrl(stops);
 
   const routeCardPanel = (
-    <>
-      <div className="ui rounded-xl border border-dashed border-slate-300 p-3 dark:border-zinc-700">
-        <label className="flex flex-col gap-1.5 text-sm font-medium text-slate-700 dark:text-zinc-300">
-          Start from a Google Maps route (optional)
-          <span className="font-normal text-slate-400 dark:text-zinc-500">
-            Plan the route in Google Maps, copy its share link, and paste it here — stops and the
-            road path fill in automatically. You can still add stops, mark waypoints, and adjust
-            the drawn line afterward.
-          </span>
-        </label>
+    <div className="flex flex-col gap-5">
+      <div className="rounded-xl bg-slate-50 p-3.5 dark:bg-zinc-900/40">
+        <p className="ui text-sm font-semibold text-slate-900 dark:text-white">
+          Import from Google Maps <span className="font-normal text-slate-400">(optional)</span>
+        </p>
         <div className="mt-2 flex gap-2">
           <input
             value={linkUrl}
@@ -711,19 +703,20 @@ function RouteEditor({
         )}
       </div>
 
-      <label className="ui mt-4 flex flex-col gap-1.5 text-sm font-medium text-slate-700 dark:text-zinc-300">
-        Route card{" "}
-        <span className="font-normal text-slate-400 dark:text-zinc-500">
-          — sets this route&rsquo;s name and photo, kept in sync with the card. No route card yet?{" "}
-          <Link href="/admin/route-cards" className="text-brand hover:underline dark:text-blue-400">
+      <div>
+        <p className="ui text-sm font-semibold text-slate-900 dark:text-white">
+          Route card{" "}
+          <Link
+            href="/admin/route-cards"
+            className="ml-1 text-xs font-normal text-brand hover:underline dark:text-blue-400"
+          >
             Create one first
           </Link>
-          .
-        </span>
+        </p>
         <select
           value={editor.routeCardId ?? ""}
           onChange={(e) => selectCard(e.target.value)}
-          className="field text-sm"
+          className="field mt-2 text-sm"
         >
           <option value="" disabled>
             Select a route card…
@@ -734,26 +727,26 @@ function RouteEditor({
             </option>
           ))}
         </select>
-      </label>
 
-      {editor.routeCardId && (
-        <div className="ui mt-3 flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 p-2.5 dark:border-zinc-800 dark:bg-zinc-900/50">
-          {editor.imageUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={editor.imageUrl}
-              alt={`${editor.name} photo`}
-              className="h-12 w-12 shrink-0 rounded-lg border border-slate-200 object-cover dark:border-zinc-800"
-            />
-          ) : (
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg border border-dashed border-slate-300 text-slate-400 dark:border-zinc-700 dark:text-zinc-600">
-              <RouteIcon size={16} />
-            </div>
-          )}
-          <p className="text-sm font-medium">{editor.name}</p>
-        </div>
-      )}
-    </>
+        {editor.routeCardId && (
+          <div className="ui mt-3 flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 p-2.5 dark:border-zinc-800 dark:bg-zinc-900/50">
+            {editor.imageUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={editor.imageUrl}
+                alt={`${editor.name} photo`}
+                className="h-12 w-12 shrink-0 rounded-lg border border-slate-200 object-cover dark:border-zinc-800"
+              />
+            ) : (
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg border border-dashed border-slate-300 text-slate-400 dark:border-zinc-700 dark:text-zinc-600">
+                <RouteIcon size={16} />
+              </div>
+            )}
+            <p className="text-sm font-medium">{editor.name}</p>
+          </div>
+        )}
+      </div>
+    </div>
   );
 
   const mapActionButtons = (
@@ -998,9 +991,10 @@ function RouteEditor({
         {/* ── Map + path preview ────────────────────────────────────── */}
         <div>
           <div className="mb-2 flex items-center justify-between gap-2">
-            <p className="ui text-sm font-medium text-slate-700 dark:text-zinc-300">Route map</p>
+            <p className="ui text-sm font-semibold text-slate-900 dark:text-white">Route map</p>
             <div className="flex items-center gap-1.5">
               {mapActionButtons}
+              <span className="h-4 w-px bg-slate-200 dark:bg-zinc-700" aria-hidden />
               <button
                 type="button"
                 onClick={() => setFullscreen(true)}
