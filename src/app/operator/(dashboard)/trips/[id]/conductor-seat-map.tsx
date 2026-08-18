@@ -17,10 +17,10 @@ interface Props {
 const SEAT_STYLE: Record<string, string> = {
   available:
     "border border-dashed border-slate-300 text-slate-400 hover:border-brand hover:text-brand dark:border-zinc-700 dark:text-zinc-600",
-  male: "bg-blue-600 text-transparent",
-  female: "bg-pink-500 text-transparent",
-  pending: "bg-yellow-500 text-transparent",
-  blocked: "bg-gray-500 text-transparent dark:bg-gray-600",
+  male: "bg-blue-600 text-white",
+  female: "bg-pink-500 text-white",
+  pending: "bg-yellow-500 text-white",
+  blocked: "bg-gray-500 text-white dark:bg-gray-600",
 };
 
 type PanelMode = "menu" | "assign";
