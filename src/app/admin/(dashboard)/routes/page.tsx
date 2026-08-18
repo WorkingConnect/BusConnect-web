@@ -5,6 +5,7 @@ import Link from "next/link";
 import {
   ArrowDown,
   ArrowUp,
+  ExternalLink,
   Eye,
   EyeOff,
   Loader2,
@@ -69,6 +70,16 @@ interface EditorState {
 
 function emptyStop(): EditorStop {
   return { key: nextKey(), locationId: null, name: null, lat: null, lng: null, isWaypoint: false };
+}
+
+/** A Google Maps directions URL through this route's pinned stops (in order),
+ *  so the admin can open/inspect the current route in Google Maps. Returns
+ *  null until at least an origin and destination are pinned. */
+function googleMapsDirUrl(stops: EditorStop[]): string | null {
+  const pinned = stops.filter((s) => s.lat != null && s.lng != null);
+  if (pinned.length < 2) return null;
+  const path = pinned.map((s) => `${s.lat},${s.lng}`).join("/");
+  return `https://www.google.com/maps/dir/${path}`;
 }
 
 function editorFromRoute(r: AdminRoute): EditorState {
@@ -651,6 +662,8 @@ function RouteEditor({
     </>
   );
 
+  const currentRouteUrl = googleMapsDirUrl(stops);
+
   const routeCardPanel = (
     <>
       <div className="ui rounded-xl border border-dashed border-slate-300 p-3 dark:border-zinc-700">
@@ -686,6 +699,16 @@ function RouteEditor({
           </button>
         </div>
         {linkError && <p className="ui mt-2 text-xs text-red-600 dark:text-red-400">{linkError}</p>}
+        {currentRouteUrl && (
+          <a
+            href={currentRouteUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="ui mt-2 inline-flex items-center gap-1.5 text-xs font-medium text-brand hover:underline dark:text-blue-400"
+          >
+            <ExternalLink size={12} /> Open this route&rsquo;s current stops in Google Maps
+          </a>
+        )}
       </div>
 
       <label className="ui mt-4 flex flex-col gap-1.5 text-sm font-medium text-slate-700 dark:text-zinc-300">
