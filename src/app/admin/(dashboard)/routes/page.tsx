@@ -38,10 +38,12 @@ import {
   listCandidateTripsForPath,
   previewPathFromTrip,
   listAdminRouteCards,
+  listAdminOperators,
   ApiError,
   type AdminLocation,
   type AdminRoute,
   type AdminRouteCard,
+  type AdminOperator,
   type RoutePathOption,
   type PreviewStopInput,
   type RouteTripCandidate,
@@ -64,6 +66,8 @@ interface EditorState {
   name: string;
   imageUrl?: string;
   routeCardId: string | null;
+  /** Operators this route is restricted to — empty means every operator can use it. */
+  operatorIds: string[];
   stops: EditorStop[];
   path: [number, number][] | null; // [lng,lat] chosen/saved road path
 }
@@ -88,6 +92,7 @@ function editorFromRoute(r: AdminRoute): EditorState {
     name: r.name,
     imageUrl: r.image_url ?? undefined,
     routeCardId: r.route_card_id,
+    operatorIds: r.operator_ids,
     stops: r.stops.map((s) => ({
       key: nextKey(),
       locationId: s.location_id,
@@ -105,6 +110,7 @@ export default function AdminRoutesPage() {
   const [locations, setLocations] = useState<AdminLocation[]>([]);
   const [routes, setRoutes] = useState<AdminRoute[]>([]);
   const [routeCards, setRouteCards] = useState<AdminRouteCard[]>([]);
+  const [operators, setOperators] = useState<AdminOperator[]>([]);
   const [editor, setEditor] = useState<EditorState | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -119,14 +125,16 @@ export default function AdminRoutesPage() {
       } = await supabase.auth.getSession();
       if (!session) throw new ApiError(401, "Please sign in.");
       setToken(session.access_token);
-      const [locs, routeList, cardList] = await Promise.all([
+      const [locs, routeList, cardList, operatorList] = await Promise.all([
         listAdminLocations(session.access_token),
         listAdminRoutes(session.access_token),
         listAdminRouteCards(session.access_token),
+        listAdminOperators(session.access_token),
       ]);
       setLocations(locs);
       setRoutes(routeList);
       setRouteCards(cardList);
+      setOperators(operatorList);
     } catch (e) {
       setError(
         e instanceof ApiError
@@ -175,14 +183,21 @@ export default function AdminRoutesPage() {
           <h1 className="font-heading text-2xl font-bold tracking-tight">Routes</h1>
           <p className="ui mt-1 text-sm text-slate-600 dark:text-zinc-400">
             Shared route catalog — each route is an ordered list of stops from origin to
-            destination. Any operator can run a journey on any route.
+            destination. Any operator can run a journey on any route, unless restricted to
+            specific operators.
           </p>
         </div>
         {!editor && (
           <button
             type="button"
             onClick={() =>
-              setEditor({ name: "", routeCardId: null, stops: [emptyStop(), emptyStop()], path: null })
+              setEditor({
+                name: "",
+                routeCardId: null,
+                operatorIds: [],
+                stops: [emptyStop(), emptyStop()],
+                path: null,
+              })
             }
             className="btn-primary shrink-0"
           >
@@ -196,6 +211,7 @@ export default function AdminRoutesPage() {
           token={token}
           locations={locations}
           routeCards={routeCards}
+          operators={operators}
           editor={editor}
           setEditor={setEditor}
           onCreateLocation={createLocation}
@@ -265,6 +281,7 @@ function RouteEditor({
   token,
   locations,
   routeCards,
+  operators,
   editor,
   setEditor,
   onCreateLocation,
@@ -273,6 +290,7 @@ function RouteEditor({
   token: string;
   locations: AdminLocation[];
   routeCards: AdminRouteCard[];
+  operators: AdminOperator[];
   editor: EditorState;
   setEditor: (e: EditorState | null) => void;
   onCreateLocation: (name: string) => Promise<AdminLocation>;
@@ -316,6 +334,13 @@ function RouteEditor({
     const card = routeCards.find((c) => c.id === cardId);
     if (!card) return;
     setEditor({ ...editor, routeCardId: card.id, name: card.name, imageUrl: card.image_url ?? undefined });
+  }
+
+  function toggleOperator(operatorId: string) {
+    const operatorIds = editor.operatorIds.includes(operatorId)
+      ? editor.operatorIds.filter((id) => id !== operatorId)
+      : [...editor.operatorIds, operatorId];
+    setEditor({ ...editor, operatorIds });
   }
 
   function selectLocation(key: string, loc: AdminLocation) {
@@ -533,6 +558,7 @@ function RouteEditor({
         pathCoordinates: editor.path ?? undefined,
         imageUrl: editor.imageUrl,
         routeCardId: editor.routeCardId,
+        operatorIds: editor.operatorIds,
       };
       if (editor.id) await updateAdminRoute(token, editor.id, body);
       else await createAdminRoute(token, body);
@@ -745,6 +771,50 @@ function RouteEditor({
             <p className="text-sm font-medium">{editor.name}</p>
           </div>
         )}
+      </div>
+
+      <div>
+        <p className="ui text-sm font-semibold text-slate-900 dark:text-white">
+          Operators <span className="font-normal text-slate-400">(optional)</span>
+        </p>
+        <p className="ui mt-0.5 text-xs text-slate-500 dark:text-zinc-400">
+          Leave none selected to allow every operator. Pick specific operators to restrict this
+          route to just them.
+        </p>
+        <div className="mt-2 flex max-h-44 flex-col gap-0.5 overflow-y-auto rounded-xl border border-slate-200 p-1.5 dark:border-zinc-800">
+          {operators.length === 0 ? (
+            <p className="ui px-1.5 py-1 text-xs text-slate-400 dark:text-zinc-500">No operators yet.</p>
+          ) : (
+            operators.map((op) => {
+              const checked = editor.operatorIds.includes(op.id);
+              return (
+                <label
+                  key={op.id}
+                  className="ui flex cursor-pointer items-center gap-2 rounded-lg px-1.5 py-1.5 text-sm hover:bg-slate-50 dark:hover:bg-zinc-800"
+                >
+                  <input
+                    type="checkbox"
+                    checked={checked}
+                    onChange={() => toggleOperator(op.id)}
+                    className="h-3.5 w-3.5 shrink-0 accent-brand"
+                  />
+                  <span className="flex-1 truncate">{op.name}</span>
+                  {op.status !== "active" && (
+                    <span
+                      className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium ${
+                        op.status === "pending"
+                          ? "bg-amber-100 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300"
+                          : "bg-red-100 text-red-700 dark:bg-red-950/50 dark:text-red-300"
+                      }`}
+                    >
+                      {op.status === "pending" ? "Pending" : "On hold"}
+                    </span>
+                  )}
+                </label>
+              );
+            })
+          )}
+        </div>
       </div>
     </div>
   );

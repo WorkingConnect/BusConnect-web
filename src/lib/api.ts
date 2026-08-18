@@ -1039,6 +1039,8 @@ export interface AdminRoute {
   stops: AdminRouteStop[];
   created_at: string;
   route_card_id: string | null;
+  /** Operators this route is restricted to — empty means unrestricted (every operator can use it). */
+  operator_ids: string[];
 }
 
 /** A shared name+image template a route can link to, so physically different
@@ -1352,6 +1354,8 @@ export interface UpsertRouteInput {
   /** Route card to link this route to — name/image are then live-synced from
    *  the card. Omit/null to leave this route on its own name/image. */
   routeCardId?: string | null;
+  /** Operators to restrict this route to. Omit/empty to leave it unrestricted (every operator can use it). */
+  operatorIds?: string[];
 }
 
 export function createAdminRoute(accessToken: string, body: UpsertRouteInput) {
