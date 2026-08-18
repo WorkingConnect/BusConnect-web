@@ -944,10 +944,13 @@ function RouteEditor({
 
           <div className="mt-6">{stopsPanel}</div>
 
-          <div className="mt-6 flex flex-wrap gap-1.5">{mapActionButtons}</div>
-          {mapHints}
+          <div className="mt-6">
+            <p className="ui text-sm font-semibold text-slate-900 dark:text-white">Route map</p>
+            <div className="mt-2 flex flex-wrap gap-1.5">{mapActionButtons}</div>
+            {mapHints}
+          </div>
 
-          <div className="mt-4">{pathOptionsPanel}</div>
+          <div className="mt-6">{pathOptionsPanel}</div>
 
           {error && <p className="ui mt-4 text-sm text-red-600 dark:text-red-400">{error}</p>}
 
