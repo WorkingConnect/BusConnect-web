@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
+import Link from "next/link";
 import {
   ArrowDown,
   ArrowUp,
@@ -18,8 +19,6 @@ import {
   X,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
-import { uploadRouteImage } from "@/lib/storage";
-import { ImageSlot } from "@/components/image-slot";
 import { StopLocationPicker } from "@/components/stop-location-picker";
 import { RoutePreviewMap, type RouteMapStop } from "@/components/route-preview-map";
 import {
@@ -267,8 +266,6 @@ function RouteEditor({
 }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [imageFile, setImageFile] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState<string | null>(editor.imageUrl ?? null);
   const [locatingKey, setLocatingKey] = useState<string | null>(null);
 
   // Preview-path state
@@ -292,20 +289,9 @@ function RouteEditor({
     setStops(stops.map((s) => (s.key === key ? { ...s, ...patch } : s)));
   }
 
-  function onImageChange(file: File | null) {
-    setImageFile(file);
-    setImagePreview(file ? URL.createObjectURL(file) : editor.imageUrl ?? null);
-  }
-
   function selectCard(cardId: string) {
-    if (!cardId) {
-      setEditor({ ...editor, routeCardId: null });
-      return;
-    }
     const card = routeCards.find((c) => c.id === cardId);
     if (!card) return;
-    setImageFile(null);
-    setImagePreview(card.image_url ?? null);
     setEditor({ ...editor, routeCardId: card.id, name: card.name, imageUrl: card.image_url ?? undefined });
   }
 
@@ -429,8 +415,8 @@ function RouteEditor({
 
   async function save() {
     setError(null);
-    if (!editor.name.trim()) {
-      setError("Give the route a name.");
+    if (!editor.routeCardId) {
+      setError("Choose a route card.");
       return;
     }
     if (stops.length < 2) {
@@ -461,16 +447,6 @@ function RouteEditor({
 
     setBusy(true);
     try {
-      let imageUrl = editor.imageUrl;
-      if (imageFile && !editor.routeCardId) {
-        const supabase = createClient();
-        const {
-          data: { session },
-        } = await supabase.auth.getSession();
-        if (!session) throw new ApiError(401, "Please sign in.");
-        imageUrl = await uploadRouteImage(session.user.id, imageFile);
-      }
-
       const body = {
         name: editor.name.trim(),
         stops: stops.map((s) => ({
@@ -480,7 +456,7 @@ function RouteEditor({
           isWaypoint: s.isWaypoint,
         })),
         pathCoordinates: editor.path ?? undefined,
-        imageUrl,
+        imageUrl: editor.imageUrl,
         routeCardId: editor.routeCardId,
       };
       if (editor.id) await updateAdminRoute(token, editor.id, body);
@@ -509,15 +485,20 @@ function RouteEditor({
       <label className="ui mt-4 flex flex-col gap-1.5 text-sm font-medium text-slate-700 dark:text-zinc-300">
         Route card{" "}
         <span className="font-normal text-slate-400 dark:text-zinc-500">
-          (optional — links this route&rsquo;s name/photo to a shared card so other operators&rsquo;
-          routes on the same corridor can display it identically)
+          — sets this route&rsquo;s name and photo, kept in sync with the card. No route card yet?{" "}
+          <Link href="/admin/route-cards" className="text-brand hover:underline dark:text-blue-400">
+            Create one first
+          </Link>
+          .
         </span>
         <select
           value={editor.routeCardId ?? ""}
           onChange={(e) => selectCard(e.target.value)}
           className="field text-sm"
         >
-          <option value="">— Custom name & photo for this route —</option>
+          <option value="" disabled>
+            Select a route card…
+          </option>
           {routeCards.map((c) => (
             <option key={c.id} value={c.id}>
               {c.name}
@@ -526,48 +507,23 @@ function RouteEditor({
         </select>
       </label>
 
-      <label className="ui mt-4 flex flex-col gap-1.5 text-sm font-medium text-slate-700 dark:text-zinc-300">
-        Route name
-        <input
-          value={editor.name}
-          onChange={(e) => setEditor({ ...editor, name: e.target.value })}
-          placeholder="e.g. Colombo – Kandy via Kadugannawa"
-          disabled={!!editor.routeCardId}
-          className="field text-sm disabled:cursor-not-allowed disabled:opacity-60"
-        />
-        {editor.routeCardId && (
-          <span className="ui text-xs text-slate-400 dark:text-zinc-500">
-            Name comes from the linked route card — edit it there to update every route using it.
-          </span>
-        )}
-      </label>
-
-      <div className="mt-4">
-        {editor.routeCardId ? (
-          <div className="ui flex flex-col gap-1.5 text-sm font-medium text-slate-700 dark:text-zinc-300">
-            Route photo
-            <div className="h-14 w-20">
-              {imagePreview ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={imagePreview}
-                  alt="Route card photo preview"
-                  className="h-14 w-20 rounded-lg border border-slate-200 object-cover dark:border-zinc-800"
-                />
-              ) : (
-                <div className="flex h-14 w-20 items-center justify-center rounded-lg border border-dashed border-slate-300 text-slate-400 dark:border-zinc-700 dark:text-zinc-600">
-                  <RouteIcon size={16} />
-                </div>
-              )}
+      {editor.routeCardId && (
+        <div className="ui mt-3 flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 p-2.5 dark:border-zinc-800 dark:bg-zinc-900/50">
+          {editor.imageUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={editor.imageUrl}
+              alt={`${editor.name} photo`}
+              className="h-12 w-12 shrink-0 rounded-lg border border-slate-200 object-cover dark:border-zinc-800"
+            />
+          ) : (
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg border border-dashed border-slate-300 text-slate-400 dark:border-zinc-700 dark:text-zinc-600">
+              <RouteIcon size={16} />
             </div>
-            <span className="ui text-xs text-slate-400 dark:text-zinc-500">
-              Photo comes from the linked route card — edit it there to update every route using it.
-            </span>
-          </div>
-        ) : (
-          <ImageSlot label="Route photo (optional)" preview={imagePreview} onChange={onImageChange} />
-        )}
-      </div>
+          )}
+          <p className="text-sm font-medium">{editor.name}</p>
+        </div>
+      )}
 
       <div className="mt-6 grid gap-6 lg:grid-cols-2">
         {/* ── Stop list ─────────────────────────────────────────────── */}
