@@ -96,6 +96,7 @@ export function RoutePreviewMap({
   useEffect(() => {
     const map = mapRef.current;
     if (!ready || !map) return;
+    const cleanupTimers: number[] = [];
 
     markersRef.current.forEach((m) => m.setMap(null));
     markersRef.current = [];
@@ -143,15 +144,39 @@ export function RoutePreviewMap({
           editable: !!editablePath,
         });
         if (editablePath) {
-          const mvcPath = polylineRef.current.getPath();
+          const thisPolyline = polylineRef.current;
+          const mvcPath = thisPolyline.getPath();
+          let lastKnownLength = mvcPath.getLength();
           const emit = () => {
-            const edited = mvcPath.getArray().map((ll): [number, number] => [ll.lng(), ll.lat()]);
+            const arr = mvcPath.getArray();
+            // A real drag/insert/remove changes the point count by at most
+            // 1 per event — a bigger jump means something else touched the
+            // array, not a genuine edit, so ignore it rather than risk
+            // silently replacing a good (possibly 100+ point) path with a
+            // broken one.
+            if (Math.abs(arr.length - lastKnownLength) > 1) {
+              lastKnownLength = arr.length;
+              return;
+            }
+            lastKnownLength = arr.length;
+            const edited = arr.map((ll): [number, number] => [ll.lng(), ll.lat()]);
             lastEmittedPathRef.current = JSON.stringify(edited);
             onPathEditedRef.current?.(edited);
           };
-          google.maps.event.addListener(mvcPath, "insert_at", emit);
-          google.maps.event.addListener(mvcPath, "set_at", emit);
-          google.maps.event.addListener(mvcPath, "remove_at", emit);
+          // Defer attaching listeners until this polyline's own construction
+          // has fully settled — Google Maps can fire internal set_at/
+          // insert_at events while wiring up editable drag handles for a
+          // large point count (a dense Directions-decoded path routinely
+          // has 100+ points), and treating those as real user edits would
+          // silently overwrite the correct path with an incomplete
+          // mid-setup snapshot.
+          const timer = window.setTimeout(() => {
+            if (polylineRef.current !== thisPolyline) return; // redrawn before we attached
+            google.maps.event.addListener(mvcPath, "insert_at", emit);
+            google.maps.event.addListener(mvcPath, "set_at", emit);
+            google.maps.event.addListener(mvcPath, "remove_at", emit);
+          }, 0);
+          cleanupTimers.push(timer);
         }
       }
     }
@@ -167,6 +192,10 @@ export function RoutePreviewMap({
       map.fitBounds(bounds, 48);
       if (stops.length === 1 && !path) map.setZoom(15);
     }
+
+    return () => {
+      cleanupTimers.forEach((t) => window.clearTimeout(t));
+    };
   }, [ready, stops, path, editablePath]);
 
   return (
