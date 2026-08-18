@@ -27,6 +27,12 @@ interface RouteRow {
   route_card_id: string | null;
 }
 
+interface RouteCardRow {
+  id: string;
+  name: string;
+  image_url: string | null;
+}
+
 /** One row of popular_route_card_activity() — see 0062_route_card_popularity.sql. */
 interface ActivityRow {
   route_card_id: string | null;
@@ -53,11 +59,15 @@ type GroupAgg = {
 /**
  * "Popular routes" for the homepage. Every route admin has published is
  * guaranteed to appear — seeded straight from the shared route catalog —
- * regardless of whether any operator has scheduled a trip on it yet. Cards
- * WITH real upcoming trips (active operators only) are ranked above ones
- * without, by how many trips actually exist for that group; this is live
- * marketplace data layered on top of the catalog, not a fixed editorial
- * list.
+ * regardless of whether any operator has scheduled a trip on it yet. So is
+ * every route CARD, even ones admin hasn't linked any actual route to yet —
+ * those get a routeCardId-only entry (empty routeId, never used since the
+ * link always prefers routeCardId when present) and will simply resolve to
+ * the normal "no trips found" search state when tapped, same as any other
+ * route with no scheduled buses. Cards WITH real upcoming trips (active
+ * operators only) are ranked above ones without, by how many trips actually
+ * exist for that group; this is live marketplace data layered on top of the
+ * catalog, not a fixed editorial list.
  *
  * Routes sharing a route card (e.g. two operators both running
  * "Colombo - Jaffna" over physically different stops) are merged into one
@@ -84,17 +94,24 @@ const getAllPopularRoutes = unstable_cache(
     // concurrently instead of one after another to halve the round-trip cost.
     const [
       { data: routes, error: routesErr },
+      { data: routeCards, error: routeCardsErr },
       { data: activity, error: activityErr },
     ] = await Promise.all([
       // 1. Seed with EVERY published route, so a brand-new route with zero
       //    trips still shows up.
       supabase.from('routes').select('id, name, image_url, route_card_id'),
-      // 2. Real upcoming-trip activity per route-card group, to rank groups
+      // 2. Every route CARD too, so one admin has published but not yet
+      //    linked any real route to still shows up (see docstring above).
+      supabase.from('route_cards').select('id, name, image_url'),
+      // 3. Real upcoming-trip activity per route-card group, to rank groups
       //    + estimate duration/fare.
       supabase.rpc('popular_route_card_activity'),
     ]);
     if (routesErr) {
       console.error('listPopularRoutes: could not load the route catalog —', routesErr.message);
+    }
+    if (routeCardsErr) {
+      console.error('listPopularRoutes: could not load route cards —', routeCardsErr.message);
     }
     if (activityErr) {
       console.error('listPopularRoutes: could not load trip activity —', activityErr.message);
@@ -118,6 +135,21 @@ const getAllPopularRoutes = unstable_cache(
           minFare: null,
         });
       }
+    }
+
+    for (const c of (routeCards ?? []) as unknown as RouteCardRow[]) {
+      if (byGroup.has(c.id)) continue; // already seeded by a route linked to this card
+      byGroup.set(c.id, {
+        routeCardId: c.id,
+        routeId: '', // never read — the link always prefers routeCardId when set
+        name: c.name,
+        durationMinutes: null,
+        count: 0,
+        todayCount: 0,
+        nextDateIso: null,
+        imageUrl: c.image_url,
+        minFare: null,
+      });
     }
 
     for (const row of (activity ?? []) as unknown as ActivityRow[]) {
