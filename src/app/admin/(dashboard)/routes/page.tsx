@@ -909,49 +909,44 @@ function RouteEditor({
   );
 
   if (fullscreen) {
-    const floatingPanel =
-      "pointer-events-auto max-h-[42vh] w-80 overflow-y-auto rounded-xl border border-slate-200 bg-white/95 p-3 shadow-lg backdrop-blur dark:border-zinc-800 dark:bg-zinc-900/95";
     return (
-      <div className="fixed inset-0 z-50 bg-slate-900">
-        <RoutePreviewMap
-          stops={mapStops}
-          path={editor.path}
-          onMapClick={handleMapClick}
-          editablePath
-          onPathEdited={(coordinates) => setEditor({ ...editor, path: coordinates })}
-          className="absolute inset-0"
-        />
-
-        <div className="pointer-events-none absolute inset-4 flex flex-col justify-between gap-4">
-          <div className="flex items-start justify-between gap-4">
-            <div className={floatingPanel}>{stopsPanel}</div>
-            <div className={floatingPanel}>
-              <div className="mb-2 flex items-center justify-between gap-2">
-                <p className="font-heading text-sm font-semibold">
-                  {editor.id ? "Edit route" : "New route"}
-                </p>
-                <button
-                  type="button"
-                  onClick={() => setFullscreen(false)}
-                  className="rounded-lg p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:text-zinc-500 dark:hover:bg-zinc-800 dark:hover:text-zinc-300"
-                  aria-label="Exit fullscreen"
-                >
-                  <Minimize2 size={16} />
-                </button>
-              </div>
-              {routeCardPanel}
-            </div>
+      <div className="fixed inset-0 z-50 flex bg-white dark:bg-zinc-950">
+        <div className="flex w-96 shrink-0 flex-col overflow-y-auto border-r border-slate-200 p-4 dark:border-zinc-800">
+          <div className="mb-4 flex items-center justify-between gap-2">
+            <p className="font-heading text-lg font-semibold">{editor.id ? "Edit route" : "New route"}</p>
+            <button
+              type="button"
+              onClick={() => setFullscreen(false)}
+              className="rounded-lg p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:text-zinc-500 dark:hover:bg-zinc-800 dark:hover:text-zinc-300"
+              aria-label="Exit fullscreen"
+            >
+              <Minimize2 size={16} />
+            </button>
           </div>
 
-          <div className="flex items-end justify-between gap-4">
-            <div className={floatingPanel}>{pathOptionsPanel}</div>
-            <div className={`${floatingPanel} w-72`}>
-              <div className="flex gap-1.5">{mapActionButtons}</div>
-              {mapHints}
-              {error && <p className="ui mt-2 text-sm text-red-600 dark:text-red-400">{error}</p>}
-              <div className="mt-3 flex gap-2">{saveCancelButtons}</div>
-            </div>
-          </div>
+          {routeCardPanel}
+
+          <div className="mt-6">{stopsPanel}</div>
+
+          <div className="mt-6 flex flex-wrap gap-1.5">{mapActionButtons}</div>
+          {mapHints}
+
+          <div className="mt-4">{pathOptionsPanel}</div>
+
+          {error && <p className="ui mt-4 text-sm text-red-600 dark:text-red-400">{error}</p>}
+
+          <div className="mt-6 flex gap-2">{saveCancelButtons}</div>
+        </div>
+
+        <div className="relative flex-1">
+          <RoutePreviewMap
+            stops={mapStops}
+            path={editor.path}
+            onMapClick={handleMapClick}
+            editablePath
+            onPathEdited={(coordinates) => setEditor({ ...editor, path: coordinates })}
+            className="absolute inset-0"
+          />
         </div>
 
         {stopLocationPickerModal}

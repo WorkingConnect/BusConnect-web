@@ -170,9 +170,7 @@ export function RoutePreviewMap({
   }, [ready, stops, path, editablePath]);
 
   return (
-    <div
-      className={`relative overflow-hidden ${className ?? "h-80 w-full rounded-xl border border-slate-200 dark:border-zinc-800"}`}
-    >
+    <div className={className ?? "relative h-80 w-full overflow-hidden rounded-xl border border-slate-200 dark:border-zinc-800"}>
       {error ? (
         <div className="flex h-full items-center justify-center p-4 text-center text-sm text-red-600 dark:text-red-400">
           {error}
