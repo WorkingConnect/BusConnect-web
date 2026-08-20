@@ -12,6 +12,7 @@ import {
   type SeatLayout,
   type SeatState,
   type OperatorManifestBooking,
+  type OperatorManifestStop,
 } from "@/lib/api";
 import { layoutToGrid } from "@/lib/seat-layout";
 
@@ -21,6 +22,7 @@ interface Props {
   seatCount: number;
   initialSeats: SeatState[];
   bookings: OperatorManifestBooking[];
+  stops: OperatorManifestStop[];
   onOpenBooking: (bookingId: string) => void;
 }
 
@@ -35,7 +37,7 @@ const SEAT_STYLE: Record<string, string> = {
 
 type PanelMode = "menu" | "assign";
 
-export function ConductorSeatMap({ tripId, layout, seatCount, initialSeats, bookings, onOpenBooking }: Props) {
+export function ConductorSeatMap({ tripId, layout, seatCount, initialSeats, bookings, stops, onOpenBooking }: Props) {
   const router = useRouter();
   const supabase = useMemo(() => createClient(), []);
   const grid = useMemo(() => layoutToGrid(layout, seatCount), [layout, seatCount]);
@@ -55,9 +57,14 @@ export function ConductorSeatMap({ tripId, layout, seatCount, initialSeats, book
   const [panelMode, setPanelMode] = useState<PanelMode>("menu");
   const [name, setName] = useState("");
   const [gender, setGender] = useState<"male" | "female">("male");
+  const [fromStopId, setFromStopId] = useState<string | null>(null);
+  const [toStopId, setToStopId] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const panelRef = useRef<HTMLDivElement>(null);
+
+  const boardableStops = stops.filter((s) => s.can_board);
+  const droppableStops = stops.filter((s) => s.can_drop);
 
   function seatKind(label: string): "available" | "male" | "female" | "pending" | "blocked" {
     const state = seatStates.get(label);
@@ -71,6 +78,8 @@ export function ConductorSeatMap({ tripId, layout, seatCount, initialSeats, book
     setError(null);
     setName("");
     setGender("male");
+    setFromStopId(boardableStops[0]?.route_stop_id ?? null);
+    setToStopId(droppableStops[droppableStops.length - 1]?.route_stop_id ?? null);
     setPanelMode("menu");
     setOpenSeat(label);
   }
@@ -133,7 +142,14 @@ export function ConductorSeatMap({ tripId, layout, seatCount, initialSeats, book
     setBusy(true);
     setError(null);
     try {
-      await withToken((token) => assignSeat(token, tripId, label, { gender, passengerName: name.trim() }));
+      await withToken((token) =>
+        assignSeat(token, tripId, label, {
+          gender,
+          passengerName: name.trim(),
+          fromStopId: fromStopId ?? undefined,
+          toStopId: toStopId ?? undefined,
+        }),
+      );
       setSeatStates((prev) => new Map(prev).set(label, { seat_no: label, status: "booked", gender }));
       closePanel();
       router.refresh();
@@ -266,6 +282,40 @@ export function ConductorSeatMap({ tripId, layout, seatCount, initialSeats, book
                               Female
                             </button>
                           </div>
+                          {stops.length > 0 && (
+                            <div className="flex flex-col gap-1.5">
+                              <select
+                                value={fromStopId ?? ""}
+                                onChange={(e) => setFromStopId(e.target.value)}
+                                className="field py-1.5 text-xs"
+                              >
+                                {boardableStops.map((s) => (
+                                  <option
+                                    key={s.id}
+                                    value={s.route_stop_id}
+                                    disabled={!!toStopId && s.seq >= (stops.find((t) => t.route_stop_id === toStopId)?.seq ?? Infinity)}
+                                  >
+                                    Board: {s.location_name ?? "—"}
+                                  </option>
+                                ))}
+                              </select>
+                              <select
+                                value={toStopId ?? ""}
+                                onChange={(e) => setToStopId(e.target.value)}
+                                className="field py-1.5 text-xs"
+                              >
+                                {droppableStops.map((s) => (
+                                  <option
+                                    key={s.id}
+                                    value={s.route_stop_id}
+                                    disabled={!!fromStopId && s.seq <= (stops.find((t) => t.route_stop_id === fromStopId)?.seq ?? -Infinity)}
+                                  >
+                                    Drop: {s.location_name ?? "—"}
+                                  </option>
+                                ))}
+                              </select>
+                            </div>
+                          )}
                           <button
                             type="button"
                             disabled={busy}

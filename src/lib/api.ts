@@ -390,6 +390,7 @@ export interface OperatorManifestBooking {
 export interface OperatorManifestStop {
   id: string;
   seq: number;
+  route_stop_id: string;
   scheduled_time: string;
   day_offset: number;
   can_board: boolean;
@@ -879,7 +880,7 @@ export function assignSeat(
   accessToken: string,
   tripId: string,
   seatNo: string,
-  body: { gender: "male" | "female"; passengerName: string },
+  body: { gender: "male" | "female"; passengerName: string; fromStopId?: string; toStopId?: string },
 ) {
   return request<AssignSeatResult>(
     `/operator/trips/${tripId}/seats/${encodeURIComponent(seatNo)}/assign`,

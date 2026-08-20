@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { User, Phone, UserCheck, ChevronRight, X, ArrowUp, ArrowDown } from "lucide-react";
+import { User, Phone, UserCheck, ChevronRight, ChevronUp, ChevronDown, X, ArrowUp, ArrowDown } from "lucide-react";
 import type { OperatorManifest, OperatorManifestBooking, OperatorManifestStop } from "@/lib/api";
 import { ConductorSeatMap } from "./conductor-seat-map";
 
@@ -15,6 +15,8 @@ const STATUS_STYLE: Record<string, string> = {
 export function ManifestPanel({ manifest, isPilot }: { manifest: OperatorManifest; isPilot: boolean }) {
   const [selectedBookingId, setSelectedBookingId] = useState<string | null>(null);
   const [selectedStopId, setSelectedStopId] = useState<string | null>(null);
+  const [passengersExpanded, setPassengersExpanded] = useState(true);
+  const [journeyExpanded, setJourneyExpanded] = useState(true);
 
   const selectedBooking = useMemo(
     () => manifest.bookings.find((b) => b.id === selectedBookingId) ?? null,
@@ -38,6 +40,7 @@ export function ManifestPanel({ manifest, isPilot }: { manifest: OperatorManifes
               seatCount={40}
               initialSeats={manifest.seats}
               bookings={manifest.bookings}
+              stops={manifest.stops}
               onOpenBooking={setSelectedBookingId}
             />
           </div>
@@ -45,8 +48,19 @@ export function ManifestPanel({ manifest, isPilot }: { manifest: OperatorManifes
 
         {/* passenger list */}
         <div className="lg:col-span-7">
-          <h2 className="mb-3 font-heading text-lg font-semibold">Passengers</h2>
-          {manifest.bookings.length === 0 ? (
+          <button
+            type="button"
+            onClick={() => setPassengersExpanded((v) => !v)}
+            className="mb-3 flex w-full items-center justify-between gap-2"
+          >
+            <h2 className="font-heading text-lg font-semibold">Passengers ({manifest.bookings.length})</h2>
+            {passengersExpanded ? (
+              <ChevronUp size={18} className="text-slate-400" />
+            ) : (
+              <ChevronDown size={18} className="text-slate-400" />
+            )}
+          </button>
+          {!passengersExpanded ? null : manifest.bookings.length === 0 ? (
             <div className="card p-10 text-center text-slate-500 dark:text-zinc-400">
               No confirmed passengers yet for this trip.
             </div>
@@ -109,8 +123,19 @@ export function ManifestPanel({ manifest, isPilot }: { manifest: OperatorManifes
 
       {/* journey — this trip's stop timetable, with boarding/dropping counts per stop */}
       <div className="mt-8">
-        <h2 className="mb-3 font-heading text-lg font-semibold">Journey</h2>
-        {manifest.stops.length === 0 ? (
+        <button
+          type="button"
+          onClick={() => setJourneyExpanded((v) => !v)}
+          className="mb-3 flex w-full items-center justify-between gap-2"
+        >
+          <h2 className="font-heading text-lg font-semibold">Journey</h2>
+          {journeyExpanded ? (
+            <ChevronUp size={18} className="text-slate-400" />
+          ) : (
+            <ChevronDown size={18} className="text-slate-400" />
+          )}
+        </button>
+        {!journeyExpanded ? null : manifest.stops.length === 0 ? (
           <div className="card p-10 text-center text-slate-500 dark:text-zinc-400">
             No stop timetable for this trip.
           </div>
