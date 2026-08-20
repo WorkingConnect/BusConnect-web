@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 /**
@@ -35,8 +36,13 @@ export function ImageCarousel({
 
   return (
     <div className={`relative h-full w-full overflow-hidden ${className ?? ""}`}>
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={images[index]} alt={alt} className="h-full w-full object-cover" />
+      <Image
+        src={images[index]}
+        alt={alt}
+        fill
+        sizes="(min-width: 640px) 14rem, 100vw"
+        className="object-cover"
+      />
 
       {images.length > 1 && (
         <>
