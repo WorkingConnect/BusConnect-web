@@ -87,6 +87,12 @@ export default async function OperatorFleetPage() {
                   {b.bus_type?.name ?? "—"} · {b.bus_type?.seat_count ?? "—"} seats
                   {b.amenities.length > 0 && <> · {b.amenities.length} amenities</>}
                 </p>
+                {(b.crew.driver || b.crew.conductor) && (
+                  <p className="ui mt-1 flex flex-wrap items-center gap-2 text-xs text-slate-500 dark:text-zinc-500">
+                    {b.crew.driver && <span>Driver · {b.crew.driver.name}</span>}
+                    {b.crew.conductor && <span>Conductor · {b.crew.conductor.name}</span>}
+                  </p>
+                )}
               </Link>
             ))}
           </div>

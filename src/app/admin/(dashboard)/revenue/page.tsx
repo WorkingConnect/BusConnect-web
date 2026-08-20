@@ -110,8 +110,10 @@ export default function AdminRevenuePage() {
   );
   const ready = filtered.filter((r) => r.status === "arrived");
   const locked = filtered.filter((r) => r.status !== "arrived" && r.status !== "cancelled");
-  const sum = (list: AdminPayoutRow[], key: "gross" | "net_amount" | "seats_sold" | "commission_amount") =>
-    list.reduce((s, r) => s + r[key], 0);
+  const sum = (
+    list: AdminPayoutRow[],
+    key: "gross" | "net_amount" | "seats_sold" | "commission_amount" | "walkup_gross",
+  ) => list.reduce((s, r) => s + r[key], 0);
   const filtersActive = !!operatorId || !!routeId || !!busRegNo || !!date;
 
   const sections: Record<Bucket, { title: string; subtitle: string; rows: AdminPayoutRow[]; emptyMessage: string }> = {
@@ -143,13 +145,18 @@ export default function AdminRevenuePage() {
         </div>
       </div>
 
-      <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+      <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
         <Stat label="Gross revenue" value={money(sum(filtered, "gross"))} />
         <Stat label="Net revenue" value={money(sum(filtered, "net_amount"))} />
         <Stat label="Ready payouts" value={money(sum(ready, "net_amount"))} accent />
         <Stat label="Locked payouts" value={money(sum(locked, "net_amount"))} />
         <Stat label="BusConnect revenue" value={money(sum(filtered, "commission_amount"))} />
+        <Stat label="Walk-in revenue (cash)" value={money(sum(filtered, "walkup_gross"))} />
       </div>
+      <p className="ui mt-2 text-xs text-slate-400 dark:text-zinc-500">
+        Walk-in revenue is cash collected directly by the operator&apos;s conductor — it never passes through
+        BusConnect, so it&apos;s excluded from every other figure above.
+      </p>
 
       <div className="mt-6 flex flex-wrap items-end gap-3">
         <label className="ui flex flex-col gap-1.5 text-xs font-medium text-slate-600 dark:text-zinc-400">
@@ -292,6 +299,7 @@ function RevenueSection({
                   <p className="ui mt-0.5 flex items-center gap-1.5 text-xs text-slate-400 dark:text-zinc-500">
                     <Users size={12} /> {r.seats_sold} seat{r.seats_sold === 1 ? "" : "s"} sold · {r.booking_count} booking
                     {r.booking_count === 1 ? "" : "s"}
+                    {r.walkup_count > 0 ? ` · ${r.walkup_count} walk-in (${money(r.walkup_gross)})` : ""}
                     {r.payout_status === "paid" && r.paid_at ? ` · paid ${dateTime(r.paid_at)}` : ""}
                   </p>
                 </div>

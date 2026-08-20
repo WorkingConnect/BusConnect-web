@@ -23,6 +23,7 @@ import { ViewIdButton } from "../view-id-button";
 import { DeleteOperatorButton } from "./delete-operator-button";
 import { CommissionEditor } from "./commission-editor";
 import { ConvenienceFeeEditor } from "./convenience-fee-editor";
+import { WalkupPolicyEditor } from "./walkup-policy-editor";
 
 const STATUS_STYLE: Record<string, string> = {
   active: "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300",
@@ -260,6 +261,22 @@ export default async function AdminOperatorDetailPage({
           very next booking — both the app and website read this rate live. Set to 0 to charge no fee.
         </p>
         <ConvenienceFeeEditor operatorId={operator.id} initialPct={operator.convenience_fee_pct} />
+      </div>
+
+      {/* ── Walk-up passenger policy ─────────────────────────────────────────── */}
+      <div className="card-lg mt-4 p-6">
+        <h2 className="ui text-xs font-semibold uppercase tracking-wide text-slate-400 dark:text-zinc-600">
+          Walk-up passengers
+        </h2>
+        <p className="ui mt-1 text-xs text-slate-500 dark:text-zinc-500">
+          Restricts conductors from assigning cash walk-up passengers to a seat on this operator&apos;s
+          trips. A limit resets per trip, not cumulatively across every trip the operator runs.
+        </p>
+        <WalkupPolicyEditor
+          operatorId={operator.id}
+          initialEnabled={operator.walkup_enabled}
+          initialLimit={operator.walkup_limit}
+        />
       </div>
 
       {/* ── Danger zone ─────────────────────────────────────────────────────── */}

@@ -381,7 +381,22 @@ export interface OperatorManifestBooking {
   created_at: string;
   passenger_name: string | null;
   passenger_phone: string | null;
+  is_walkup: boolean;
   boarded: boolean;
+  from_location: string | null;
+  to_location: string | null;
+}
+
+export interface OperatorManifestStop {
+  id: string;
+  seq: number;
+  scheduled_time: string;
+  day_offset: number;
+  can_board: boolean;
+  can_drop: boolean;
+  location_name: string | null;
+  boarding_seats: string[];
+  dropping_seats: string[];
 }
 
 export interface OperatorManifest {
@@ -397,6 +412,7 @@ export interface OperatorManifest {
   boarded_count: number;
   confirmed_count: number;
   revenue: number;
+  stops: OperatorManifestStop[];
 }
 
 export interface AssignSeatResult {
@@ -451,6 +467,10 @@ export interface OperatorBus {
   interior_image_url: string | null;
   seat_layout_image_url: string | null;
   bus_type: { name: string; class: string; seat_count: number; layout_json: SeatLayout | null } | null;
+  crew: {
+    driver: { id: string; name: string } | null;
+    conductor: { id: string; name: string } | null;
+  };
 }
 
 export interface RouteStopEntry {
@@ -937,6 +957,8 @@ export interface AdminOperator {
   payout_account: OperatorPayoutAccount | null;
   commission_pct: number;
   convenience_fee_pct: number;
+  walkup_enabled: boolean;
+  walkup_limit: number | null;
   owner_email?: string | null;
 }
 
@@ -956,6 +978,17 @@ export function setOperatorConvenienceFee(accessToken: string, operatorId: strin
       body: JSON.stringify({ convenienceFeePct }),
       accessToken,
     },
+  );
+}
+
+export function setOperatorWalkupPolicy(
+  accessToken: string,
+  operatorId: string,
+  body: { walkupEnabled: boolean; walkupLimit: number | null },
+) {
+  return request<{ id: string; walkup_enabled: boolean; walkup_limit: number | null }>(
+    `/admin/operators/${operatorId}/walkup-policy`,
+    { method: 'PATCH', body: JSON.stringify(body), accessToken },
   );
 }
 
@@ -1030,6 +1063,62 @@ export interface AdminBus {
   seat_layout_image_url: string | null;
   operator: { name: string } | null;
   bus_type: { name: string; class: string; seat_count: number } | null;
+}
+
+export interface AdminJourney {
+  id: string;
+  code: string | null;
+  depart_time: string;
+  arrive_time: string;
+  arrive_day_offset: number;
+  base_fare: number;
+  status: 'active' | 'paused';
+  review_status: 'pending' | 'approved' | 'rejected';
+  created_at: string;
+  operator: { name: string } | null;
+  route: { name: string } | null;
+  bus: { reg_no: string; bus_type: { name: string; class: string; seat_count: number } | null } | null;
+  driver: { name: string } | null;
+  conductor: { name: string } | null;
+}
+
+export function listAdminJourneys(accessToken: string) {
+  return request<AdminJourney[]>('/admin/journeys', { accessToken });
+}
+
+export function setAdminJourneyReviewStatus(
+  accessToken: string,
+  journeyId: string,
+  reviewStatus: 'pending' | 'approved' | 'rejected',
+) {
+  return request<AdminJourney>(`/admin/journeys/${journeyId}/review-status`, {
+    method: 'PATCH',
+    body: JSON.stringify({ reviewStatus }),
+    accessToken,
+  });
+}
+
+export interface AdminJourneyDetail extends AdminJourney {
+  route: { name: string; origin_id: string; dest_id: string } | null;
+  driver: { id: string; name: string } | null;
+  conductor: { id: string; name: string } | null;
+  depart_location: string | null;
+  depart_location_url: string | null;
+  arrive_location: string | null;
+  arrive_location_url: string | null;
+  stops: {
+    id: string;
+    seq: number;
+    scheduled_time: string;
+    day_offset: number;
+    can_board: boolean;
+    can_drop: boolean;
+    route_stop: { location: { id: string; name_en: string } | null } | null;
+  }[];
+}
+
+export function getAdminJourney(accessToken: string, journeyId: string) {
+  return request<AdminJourneyDetail>(`/admin/journeys/${journeyId}`, { accessToken });
 }
 
 /** A stop as the admin editor sees it — its own pin + waypoint flag. A hidden
@@ -1580,6 +1669,10 @@ export interface AdminPayoutRow {
   paid_at: string | null;
   reference: string | null;
   settleable: boolean;
+  /** Cash walk-up revenue — collected directly by the operator, never paid out by BusConnect. */
+  walkup_gross: number;
+  walkup_seats: number;
+  walkup_count: number;
 }
 
 export interface AdminPayoutDetail {
@@ -1598,12 +1691,15 @@ export interface AdminPayoutDetail {
       payout_account: OperatorPayoutAccount | null;
     } | null;
   } | null;
-  bookings: { id: string; seats: string[]; amount: number; status: string; created_at: string }[];
+  bookings: { id: string; seats: string[]; amount: number; status: string; created_at: string; walkup_name: string | null }[];
   seats_sold: number;
   gross: number;
   commission_pct: number;
   commission_amount: number;
   net_amount: number;
+  walkup_gross: number;
+  walkup_seats: number;
+  walkup_count: number;
   payout: {
     reference: string | null;
     paid_at: string;
@@ -1664,11 +1760,13 @@ export interface OperatorRevenueRow {
   paid_at: string | null;
   reference: string | null;
   has_slip: boolean;
+  walkup_gross: number;
+  walkup_seats: number;
 }
 
 export interface OperatorRevenue {
   rows: OperatorRevenueRow[];
-  totals: { grossEarned: number; netEarned: number; paidOut: number; pending: number };
+  totals: { grossEarned: number; netEarned: number; paidOut: number; pending: number; walkupEarned: number };
 }
 
 export function getOperatorRevenue(accessToken: string) {

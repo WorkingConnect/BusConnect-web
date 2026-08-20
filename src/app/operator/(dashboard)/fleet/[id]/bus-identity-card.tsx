@@ -311,6 +311,19 @@ export function BusIdentityCard({ bus }: { bus: OperatorBusDetail }) {
             {bus.amenities.length > 0 ? bus.amenities.join(", ") : "None listed"}
           </p>
         </div>
+        <div>
+          <p className="text-xs font-medium text-slate-500 dark:text-zinc-500">Crew</p>
+          <p className="mt-0.5 text-sm font-medium">
+            {bus.crew.driver || bus.crew.conductor
+              ? [
+                  bus.crew.driver && `Driver: ${bus.crew.driver.name}`,
+                  bus.crew.conductor && `Conductor: ${bus.crew.conductor.name}`,
+                ]
+                  .filter(Boolean)
+                  .join(" · ")
+              : "No pilot assigned"}
+          </p>
+        </div>
         {bus.notes && (
           <div className="sm:col-span-2">
             <p className="text-xs font-medium text-slate-500 dark:text-zinc-500">Notes</p>

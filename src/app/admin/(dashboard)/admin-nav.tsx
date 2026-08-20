@@ -2,12 +2,13 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Building2, Wallet, PiggyBank, Search, Bus, Route, Images, IdCard, CalendarRange, HandCoins, TrendingUp, Users } from "lucide-react";
+import { LayoutDashboard, Building2, Wallet, PiggyBank, Search, Bus, Route, Images, IdCard, CalendarRange, HandCoins, TrendingUp, Users, ClipboardCheck } from "lucide-react";
 
 const items = [
   { label: "Overview", href: "/admin", icon: LayoutDashboard },
   { label: "Users", href: "/admin/users", icon: Users },
   { label: "Operators", href: "/admin/operators", icon: Building2 },
+  { label: "Review", href: "/admin/review", icon: ClipboardCheck },
   { label: "Timetable", href: "/admin/timetable", icon: CalendarRange },
   { label: "Revenue", href: "/admin/revenue", icon: TrendingUp },
   { label: "Payouts", href: "/admin/payouts", icon: HandCoins },
@@ -23,7 +24,7 @@ const items = [
 export function AdminNav({
   counts,
 }: {
-  counts?: { operators?: number; fleet?: number; pilots?: number; refunds?: number };
+  counts?: { operators?: number; fleet?: number; pilots?: number; refunds?: number; review?: number };
 }) {
   const pathname = usePathname();
   const badgeFor: Record<string, number | undefined> = {
@@ -31,6 +32,7 @@ export function AdminNav({
     "/admin/fleet": counts?.fleet,
     "/admin/pilots": counts?.pilots,
     "/admin/refunds": counts?.refunds,
+    "/admin/review": counts?.review,
   };
 
   return (

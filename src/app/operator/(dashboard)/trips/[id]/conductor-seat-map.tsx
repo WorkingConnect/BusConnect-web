@@ -4,7 +4,15 @@ import { useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
-import { blockSeat, unblockSeat, assignSeat, ApiError, type SeatLayout, type SeatState } from "@/lib/api";
+import {
+  blockSeat,
+  unblockSeat,
+  assignSeat,
+  ApiError,
+  type SeatLayout,
+  type SeatState,
+  type OperatorManifestBooking,
+} from "@/lib/api";
 import { layoutToGrid } from "@/lib/seat-layout";
 
 interface Props {
@@ -12,6 +20,8 @@ interface Props {
   layout: SeatLayout | null;
   seatCount: number;
   initialSeats: SeatState[];
+  bookings: OperatorManifestBooking[];
+  onOpenBooking: (bookingId: string) => void;
 }
 
 const SEAT_STYLE: Record<string, string> = {
@@ -25,10 +35,18 @@ const SEAT_STYLE: Record<string, string> = {
 
 type PanelMode = "menu" | "assign";
 
-export function ConductorSeatMap({ tripId, layout, seatCount, initialSeats }: Props) {
+export function ConductorSeatMap({ tripId, layout, seatCount, initialSeats, bookings, onOpenBooking }: Props) {
   const router = useRouter();
   const supabase = useMemo(() => createClient(), []);
   const grid = useMemo(() => layoutToGrid(layout, seatCount), [layout, seatCount]);
+  const seatToBookingId = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const b of bookings) {
+      if (b.status === "cancelled") continue;
+      for (const seat of b.seats) map.set(seat, b.id);
+    }
+    return map;
+  }, [bookings]);
 
   const [seatStates, setSeatStates] = useState<Map<string, SeatState>>(
     () => new Map(initialSeats.map((s) => [s.seat_no, s])),
@@ -157,17 +175,22 @@ export function ConductorSeatMap({ tripId, layout, seatCount, initialSeats }: Pr
             {row.map((label, ci) => {
               if (label === null) return <span key={ci} className="w-6" aria-hidden />;
               const kind = seatKind(label);
-              const clickable = kind === "available" || kind === "blocked";
+              const hasBooking = kind === "male" || kind === "female" || kind === "pending";
               return (
                 <div key={ci} className="relative">
                   <button
                     type="button"
-                    disabled={!clickable}
-                    onClick={() => openFor(label)}
+                    onClick={() => {
+                      if (hasBooking) {
+                        const bookingId = seatToBookingId.get(label);
+                        if (bookingId) onOpenBooking(bookingId);
+                        return;
+                      }
+                      openFor(label);
+                    }}
                     className={[
                       "ui flex h-9 w-9 items-center justify-center rounded-lg text-xs font-medium transition-colors duration-200",
                       SEAT_STYLE[kind],
-                      !clickable ? "cursor-default" : "",
                     ].join(" ")}
                   >
                     {label}

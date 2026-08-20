@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
-import { getMyRoles, getAdminAnalytics, listAdminBuses, listAdminPilots, ApiError } from "@/lib/api";
+import { getMyRoles, getAdminAnalytics, listAdminBuses, listAdminPilots, listAdminJourneys, ApiError } from "@/lib/api";
 import { AdminNav } from "./admin-nav";
 
 // Mirrors operator/(dashboard)/layout.tsx: this is the ONLY thing that
@@ -39,16 +39,19 @@ export default async function AdminDashboardLayout({
   let fleetPending = 0;
   let pilotsPending = 0;
   let refundsPending = 0;
+  let reviewPending = 0;
   try {
-    const [analytics, buses, pilots] = await Promise.all([
+    const [analytics, buses, pilots, journeys] = await Promise.all([
       getAdminAnalytics(session!.access_token),
       listAdminBuses(session!.access_token),
       listAdminPilots(session!.access_token),
+      listAdminJourneys(session!.access_token),
     ]);
     operatorsPending = analytics.pendingOperators;
     refundsPending = analytics.pendingRefundsCount;
     fleetPending = buses.filter((b) => b.status === "pending").length;
     pilotsPending = pilots.filter((p) => p.status === "pending").length;
+    reviewPending = journeys.filter((j) => j.review_status === "pending").length;
   } catch (e) {
     if (!(e instanceof ApiError)) throw e;
   }
@@ -66,6 +69,7 @@ export default async function AdminDashboardLayout({
             fleet: fleetPending,
             pilots: pilotsPending,
             refunds: refundsPending,
+            review: reviewPending,
           }}
         />
       </aside>

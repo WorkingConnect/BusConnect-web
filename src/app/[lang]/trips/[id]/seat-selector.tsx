@@ -172,12 +172,6 @@ export function SeatSelector(props: Props) {
   return (
     <div>
       <div className="card p-5 sm:p-6">
-        <div className="ui mb-2 flex items-center justify-center gap-1.5 text-xs font-medium text-slate-500 dark:text-zinc-500">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden>
-            <path d="M12 21s7-5.7 7-11a7 7 0 1 0-14 0c0 5.3 7 11 7 11Z" stroke="currentColor" strokeWidth="2" />
-          </svg>
-          Front of bus
-        </div>
         <div className="ui mb-5 flex flex-wrap justify-center gap-x-4 gap-y-2 text-xs text-slate-500 dark:text-zinc-400">
           <span className="flex items-center gap-1.5">
             <span className="inline-block h-3 w-3 rounded border border-slate-300 dark:border-zinc-600" />

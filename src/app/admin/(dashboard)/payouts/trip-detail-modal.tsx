@@ -77,6 +77,19 @@ export function TripDetailModal({ token, tripId, onClose }: { token: string; tri
               )}
             </div>
 
+            {detail.walkup_count > 0 && (
+              <div className="mt-3 rounded-xl bg-slate-50 p-4 dark:bg-zinc-900">
+                <Row
+                  label={`Walk-in cash (${detail.walkup_count} seat${detail.walkup_count === 1 ? "" : "s"})`}
+                  value={money(detail.walkup_gross)}
+                  muted
+                />
+                <p className="ui mt-1 text-xs text-slate-400 dark:text-zinc-500">
+                  Collected directly by the operator — not part of the payout above.
+                </p>
+              </div>
+            )}
+
             <p className="ui mt-4 text-xs font-medium uppercase tracking-wide text-slate-400 dark:text-zinc-500">
               Bookings ({detail.bookings.length})
             </p>
