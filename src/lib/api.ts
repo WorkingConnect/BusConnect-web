@@ -1346,6 +1346,11 @@ export function processAdminRefund(accessToken: string, refundId: string) {
   return request(`/admin/refunds/${refundId}/process`, { method: 'POST', accessToken });
 }
 
+/** Permanently removes a resolved (non-pending) refund from the History list. */
+export function deleteAdminRefund(accessToken: string, refundId: string) {
+  return request<{ ok: true }>(`/admin/refunds/${refundId}`, { method: 'DELETE', accessToken });
+}
+
 export function getAdminAnalytics(accessToken: string) {
   return request<AdminAnalytics>('/admin/analytics', { accessToken });
 }

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { listAdminRefunds, ApiError, type AdminRefund } from "@/lib/api";
 import { ProcessButton } from "./process-button";
+import { DeleteRefundButton } from "./delete-refund-button";
 
 const STATUS_STYLE: Record<string, string> = {
   processed: "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300",
@@ -86,16 +87,19 @@ export default async function AdminRefundsPage() {
           <h2 className="mt-8 font-heading text-lg font-semibold">History</h2>
           <div className="mt-3 flex flex-col gap-2">
             {others.map((r) => (
-              <div key={r.id} className="card flex items-center justify-between p-4">
+              <div key={r.id} className="card flex items-center justify-between gap-3 p-4">
                 <div>
                   <p className="font-medium">LKR {Number(r.amount).toLocaleString("en-LK")}</p>
                   <p className="ui mt-0.5 text-xs text-slate-500 dark:text-zinc-500">{r.reason}</p>
                 </div>
-                <span
-                  className={`ui rounded-full px-2 py-0.5 text-xs font-medium capitalize ${STATUS_STYLE[r.status] ?? ""}`}
-                >
-                  {r.status.replace("_", " ")}
-                </span>
+                <div className="flex shrink-0 items-center gap-2">
+                  <span
+                    className={`ui rounded-full px-2 py-0.5 text-xs font-medium capitalize ${STATUS_STYLE[r.status] ?? ""}`}
+                  >
+                    {r.status.replace("_", " ")}
+                  </span>
+                  <DeleteRefundButton refundId={r.id} />
+                </div>
               </div>
             ))}
           </div>
