@@ -403,6 +403,8 @@ export interface OperatorManifestStop {
 export interface OperatorManifest {
   trip_id: string;
   role: "owner" | "pilot";
+  status: string;
+  location_sharing: boolean;
   route_name: string | null;
   bus: { reg_no: string; bus_type: { name: string; class: string } | null } | null;
   depart_at: string;
@@ -623,11 +625,15 @@ export function scheduleTrips(accessToken: string, input: { journeyId: string; d
 
 /** `force` only ever does anything for a platform admin in admin-context
  *  mode — the backend re-checks that independently, this is not a client-
- *  side permission. Force-deleting erases the trip's bookings/tickets/
- *  payments with no refund. */
+ *  side permission. Forcing a trip with bookings cancels each one and
+ *  queues a full refund (see the admin Refunds page) rather than deleting
+ *  them outright. */
 export function cancelOperatorTrip(accessToken: string, tripId: string, force = false) {
   const qs = force ? '?force=true' : '';
-  return request(`/operator/trips/${tripId}${qs}`, { method: 'DELETE', accessToken });
+  return request<{ ok: true; refundsQueued: number }>(`/operator/trips/${tripId}${qs}`, {
+    method: 'DELETE',
+    accessToken,
+  });
 }
 
 export function getOperatorRouteCatalog(accessToken: string) {

@@ -3,6 +3,7 @@ import { ArrowLeft, Wallet, Armchair, UserCheck } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { getOperatorManifest, ApiError, type OperatorManifest } from "@/lib/api";
 import { ManifestPanel } from "@/app/operator/(dashboard)/trips/[id]/manifest-panel";
+import { CancelTripButton } from "./cancel-trip-button";
 
 function dateTime(iso: string) {
   return new Date(iso).toLocaleString("en-LK", {
@@ -85,6 +86,9 @@ export default async function AdminTripPage({ params }: { params: Promise<{ id: 
             {dateTime(manifest.depart_at)} · Bus {manifest.bus?.reg_no ?? "—"}
           </p>
         </div>
+        {(manifest.status === "scheduled" || manifest.status === "boarding") && (
+          <CancelTripButton tripId={id} />
+        )}
       </div>
 
       {/* stat tiles */}

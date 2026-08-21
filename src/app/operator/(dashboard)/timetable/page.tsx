@@ -9,7 +9,6 @@ import {
   type OperatorJourney,
 } from "@/lib/api";
 import { ScheduleForm } from "./schedule-form";
-import { CancelTripButton } from "./cancel-trip-button";
 
 const STATUS_STYLE: Record<string, string> = {
   scheduled: "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300",
@@ -135,7 +134,6 @@ export default async function TimetablePage() {
                       <span className="font-heading font-bold text-brand dark:text-blue-400">
                         {colomboTime(t.depart_at)}
                       </span>
-                      <CancelTripButton tripId={t.id} />
                     </div>
                   </div>
                 ))}
