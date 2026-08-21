@@ -1699,6 +1699,19 @@ export function listAdminTrips(accessToken: string, upcomingOnly = false) {
   return request<AdminTrip[]>(`/admin/trips${qs}`, { accessToken });
 }
 
+export interface AdminCancellationRequest {
+  id: string;
+  depart_at: string;
+  cancellation_requested_at: string;
+  cancellation_reason: string | null;
+  route: { id: string; name: string } | null;
+  bus: { reg_no: string; operator: { id: string; name: string } | null } | null;
+}
+
+export function listCancellationRequests(accessToken: string) {
+  return request<AdminCancellationRequest[]>('/admin/trips/cancellation-requests', { accessToken });
+}
+
 // ── Payouts (admin) ─────────────────────────────────────────────────────────
 
 export interface AdminPayoutRow {
