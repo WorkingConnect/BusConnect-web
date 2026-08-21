@@ -597,11 +597,12 @@ export function setJourneyStatus(accessToken: string, id: string, status: 'activ
 
 /** `force` only ever does anything for a platform admin in admin-context
  *  mode — the backend re-checks that independently, this is not a client-
- *  side permission. Force-deleting erases the journey's upcoming trips'
- *  bookings/tickets/payments with no refund. */
+ *  side permission. Forcing cancels the journey's upcoming trips (each
+ *  booking is cancelled and a full refund queued for the admin Refunds
+ *  page) before the journey itself is deleted. */
 export function deleteJourney(accessToken: string, id: string, force = false) {
   const qs = force ? '?force=true' : '';
-  return request(`/operator/journeys/${id}${qs}`, { method: 'DELETE', accessToken });
+  return request<{ ok: true }>(`/operator/journeys/${id}${qs}`, { method: 'DELETE', accessToken });
 }
 
 // ── Timetable — schedule dated trips from journeys ──────────────────────────

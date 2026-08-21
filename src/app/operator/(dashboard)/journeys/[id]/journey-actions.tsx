@@ -125,7 +125,7 @@ export function JourneyActions({
                 disabled={!!busy}
                 className="ui mt-1.5 rounded-lg bg-amber-600 px-2.5 py-1.5 text-xs font-semibold text-white hover:bg-amber-700 disabled:opacity-60"
               >
-                {busy === "delete" ? <Loader2 size={13} className="animate-spin" /> : "Force delete anyway"}
+                {busy === "delete" ? <Loader2 size={13} className="animate-spin" /> : "Cancel trips, refund & delete"}
               </button>
             </div>
           )}
