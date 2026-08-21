@@ -76,23 +76,35 @@ export default async function OperatorFleetPage() {
         ) : (
           <div className="flex flex-col gap-2">
             {fleet.buses.map((b) => (
-              <Link key={b.id} href={`/operator/fleet/${b.id}`} className="card card-hover p-4">
-                <div className="flex items-center justify-between gap-3">
-                  <p className="font-medium">{b.reg_no}</p>
-                  <span className={`ui rounded-full px-2 py-0.5 text-xs font-semibold ${STATUS_STYLE[b.status]}`}>
-                    {STATUS_LABEL[b.status] ?? b.status}
-                  </span>
-                </div>
-                <p className="ui mt-0.5 text-sm text-slate-600 dark:text-zinc-400">
-                  {b.bus_type?.name ?? "—"} · {b.bus_type?.seat_count ?? "—"} seats
-                  {b.amenities.length > 0 && <> · {b.amenities.length} amenities</>}
-                </p>
-                {(b.crew.driver || b.crew.conductor) && (
-                  <p className="ui mt-1 flex flex-wrap items-center gap-2 text-xs text-slate-500 dark:text-zinc-500">
-                    {b.crew.driver && <span>Driver · {b.crew.driver.name}</span>}
-                    {b.crew.conductor && <span>Conductor · {b.crew.conductor.name}</span>}
-                  </p>
+              <Link key={b.id} href={`/operator/fleet/${b.id}`} className="card card-hover flex items-start gap-3 p-4">
+                {b.front_image_url ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={b.front_image_url}
+                    alt={`${b.reg_no} front`}
+                    className="h-14 w-20 shrink-0 rounded-lg border border-slate-200 object-cover dark:border-zinc-800"
+                  />
+                ) : (
+                  <div className="h-14 w-20 shrink-0 rounded-lg border border-dashed border-slate-300 dark:border-zinc-700" />
                 )}
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center justify-between gap-3">
+                    <p className="font-medium">{b.reg_no}</p>
+                    <span className={`ui rounded-full px-2 py-0.5 text-xs font-semibold ${STATUS_STYLE[b.status]}`}>
+                      {STATUS_LABEL[b.status] ?? b.status}
+                    </span>
+                  </div>
+                  <p className="ui mt-0.5 text-sm text-slate-600 dark:text-zinc-400">
+                    {b.bus_type?.name ?? "—"} · {b.bus_type?.seat_count ?? "—"} seats
+                    {b.amenities.length > 0 && <> · {b.amenities.length} amenities</>}
+                  </p>
+                  {(b.crew.driver || b.crew.conductor) && (
+                    <p className="ui mt-1 flex flex-wrap items-center gap-2 text-xs text-slate-500 dark:text-zinc-500">
+                      {b.crew.driver && <span>Driver · {b.crew.driver.name}</span>}
+                      {b.crew.conductor && <span>Conductor · {b.crew.conductor.name}</span>}
+                    </p>
+                  )}
+                </div>
               </Link>
             ))}
           </div>
