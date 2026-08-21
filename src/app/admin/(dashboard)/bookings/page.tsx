@@ -1,10 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { Search, Loader2, ArrowUpRight, Trash2, EyeOff } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
-import { findAdminBookingById, findAdminBookingsByEmail, hideAdminBooking, ApiError, type AdminBooking } from "@/lib/api";
+import {
+  listAllAdminBookings,
+  findAdminBookingById,
+  findAdminBookingsByEmail,
+  hideAdminBooking,
+  ApiError,
+  type AdminBooking,
+} from "@/lib/api";
 
 const STATUS_STYLE: Record<string, string> = {
   confirmed: "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300",
@@ -19,6 +26,48 @@ export default function AdminBookingsPage() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [searched, setSearched] = useState(false);
+
+  // Default view: every booking platform-wide (most recent 200), grouped by
+  // operator into cards — the search box below is only needed to jump to a
+  // specific older booking a search wouldn't otherwise surface.
+  const [allBookings, setAllBookings] = useState<AdminBooking[] | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const supabase = createClient();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (!session) return;
+      try {
+        const list = await listAllAdminBookings(session.access_token);
+        if (!cancelled) setAllBookings(list);
+      } catch (e) {
+        if (!cancelled) setLoadError(e instanceof ApiError ? e.message : "Could not reach BusConnect-api. Is it running?");
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const groups = useMemo(() => {
+    const map = new Map<string, AdminBooking[]>();
+    for (const b of allBookings ?? []) {
+      const key = b.trip?.bus?.operator?.name ?? "Unknown operator";
+      const bucket = map.get(key);
+      if (bucket) bucket.push(b);
+      else map.set(key, [b]);
+    }
+    return [...map.entries()].sort(([a], [b]) => a.localeCompare(b));
+  }, [allBookings]);
+
+  function updateBooking(id: string, patch: Partial<AdminBooking>) {
+    setAllBookings((prev) => prev?.map((r) => (r.id === id ? { ...r, ...patch } : r)) ?? prev);
+    setResults((prev) => prev.map((r) => (r.id === id ? { ...r, ...patch } : r)));
+  }
 
   async function search(e: React.FormEvent) {
     e.preventDefault();
@@ -47,11 +96,18 @@ export default function AdminBookingsPage() {
     }
   }
 
+  function clearSearch() {
+    setSearched(false);
+    setQuery("");
+    setResults([]);
+    setError(null);
+  }
+
   return (
     <div>
-      <h1 className="font-heading text-2xl font-bold tracking-tight">Booking lookup</h1>
+      <h1 className="font-heading text-2xl font-bold tracking-tight">Bookings</h1>
       <p className="ui mt-1 text-sm text-slate-600 dark:text-zinc-400">
-        Find any booking platform-wide to help resolve a support ticket.
+        Every booking platform-wide, grouped by operator — search below to jump straight to one.
       </p>
 
       <form onSubmit={search} className="card mt-6 flex flex-col gap-3 p-5 sm:flex-row sm:items-end">
@@ -91,15 +147,56 @@ export default function AdminBookingsPage() {
         </p>
       )}
 
-      {!error && searched && !busy && results.length === 0 && (
-        <p className="ui mt-4 text-sm text-slate-500 dark:text-zinc-400">No bookings found.</p>
+      {searched ? (
+        <>
+          <div className="mt-4 flex items-center justify-between">
+            <p className="ui text-sm font-semibold text-slate-500 dark:text-zinc-400">Search results</p>
+            <button
+              type="button"
+              onClick={clearSearch}
+              className="ui text-xs font-medium text-slate-500 underline hover:text-slate-900 dark:text-zinc-400 dark:hover:text-white"
+            >
+              Back to all bookings
+            </button>
+          </div>
+          {!error && !busy && results.length === 0 && (
+            <p className="ui mt-4 text-sm text-slate-500 dark:text-zinc-400">No bookings found.</p>
+          )}
+          <div className="mt-4 flex flex-col gap-3">
+            {results.map((b) => (
+              <ResultCard key={b.id} b={b} onHidden={() => updateBooking(b.id, { hidden_by_passenger: true })} />
+            ))}
+          </div>
+        </>
+      ) : loadError ? (
+        <p className="mt-4 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-950/40 dark:text-red-300">
+          {loadError}
+        </p>
+      ) : allBookings === null ? (
+        <div className="mt-6 flex justify-center p-10">
+          <Loader2 size={20} className="animate-spin text-slate-400" />
+        </div>
+      ) : groups.length === 0 ? (
+        <p className="ui mt-4 text-sm text-slate-500 dark:text-zinc-400">No bookings yet.</p>
+      ) : (
+        <div className="mt-6 flex flex-col gap-8">
+          {groups.map(([operatorName, bookings]) => (
+            <div key={operatorName}>
+              <p className="ui mb-2 text-sm font-semibold text-slate-500 dark:text-zinc-400">
+                {operatorName}{" "}
+                <span className="font-normal text-slate-400 dark:text-zinc-600">
+                  · {bookings.length} booking{bookings.length === 1 ? "" : "s"}
+                </span>
+              </p>
+              <div className="flex flex-col gap-3">
+                {bookings.map((b) => (
+                  <ResultCard key={b.id} b={b} onHidden={() => updateBooking(b.id, { hidden_by_passenger: true })} />
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
       )}
-
-      <div className="mt-4 flex flex-col gap-3">
-        {results.map((b) => (
-          <ResultCard key={b.id} b={b} onHidden={() => setResults((prev) => prev.map((r) => (r.id === b.id ? { ...r, hidden_by_passenger: true } : r)))} />
-        ))}
-      </div>
     </div>
   );
 }

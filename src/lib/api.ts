@@ -1076,7 +1076,7 @@ export interface AdminBooking {
   status: string;
   created_at: string;
   hidden_by_passenger: boolean;
-  trip: { depart_at: string; bus: { operator: { name: string } | null } | null } | null;
+  trip: { depart_at: string; bus: { operator: { id: string; name: string } | null } | null } | null;
   tickets?: { id: string; status: string }[];
   payments?: { id: string; status: string; amount: number }[];
   refunds?: { id: string; amount: number; status: string }[];
@@ -1369,6 +1369,10 @@ export interface AdminWalletOverview {
 
 export function getAdminWalletOverview(accessToken: string) {
   return request<AdminWalletOverview>('/admin/wallets', { accessToken });
+}
+
+export function listAllAdminBookings(accessToken: string) {
+  return request<AdminBooking[]>('/admin/bookings/all', { accessToken });
 }
 
 export function findAdminBookingById(accessToken: string, bookingId: string) {
