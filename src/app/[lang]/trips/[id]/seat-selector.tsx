@@ -1,10 +1,10 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { Loader2, ArrowRight } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
-import { createHold, createBooking, ApiError, type SeatLayout, type SeatState } from "@/lib/api";
+import { createHold, createBooking, ApiError, type SeatLayout, type SeatState, type TripStopTime } from "@/lib/api";
 import { layoutToGrid } from "@/lib/seat-layout";
 
 interface Props {
@@ -15,6 +15,7 @@ interface Props {
   farePerSeat: number;
   fromStopId: string;
   toStopId: string;
+  stops: TripStopTime[];
 }
 
 const SEAT_STYLE: Record<string, string> = {
@@ -28,9 +29,23 @@ const SEAT_STYLE: Record<string, string> = {
 };
 
 export function SeatSelector(props: Props) {
-  const { tripId, seatCount, farePerSeat, fromStopId, toStopId } = props;
+  const { tripId, seatCount, farePerSeat, fromStopId, toStopId, stops } = props;
   const router = useRouter();
+  const pathname = usePathname();
   const supabase = useMemo(() => createClient(), []);
+
+  const boardableStops = useMemo(() => stops.filter((s) => s.can_board), [stops]);
+  const droppableStops = useMemo(() => stops.filter((s) => s.can_drop), [stops]);
+  const fromSeq = stops.find((s) => s.route_stop_id === fromStopId)?.seq ?? -Infinity;
+  const toSeq = stops.find((s) => s.route_stop_id === toStopId)?.seq ?? Infinity;
+
+  function changeStop(which: "from" | "to", routeStopId: string) {
+    const params = new URLSearchParams({
+      from: which === "from" ? routeStopId : fromStopId,
+      to: which === "to" ? routeStopId : toStopId,
+    });
+    router.push(`${pathname}?${params.toString()}`);
+  }
 
   const grid = useMemo(() => layoutToGrid(props.layout, seatCount), [props.layout, seatCount]);
   const [seatStates, setSeatStates] = useState<Map<string, SeatState>>(
@@ -252,6 +267,39 @@ export function SeatSelector(props: Props) {
           ))}
         </div>
       </div>
+
+      {stops.length > 0 && (
+        <div className="card mt-4 grid grid-cols-1 gap-3 p-4 sm:grid-cols-2">
+          <label className="ui flex flex-col gap-1.5 text-xs font-medium text-slate-600 dark:text-zinc-400">
+            Boarding point
+            <select
+              value={fromStopId}
+              onChange={(e) => changeStop("from", e.target.value)}
+              className="field py-2 text-sm"
+            >
+              {boardableStops.map((s) => (
+                <option key={s.route_stop_id} value={s.route_stop_id} disabled={s.seq >= toSeq}>
+                  {s.location_name}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="ui flex flex-col gap-1.5 text-xs font-medium text-slate-600 dark:text-zinc-400">
+            Drop-off point
+            <select
+              value={toStopId}
+              onChange={(e) => changeStop("to", e.target.value)}
+              className="field py-2 text-sm"
+            >
+              {droppableStops.map((s) => (
+                <option key={s.route_stop_id} value={s.route_stop_id} disabled={s.seq <= fromSeq}>
+                  {s.location_name}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
+      )}
 
       {error && (
         <p className="mt-4 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-950/40 dark:text-red-300">

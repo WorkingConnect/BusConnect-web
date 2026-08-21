@@ -142,6 +142,7 @@ export default async function TripPage({
             farePerSeat={farePerSeat}
             fromStopId={fromStopId}
             toStopId={toStopId}
+            stops={stops}
           />
         </section>
 
