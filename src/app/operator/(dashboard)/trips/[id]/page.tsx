@@ -3,6 +3,7 @@ import { ArrowLeft, Wallet, Armchair, UserCheck, ScanLine } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { getOperatorManifest, ApiError, type OperatorManifest } from "@/lib/api";
 import { ManifestPanel } from "./manifest-panel";
+import { RequestCancellationButton } from "../../timetable/request-cancellation-button";
 
 function dateTime(iso: string) {
   return new Date(iso).toLocaleString("en-LK", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" });
@@ -63,9 +64,18 @@ export default async function OperatorManifestPage({
             {dateTime(manifest.depart_at)} · Bus {manifest.bus?.reg_no ?? "—"}
           </p>
         </div>
-        <Link href="/operator/scan" className="btn-primary shrink-0">
-          <ScanLine size={16} /> Scan tickets
-        </Link>
+        <div className="flex shrink-0 items-center gap-2">
+          {!isPilot && (manifest.status === "scheduled" || manifest.status === "boarding") && (
+            <RequestCancellationButton
+              tripId={manifest.trip_id}
+              cancellationRequestedAt={manifest.cancellation_requested_at}
+              variant="full"
+            />
+          )}
+          <Link href="/operator/scan" className="btn-primary shrink-0">
+            <ScanLine size={16} /> Scan tickets
+          </Link>
+        </div>
       </div>
 
       {/* stat tiles */}

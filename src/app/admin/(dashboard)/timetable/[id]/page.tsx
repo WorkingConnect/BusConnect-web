@@ -87,7 +87,11 @@ export default async function AdminTripPage({ params }: { params: Promise<{ id: 
           </p>
         </div>
         {(manifest.status === "scheduled" || manifest.status === "boarding") && (
-          <CancelTripButton tripId={id} />
+          <CancelTripButton
+            tripId={id}
+            cancellationRequestedAt={manifest.cancellation_requested_at}
+            cancellationReason={manifest.cancellation_reason}
+          />
         )}
       </div>
 

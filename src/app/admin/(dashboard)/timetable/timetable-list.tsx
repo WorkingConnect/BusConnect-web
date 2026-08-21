@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { CalendarRange, Search, Users } from "lucide-react";
+import { CalendarRange, Search, ShieldAlert, Users } from "lucide-react";
 import type { AdminTrip } from "@/lib/api";
 
 const STATUS_STYLE: Record<string, string> = {
@@ -114,6 +114,11 @@ export function TimetableList({ trips }: { trips: AdminTrip[] }) {
                         >
                           {t.status}
                         </span>
+                        {t.cancellation_requested_at && (
+                          <span className="ui flex shrink-0 items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-semibold text-amber-700 dark:bg-amber-950/50 dark:text-amber-300">
+                            <ShieldAlert size={11} /> Cancellation requested
+                          </span>
+                        )}
                       </div>
                       <p className="ui mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-slate-500 dark:text-zinc-400">
                         <span className="font-medium text-slate-700 dark:text-zinc-300">

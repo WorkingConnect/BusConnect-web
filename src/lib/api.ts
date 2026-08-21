@@ -369,6 +369,8 @@ export interface OperatorTrip {
   base_fare: number;
   status: string;
   journey_id: string | null;
+  cancellation_requested_at: string | null;
+  cancellation_reason: string | null;
   route: { id: string; name: string; origin_id: string; dest_id: string } | null;
   bus: { reg_no: string; bus_type: { name: string; class: string; seat_count: number } };
 }
@@ -405,6 +407,8 @@ export interface OperatorManifest {
   role: "owner" | "pilot";
   status: string;
   location_sharing: boolean;
+  cancellation_requested_at: string | null;
+  cancellation_reason: string | null;
   route_name: string | null;
   bus: { reg_no: string; bus_type: { name: string; class: string } | null } | null;
   depart_at: string;
@@ -631,6 +635,24 @@ export function scheduleTrips(accessToken: string, input: { journeyId: string; d
 export function cancelOperatorTrip(accessToken: string, tripId: string, force = false) {
   const qs = force ? '?force=true' : '';
   return request<{ ok: true; refundsQueued: number }>(`/operator/trips/${tripId}${qs}`, {
+    method: 'DELETE',
+    accessToken,
+  });
+}
+
+/** Owner-only: flags a trip (that has bookings, so a plain cancelOperatorTrip
+ *  would 409) for admin review instead of cancelling it outright. */
+export function requestTripCancellation(accessToken: string, tripId: string, reason?: string) {
+  return request<{ ok: true }>(`/operator/trips/${tripId}/cancellation-request`, {
+    method: 'POST',
+    body: JSON.stringify({ reason }),
+    accessToken,
+  });
+}
+
+/** Withdraws (owner) or rejects (admin-context) a pending cancellation request. */
+export function clearCancellationRequest(accessToken: string, tripId: string) {
+  return request<{ ok: true }>(`/operator/trips/${tripId}/cancellation-request`, {
     method: 'DELETE',
     accessToken,
   });
@@ -1647,6 +1669,8 @@ export interface AdminTrip {
   arrive_est: string | null;
   base_fare: number;
   status: string;
+  cancellation_requested_at: string | null;
+  cancellation_reason: string | null;
   route: { id: string; name: string } | null;
   bus: {
     reg_no: string;
