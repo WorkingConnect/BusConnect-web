@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
-import { Loader2, ArrowRight } from "lucide-react";
+import { Loader2, ArrowRight, ChevronDown } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { createHold, createBooking, ApiError, type SeatLayout, type SeatState, type TripStopTime } from "@/lib/api";
 import { layoutToGrid } from "@/lib/seat-layout";
@@ -268,47 +268,60 @@ export function SeatSelector(props: Props) {
         </div>
       </div>
 
-      {stops.length > 0 && (
-        <div className="card mt-4 grid grid-cols-1 gap-3 p-4 sm:grid-cols-2">
-          <label className="ui flex flex-col gap-1.5 text-xs font-medium text-slate-600 dark:text-zinc-400">
-            Boarding point
-            <select
-              value={fromStopId}
-              onChange={(e) => changeStop("from", e.target.value)}
-              className="field py-2 text-sm"
-            >
-              {boardableStops.map((s) => (
-                <option key={s.route_stop_id} value={s.route_stop_id} disabled={s.seq >= toSeq}>
-                  {s.location_name}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label className="ui flex flex-col gap-1.5 text-xs font-medium text-slate-600 dark:text-zinc-400">
-            Drop-off point
-            <select
-              value={toStopId}
-              onChange={(e) => changeStop("to", e.target.value)}
-              className="field py-2 text-sm"
-            >
-              {droppableStops.map((s) => (
-                <option key={s.route_stop_id} value={s.route_stop_id} disabled={s.seq <= fromSeq}>
-                  {s.location_name}
-                </option>
-              ))}
-            </select>
-          </label>
-        </div>
-      )}
+      {/* sticky summary card — boarding/drop-off, seat total, and continue all in one place */}
+      <div className="sticky bottom-4 mt-6 rounded-2xl border border-slate-200 bg-white/90 p-3 backdrop-blur-md dark:border-zinc-800 dark:bg-zinc-900/90">
+        {stops.length > 0 && (
+          <div className="grid grid-cols-1 gap-3 border-b border-slate-200 pb-3 sm:grid-cols-2 dark:border-zinc-800">
+            <label className="ui flex flex-col gap-1.5 text-xs font-medium text-slate-600 dark:text-zinc-400">
+              Boarding point
+              <div className="relative">
+                <select
+                  value={fromStopId}
+                  onChange={(e) => changeStop("from", e.target.value)}
+                  className="field appearance-none py-2 pr-8 text-sm"
+                >
+                  {boardableStops.map((s) => (
+                    <option key={s.route_stop_id} value={s.route_stop_id} disabled={s.seq >= toSeq}>
+                      {s.location_name}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown
+                  size={14}
+                  className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400"
+                />
+              </div>
+            </label>
+            <label className="ui flex flex-col gap-1.5 text-xs font-medium text-slate-600 dark:text-zinc-400">
+              Drop-off point
+              <div className="relative">
+                <select
+                  value={toStopId}
+                  onChange={(e) => changeStop("to", e.target.value)}
+                  className="field appearance-none py-2 pr-8 text-sm"
+                >
+                  {droppableStops.map((s) => (
+                    <option key={s.route_stop_id} value={s.route_stop_id} disabled={s.seq <= fromSeq}>
+                      {s.location_name}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown
+                  size={14}
+                  className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400"
+                />
+              </div>
+            </label>
+          </div>
+        )}
 
-      {error && (
-        <p className="mt-4 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-950/40 dark:text-red-300">
-          {error}
-        </p>
-      )}
+        {error && (
+          <p className="mt-3 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-950/40 dark:text-red-300">
+            {error}
+          </p>
+        )}
 
-      {/* sticky action bar */}
-      <div className="sticky bottom-4 mt-6 flex items-center justify-between gap-4 rounded-2xl border border-slate-200 bg-white/90 p-3 backdrop-blur-md dark:border-zinc-800 dark:bg-zinc-900/90">
+        <div className="flex items-center justify-between gap-4 pt-3">
         <div className="ui pl-2 text-sm">
           {selected.size > 0 ? (
             <>
@@ -338,6 +351,7 @@ export function SeatSelector(props: Props) {
             </>
           )}
         </button>
+        </div>
       </div>
     </div>
   );
