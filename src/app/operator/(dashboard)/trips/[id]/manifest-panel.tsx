@@ -41,6 +41,7 @@ export function ManifestPanel({ manifest, isPilot }: { manifest: OperatorManifes
               initialSeats={manifest.seats}
               bookings={manifest.bookings}
               stops={manifest.stops}
+              canAssignWalkup={manifest.can_assign_walkup}
               onOpenBooking={setSelectedBookingId}
             />
           </div>

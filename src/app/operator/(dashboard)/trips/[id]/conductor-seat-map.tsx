@@ -23,6 +23,7 @@ interface Props {
   initialSeats: SeatState[];
   bookings: OperatorManifestBooking[];
   stops: OperatorManifestStop[];
+  canAssignWalkup: boolean;
   onOpenBooking: (bookingId: string) => void;
 }
 
@@ -37,7 +38,7 @@ const SEAT_STYLE: Record<string, string> = {
 
 type PanelMode = "menu" | "assign";
 
-export function ConductorSeatMap({ tripId, layout, seatCount, initialSeats, bookings, stops, onOpenBooking }: Props) {
+export function ConductorSeatMap({ tripId, layout, seatCount, initialSeats, bookings, stops, canAssignWalkup, onOpenBooking }: Props) {
   const router = useRouter();
   const supabase = useMemo(() => createClient(), []);
   const grid = useMemo(() => layoutToGrid(layout, seatCount), [layout, seatCount]);
@@ -233,13 +234,15 @@ export function ConductorSeatMap({ tripId, layout, seatCount, initialSeats, book
                         </div>
                       ) : panelMode === "menu" ? (
                         <div className="flex flex-col gap-1.5">
-                          <button
-                            type="button"
-                            onClick={() => setPanelMode("assign")}
-                            className="ui rounded-lg border border-border px-3 py-1.5 text-left text-xs font-medium hover:bg-muted"
-                          >
-                            Assign walk-up passenger
-                          </button>
+                          {canAssignWalkup && (
+                            <button
+                              type="button"
+                              onClick={() => setPanelMode("assign")}
+                              className="ui rounded-lg border border-border px-3 py-1.5 text-left text-xs font-medium hover:bg-muted"
+                            >
+                              Assign walk-up passenger
+                            </button>
+                          )}
                           <button
                             type="button"
                             disabled={busy}

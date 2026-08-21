@@ -414,6 +414,7 @@ export interface OperatorManifest {
   confirmed_count: number;
   revenue: number;
   stops: OperatorManifestStop[];
+  can_assign_walkup: boolean;
 }
 
 export interface AssignSeatResult {
