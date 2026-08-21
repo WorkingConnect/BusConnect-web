@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2, Pause, Play, ShieldAlert, Trash2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
@@ -21,6 +21,13 @@ export function JourneyActions({
   // override; a 403/404/etc means something else is wrong and force
   // wouldn't help.
   const [canOverride, setCanOverride] = useState(false);
+  // Deleting a journey is admin-only now (the backend forbids it outright
+  // for a real owner) — pausing is the safe, always-available action for
+  // everyone else. Read after mount (not during render) so server and
+  // client agree on the first paint and only then reveal the button —
+  // isAdminOperatorContext() is browser-only and would otherwise mismatch.
+  const [isAdmin, setIsAdmin] = useState(false);
+  useEffect(() => setIsAdmin(isAdminOperatorContext()), []);
 
   async function toggle() {
     setError(null);
@@ -79,7 +86,7 @@ export function JourneyActions({
         {status === "active" ? "Pause" : "Resume"}
       </button>
 
-      {!confirming ? (
+      {!isAdmin ? null : !confirming ? (
         <button
           type="button"
           onClick={() => setConfirming(true)}
