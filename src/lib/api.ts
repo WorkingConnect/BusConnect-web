@@ -385,6 +385,7 @@ export interface OperatorManifestBooking {
   passenger_phone: string | null;
   is_walkup: boolean;
   boarded: boolean;
+  boarded_seats: string[];
   from_location: string | null;
   to_location: string | null;
 }
@@ -648,6 +649,20 @@ export function requestTripCancellation(accessToken: string, tripId: string, rea
     body: JSON.stringify({ reason }),
     accessToken,
   });
+}
+
+/** Queues a refund for a passenger who never checked in on an arrived trip —
+ *  conductor, owner, or admin-context, picks the refund %. Only queues (goes
+ *  to the admin Refunds page); never moves money itself. */
+export function requestNoShowRefund(accessToken: string, tripId: string, bookingId: string, refundPct: number) {
+  return request<{ ok: true; refundAmount: number; refundStatus: string }>(
+    `/operator/trips/${tripId}/bookings/${bookingId}/no-show-refund`,
+    {
+      method: 'POST',
+      body: JSON.stringify({ refund_pct: refundPct }),
+      accessToken,
+    },
+  );
 }
 
 /** Withdraws (owner) or rejects (admin-context) a pending cancellation request. */
