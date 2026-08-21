@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { headers } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import { listAdminTrips, ApiError, type AdminTrip } from "@/lib/api";
 import { TimetableList } from "./timetable-list";
@@ -39,19 +38,6 @@ export default async function AdminTimetablePage() {
     );
   }
 
-  // Tapping a trip opens it in the operator's own trip-detail workspace
-  // (seat map, walk-up assign, cancel — the exact same page/access an
-  // operator owner gets), entered in admin-context for that trip's
-  // operator via admin-enter. See the comment on operators/[id]/page.tsx's
-  // goToOperatorHref for why this needs an absolute, host-aware URL rather
-  // than a plain relative link.
-  const host = (await headers()).get("host") ?? "";
-  const isAdminSubdomain = host.startsWith("admin.");
-  const protocol = host.includes("localhost") ? "http" : "https";
-  const targetHost = isAdminSubdomain ? host.replace(/^admin\./, "operator.") : host;
-  const targetPath = isAdminSubdomain ? "/admin-enter" : "/operator/admin-enter";
-  const goToOperatorBase = `${protocol}://${targetHost}${targetPath}`;
-
   return (
     <div>
       <div className="flex items-center justify-between gap-4">
@@ -67,7 +53,7 @@ export default async function AdminTimetablePage() {
         </div>
       </div>
 
-      <TimetableList trips={trips} goToOperatorBase={goToOperatorBase} />
+      <TimetableList trips={trips} />
     </div>
   );
 }

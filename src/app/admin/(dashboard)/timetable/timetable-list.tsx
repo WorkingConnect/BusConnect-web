@@ -25,7 +25,7 @@ function colomboTime(iso: string) {
   return new Date(iso).toLocaleTimeString("en-LK", { timeZone: "Asia/Colombo", hour: "2-digit", minute: "2-digit" });
 }
 
-export function TimetableList({ trips, goToOperatorBase }: { trips: AdminTrip[]; goToOperatorBase: string }) {
+export function TimetableList({ trips }: { trips: AdminTrip[] }) {
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState<string>("all");
 
@@ -104,7 +104,7 @@ export function TimetableList({ trips, goToOperatorBase }: { trips: AdminTrip[];
               <div className="flex flex-col gap-2">
                 {dayTrips.map((t) => {
                   const operatorId = t.bus?.operator?.id;
-                  const href = operatorId ? `${goToOperatorBase}?operatorId=${operatorId}&tripId=${t.id}` : null;
+                  const href = operatorId ? `/admin/trip-enter?operatorId=${operatorId}&tripId=${t.id}` : null;
                   const row = (
                     <div className="min-w-0 flex-1">
                       <div className="flex flex-wrap items-center gap-2">
@@ -129,13 +129,7 @@ export function TimetableList({ trips, goToOperatorBase }: { trips: AdminTrip[];
                     </div>
                   );
                   return href ? (
-                    <a
-                      key={t.id}
-                      href={href}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="card card-hover flex items-center justify-between gap-3 p-4"
-                    >
+                    <a key={t.id} href={href} className="card card-hover flex items-center justify-between gap-3 p-4">
                       {row}
                       <span className="shrink-0 font-heading font-bold text-brand dark:text-blue-400">
                         {colomboTime(t.depart_at)}
