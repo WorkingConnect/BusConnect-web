@@ -34,6 +34,12 @@ export function ScheduleForm({ journeys }: { journeys: OperatorJourney[] }) {
 
   function addDate() {
     if (!dateInput) return;
+    // Clear feedback from a previous submit — otherwise a stale "0
+    // scheduled · N already on the calendar" banner lingers on screen while
+    // the operator is clearly setting up a new attempt, reading as if it
+    // describes what they're about to do rather than what already happened.
+    setNotice(null);
+    setError(null);
     setDates((prev) => (prev.includes(dateInput) ? prev : [...prev, dateInput].sort()));
   }
   function removeDate(d: string) {
@@ -97,7 +103,11 @@ export function ScheduleForm({ journeys }: { journeys: OperatorJourney[] }) {
           <div className="relative">
             <select
               value={journeyId}
-              onChange={(e) => setJourneyId(e.target.value)}
+              onChange={(e) => {
+                setJourneyId(e.target.value);
+                setNotice(null);
+                setError(null);
+              }}
               className="field appearance-none pr-9 text-sm"
             >
               <option value="" disabled>
