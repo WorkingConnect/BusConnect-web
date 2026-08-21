@@ -51,7 +51,8 @@ export default async function AdminRefundsPage() {
     <div>
       <h1 className="font-heading text-2xl font-bold tracking-tight">Refunds</h1>
       <p className="ui mt-1 text-sm text-slate-600 dark:text-zinc-400">
-        Cancellations without a configured payment gateway fall back to manual processing here.
+        Card payments are refunded through MPGS and wallet payments are credited back automatically.
+        Anything without a paid payment on record falls back to manual processing.
       </p>
 
       <h2 className="mt-6 font-heading text-lg font-semibold">
@@ -74,7 +75,7 @@ export default async function AdminRefundsPage() {
                 </p>
                 <p className="ui mt-0.5 text-xs text-slate-500 dark:text-zinc-500">{r.reason}</p>
               </div>
-              <ProcessButton refundId={r.id} />
+              <ProcessButton refundId={r.id} refundMethod={r.refund_method} />
             </div>
           ))}
         </div>

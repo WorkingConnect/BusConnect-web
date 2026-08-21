@@ -1013,6 +1013,10 @@ export interface AdminRefund {
     seats: string[];
     trip: { bus: { operator: { name: string } | null } | null } | null;
   };
+  /** How "Process" will actually move money: 'mpgs' (real gateway refund),
+   *  'wallet' (credited back to the passenger's balance), or null (no paid
+   *  payment on record — falls back to marking it processed manually). */
+  refund_method: 'mpgs' | 'wallet' | string | null;
 }
 
 export interface AdminAnalytics {
