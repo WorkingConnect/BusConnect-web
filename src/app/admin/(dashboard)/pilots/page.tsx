@@ -64,7 +64,8 @@ export default async function AdminPilotsPage() {
     <div>
       <h1 className="font-heading text-2xl font-bold tracking-tight">Pilots</h1>
       <p className="ui mt-1 text-sm text-slate-600 dark:text-zinc-400">
-        Drivers and conductors operators have registered — pending approvals surface to the top.
+        Every driver and conductor operators have registered — active immediately, no approval needed. Reject one
+        here if it needs to be deactivated.
       </p>
 
       <PilotList pilots={pilotsWithPhoto} />

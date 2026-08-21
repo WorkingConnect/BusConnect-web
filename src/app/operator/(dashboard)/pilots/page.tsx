@@ -89,8 +89,7 @@ export default async function OperatorPilotsPage() {
         <div>
           <h1 className="font-heading text-2xl font-bold tracking-tight">Pilots</h1>
           <p className="ui mt-1 text-sm text-slate-600 dark:text-zinc-400">
-            Drivers and conductors registered to your fleet. New registrations stay pending until
-            BusConnect approves them.
+            Drivers and conductors registered to your fleet — active immediately, no approval needed.
           </p>
         </div>
         <Link href="/operator/pilots/register" className="btn-primary shrink-0">
