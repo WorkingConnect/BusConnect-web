@@ -24,6 +24,7 @@ export default async function Home({ params }: { params: Promise<{ lang: string 
   return (
     <>
       <Hero locations={locations} dict={dict} />
+      <AppPromo dict={dict} />
       <PopularRoutes routes={popularRoutes} dict={dict} locale={locale} />
       <HowItWorks />
       <OperatorCta dict={dict} />
@@ -96,6 +97,66 @@ function Hero({
             <p className="ui mt-3 text-center text-sm text-slate-500 dark:text-zinc-500">{dict.home.searchEmpty}</p>
           )}
         </div>
+      </div>
+    </section>
+  );
+}
+
+/* ── App download promo ────────────────────────────────────────────────── */
+// TODO: swap for the real App Store URL once BusConnect is published (Apple
+// only allocates an id after the app is created in App Store Connect).
+const IOS_APP_STORE_URL = "#";
+const ANDROID_PLAY_STORE_URL = "https://play.google.com/store/apps/details?id=lk.busconnect.app";
+
+function AppPromo({ dict }: { dict: Dictionary }) {
+  return (
+    <section className="mx-auto w-full max-w-7xl px-4 pt-2 sm:px-6 lg:px-8">
+      <div className="relative rounded-3xl bg-brand-soft/70 p-6 dark:bg-brand-soft-dark/30 sm:p-8">
+        <div className="flex flex-col items-center gap-6 text-center sm:flex-row sm:gap-8 sm:text-left lg:pr-36">
+          <div className="flex flex-col items-center gap-4 text-center sm:flex-row sm:text-left">
+            <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-2xl shadow-lg shadow-black/10 sm:h-20 sm:w-20">
+              <Image src="/app-icon.png" alt="" fill sizes="80px" className="object-cover" />
+            </div>
+            <div>
+              <h3 className="font-heading text-xl font-bold tracking-tight sm:text-2xl">
+                {dict.home.appPromoTitle}
+              </h3>
+              <p className="mt-1.5 max-w-md text-sm text-slate-600 dark:text-zinc-400 sm:text-base">
+                {dict.home.appPromoBody}
+              </p>
+            </div>
+          </div>
+
+          <div className="relative z-10 flex shrink-0 items-center gap-3">
+            <a
+              href={IOS_APP_STORE_URL}
+              target="_blank"
+              rel="noreferrer"
+              className="relative h-11 w-[124px] transition-opacity hover:opacity-80"
+            >
+              <Image src="/app-store.png" alt={dict.home.appStoreAlt} fill sizes="124px" className="object-contain" />
+            </a>
+            <a
+              href={ANDROID_PLAY_STORE_URL}
+              target="_blank"
+              rel="noreferrer"
+              className="relative h-11 w-[124px] transition-opacity hover:opacity-80"
+            >
+              <Image src="/google-play.png" alt={dict.home.playStoreAlt} fill sizes="124px" className="object-contain" />
+            </a>
+          </div>
+        </div>
+
+        {/* Anchored to the card's bottom but taller than it — deliberately
+            not clipped, so he stands "over" the card's top edge rather than
+            stretching the card to fit him. */}
+        <Image
+          src="/man.png"
+          alt=""
+          width={356}
+          height={540}
+          className="pointer-events-none absolute bottom-0 right-4 hidden h-40 w-auto object-contain object-bottom lg:block lg:right-8 lg:h-56"
+        />
       </div>
     </section>
   );

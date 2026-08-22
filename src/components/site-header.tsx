@@ -29,7 +29,7 @@ export function SiteHeader() {
     <>
       <header className="relative z-50 sm:sticky sm:top-0">
         {/* Top bar — utility */}
-        <div className="bg-transparent transition-colors duration-300">
+        <div className="bg-transparent transition-colors duration-300 sm:border-b sm:border-border sm:bg-card/80 sm:backdrop-blur-md">
           <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
             <Logo href={localizePath(locale, "/")} height={44} />
 
