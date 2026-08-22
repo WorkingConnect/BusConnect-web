@@ -109,7 +109,7 @@ export default async function OperatorManifestPage({
             <div>
               <p className="ui text-xs uppercase tracking-wide text-slate-500 dark:text-zinc-500">Revenue</p>
               <p className="font-heading text-xl font-bold text-brand dark:text-blue-400">
-                LKR {Number(manifest.revenue).toLocaleString("en-LK")}
+                LKR {Number(manifest.operator_net_revenue).toLocaleString("en-LK")}
               </p>
             </div>
           </div>

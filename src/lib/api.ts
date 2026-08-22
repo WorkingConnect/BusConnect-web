@@ -420,6 +420,7 @@ export interface OperatorManifest {
   boarded_count: number;
   confirmed_count: number;
   revenue: number;
+  operator_net_revenue: number;
   stops: OperatorManifestStop[];
   can_assign_walkup: boolean;
 }
