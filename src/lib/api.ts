@@ -1076,12 +1076,15 @@ export interface AdminRefund {
   reason: string;
   status: string;
   processed_at: string | null;
+  /** Null for a wallet-cashout-on-account-deletion refund — there's no
+   *  booking to attach to, see passenger_id instead. */
   booking: {
     id: string;
     amount: number;
     seats: string[];
     trip: { bus: { operator: { name: string } | null } | null } | null;
-  };
+  } | null;
+  passenger_id: string | null;
   /** How "Process" will actually move money: 'mpgs' (real gateway refund),
    *  'wallet' (credited back to the passenger's balance), or null (no paid
    *  payment on record — falls back to marking it processed manually). */

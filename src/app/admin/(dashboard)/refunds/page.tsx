@@ -71,7 +71,7 @@ export default async function AdminRefundsPage() {
                 <p className="font-medium">
                   LKR {Number(r.amount).toLocaleString("en-LK")}{" "}
                   <span className="ui font-normal text-slate-500 dark:text-zinc-400">
-                    · {r.booking.trip?.bus?.operator?.name ?? "—"}
+                    · {r.booking ? (r.booking.trip?.bus?.operator?.name ?? "—") : "Account deletion"}
                   </span>
                 </p>
                 <p className="ui mt-0.5 text-xs text-slate-500 dark:text-zinc-500">{r.reason}</p>
