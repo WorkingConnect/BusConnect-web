@@ -889,13 +889,44 @@ export function deleteMyAccount(accessToken: string) {
   return request<{ ok: boolean }>('/me/account', { method: 'DELETE', accessToken });
 }
 
-export function validateTicket(accessToken: string, token: string) {
-  return request<
-    | { ok: true; status: 'accepted'; ticketId: string }
-    | { ok: false; reason: 'already_used' | 'void' | 'not_found' }
-  >('/tickets/validate', {
+export type PreviewTicketResult =
+  | {
+      ok: true;
+      ticketId: string;
+      bookingId: string;
+      tripId: string;
+      status: string;
+      seats: string[];
+      boardedSeats: string[];
+      passengerName: string | null;
+      routeName: string | null;
+      busRegNo: string | null;
+      busType: string | null;
+      boardingStopName: string | null;
+      dropStopName: string | null;
+      bookingCode: string;
+    }
+  | { ok: false; reason: 'void' | 'not_found' | 'invalid_signature' };
+
+export type BoardTicketResult =
+  | { ok: true; status: string; boardedSeats: string[] }
+  | { ok: false; reason: 'void' | 'not_found' | 'invalid_seats' | 'invalid_signature' };
+
+/** Read-only — safe to call repeatedly, including on an already-boarded ticket. */
+export function previewTicket(accessToken: string, token: string) {
+  return request<PreviewTicketResult>('/tickets/preview', {
     method: 'POST',
     body: JSON.stringify({ token }),
+    accessToken,
+  });
+}
+
+/** Merges `seats` into the ticket's already-boarded set (idempotent re-board);
+ *  status only flips to 'used' once every seat on it has boarded. */
+export function boardTicket(accessToken: string, token: string, seats: string[]) {
+  return request<BoardTicketResult>('/tickets/board', {
+    method: 'POST',
+    body: JSON.stringify({ token, seats }),
     accessToken,
   });
 }
