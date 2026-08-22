@@ -22,7 +22,7 @@
   "home": {
     "heroTitlePrefix": "Every Journey,",
     "heroTitleAccent": "Connected.",
-    "heroSubtitle": "Search live seat availability, compare operators and fares, book securely, and receive an instant QR e-ticket for your journey across Sri Lanka.",
+    "heroSubtitle": "Search live seats, compare fares, book securely, and get an instant QR e-ticket across Sri Lanka.",
     "searchEmpty": "No routes seeded yet — add locations in Supabase to enable search.",
     "popularRoutesTitle": "Popular bus routes across Sri Lanka",
     "noRoutes": "No routes published yet",

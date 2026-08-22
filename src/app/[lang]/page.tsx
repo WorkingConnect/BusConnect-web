@@ -115,7 +115,7 @@ function Features() {
   return (
     <section className="mx-auto w-full max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
       <SectionHeading title="Why BusConnect" centered />
-      <div className="mt-9 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="mt-9 grid grid-cols-2 gap-3 lg:grid-cols-3">
         {features.map(([Icon, title, body]) => (
           <div key={title} className="card card-hover p-4">
             <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-brand-soft text-brand dark:bg-brand-soft-dark dark:text-blue-300 sm:h-9 sm:w-9">

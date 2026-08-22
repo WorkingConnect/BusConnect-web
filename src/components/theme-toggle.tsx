@@ -36,7 +36,7 @@ export function ThemeToggle({ className = "" }: { className?: string }) {
       type="button"
       onClick={toggle}
       aria-label="Toggle theme"
-      className={`ui inline-flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 text-slate-600 transition-colors duration-300 hover:bg-slate-50 dark:border-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-900 ${className}`}
+      className={`ui inline-flex h-9 w-9 items-center justify-center rounded-xl text-slate-600 transition-colors duration-300 hover:bg-transparent sm:border sm:border-slate-200 sm:hover:bg-slate-50 dark:text-zinc-400 dark:sm:border-zinc-800 dark:sm:hover:bg-zinc-900 ${className}`}
     >
       {mounted && dark ? <Sun size={17} /> : <Moon size={17} />}
     </button>

@@ -29,9 +29,9 @@ export function SiteHeader() {
     <>
       <header className="sticky top-0 z-50">
         {/* Top bar — utility */}
-        <div className="border-b border-border bg-card/80 backdrop-blur-md transition-colors duration-300">
+        <div className="border-b-0 bg-transparent transition-colors duration-300 sm:border-b sm:border-border sm:bg-card/80 sm:backdrop-blur-md">
           <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
-            <Logo href={localizePath(locale, "/")} />
+            <Logo href={localizePath(locale, "/")} height={44} />
 
             <div className="ui flex items-center gap-3 text-sm">
               <LanguageSwitcher />
@@ -39,14 +39,6 @@ export function SiteHeader() {
               <span className="hidden sm:inline-flex">
                 <UserMenu />
               </span>
-              <button
-                type="button"
-                onClick={() => setOpen(true)}
-                aria-label={t("menu")}
-                className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-border text-muted-foreground lg:hidden"
-              >
-                <Menu size={18} />
-              </button>
             </div>
           </div>
         </div>
@@ -93,7 +85,7 @@ function MobileBottomNav({ onOpenMenu }: { onOpenMenu: () => void }) {
 
   return (
     <nav
-      className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-card/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-md lg:hidden"
+      className="fixed inset-x-0 bottom-0 z-40 rounded-t-3xl bg-card/95 pb-[env(safe-area-inset-bottom)] shadow-[0_-2px_12px_rgba(0,0,0,0.12)] backdrop-blur-md lg:hidden"
       aria-label="Primary"
     >
       <div className="grid grid-cols-4">
