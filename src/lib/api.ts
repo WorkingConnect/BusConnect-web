@@ -1085,6 +1085,12 @@ export interface AdminRefund {
     trip: { bus: { operator: { name: string } | null } | null } | null;
   } | null;
   passenger_id: string | null;
+  /** Captured at deletion time, before the passenger row is anonymized —
+   *  the only way to tell whose wallet-cashout refund this is. Null for a
+   *  normal booking refund (look at booking.trip.bus.operator instead). */
+  contact_name: string | null;
+  contact_email: string | null;
+  contact_phone: string | null;
   /** How "Process" will actually move money: 'mpgs' (real gateway refund),
    *  'wallet' (credited back to the passenger's balance), or null (no paid
    *  payment on record — falls back to marking it processed manually). */

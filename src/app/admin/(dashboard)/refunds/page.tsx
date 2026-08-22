@@ -10,6 +10,14 @@ const STATUS_STYLE: Record<string, string> = {
   not_eligible: "bg-slate-100 text-slate-600 dark:bg-zinc-800 dark:text-zinc-400",
 };
 
+/** For a wallet-cashout-on-account-deletion refund, the passenger row is
+ *  already anonymized by the time admin sees this — contact_name/email/phone
+ *  (captured at deletion time) are the only way left to tell whose it was. */
+function deletedAccountLabel(r: AdminRefund): string {
+  const parts = [r.contact_name, r.contact_email, r.contact_phone].filter(Boolean);
+  return parts.length > 0 ? parts.join(" · ") : "Account deletion";
+}
+
 export default async function AdminRefundsPage() {
   const supabase = await createClient();
   const {
@@ -71,7 +79,7 @@ export default async function AdminRefundsPage() {
                 <p className="font-medium">
                   LKR {Number(r.amount).toLocaleString("en-LK")}{" "}
                   <span className="ui font-normal text-slate-500 dark:text-zinc-400">
-                    · {r.booking ? (r.booking.trip?.bus?.operator?.name ?? "—") : "Account deletion"}
+                    · {r.booking ? (r.booking.trip?.bus?.operator?.name ?? "—") : deletedAccountLabel(r)}
                   </span>
                 </p>
                 <p className="ui mt-0.5 text-xs text-slate-500 dark:text-zinc-500">{r.reason}</p>
@@ -89,7 +97,12 @@ export default async function AdminRefundsPage() {
             {others.map((r) => (
               <div key={r.id} className="card flex items-center justify-between gap-3 p-4">
                 <div>
-                  <p className="font-medium">LKR {Number(r.amount).toLocaleString("en-LK")}</p>
+                  <p className="font-medium">
+                    LKR {Number(r.amount).toLocaleString("en-LK")}{" "}
+                    <span className="ui font-normal text-slate-500 dark:text-zinc-400">
+                      · {r.booking ? (r.booking.trip?.bus?.operator?.name ?? "—") : deletedAccountLabel(r)}
+                    </span>
+                  </p>
                   <p className="ui mt-0.5 text-xs text-slate-500 dark:text-zinc-500">{r.reason}</p>
                 </div>
                 <div className="flex shrink-0 items-center gap-2">
