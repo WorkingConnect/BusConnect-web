@@ -34,7 +34,11 @@
     "whyTitle": "Why BusConnect",
     "operatorCtaTitle": "Run a bus fleet? Fill more seats.",
     "operatorCtaBody": "List your buses on BusConnect and get a live manifest, dynamic pricing and revenue analytics - reach passengers across the country.",
-    "operatorCtaButton": "Operator dashboard"
+    "operatorCtaButton": "Operator dashboard",
+    "appPromoTitle": "There's more in the app.",
+    "appPromoBody": "Pay instantly from your wallet, track your bus live on the map, and get a push alert the moment it's near your stop.",
+    "appStoreAlt": "Download on the App Store",
+    "playStoreAlt": "Get it on Google Play"
   },
   "footer": {
     "brandBlurb": "BusConnect is Sri Lanka's smartest online bus booking platform, making intercity travel simple with live seat availability, operator and fare comparisons, secure online booking, and instant QR e-tickets.",
