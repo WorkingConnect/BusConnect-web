@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getOperatorManifest, ApiError, type OperatorManifest } from "@/lib/api";
 import { ManifestPanel } from "@/app/operator/(dashboard)/trips/[id]/manifest-panel";
 import { CancelTripButton } from "./cancel-trip-button";
+import { PayoutActions } from "./payout-actions";
 
 function dateTime(iso: string) {
   return new Date(iso).toLocaleString("en-LK", {
@@ -93,6 +94,7 @@ export default async function AdminTripPage({ params }: { params: Promise<{ id: 
             cancellationReason={manifest.cancellation_reason}
           />
         )}
+        {(manifest.status === "arrived" || manifest.status === "cancelled") && <PayoutActions tripId={id} />}
       </div>
 
       {/* stat tiles */}

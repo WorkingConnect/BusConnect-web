@@ -7,9 +7,12 @@ import type { AdminTrip } from "@/lib/api";
 const STATUS_STYLE: Record<string, string> = {
   scheduled: "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300",
   boarding: "bg-blue-100 text-blue-700 dark:bg-blue-950/50 dark:text-blue-300",
-  departed: "bg-slate-100 text-slate-600 dark:bg-zinc-800 dark:text-zinc-400",
+  departed: "bg-indigo-100 text-indigo-700 dark:bg-indigo-950/50 dark:text-indigo-300",
+  arrived: "bg-teal-100 text-teal-700 dark:bg-teal-950/50 dark:text-teal-300",
   cancelled: "bg-red-100 text-red-700 dark:bg-red-950/50 dark:text-red-300",
 };
+
+type Section = "upcoming" | "completed" | "cancelled";
 
 function colomboDateKey(iso: string) {
   return new Date(iso).toLocaleDateString("en-CA", { timeZone: "Asia/Colombo" });
@@ -26,17 +29,31 @@ function colomboTime(iso: string) {
 }
 
 export function TimetableList({ trips }: { trips: AdminTrip[] }) {
+  const [section, setSection] = useState<Section>("upcoming");
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState<string>("all");
 
-  const statuses = useMemo(() => {
-    const seen = new Set(trips.map((t) => t.status));
-    return ["all", ...Array.from(seen)];
+  // Mutually exclusive across the whole trip_status enum: a trip is either
+  // still on its way (upcoming), done (completed/arrived), or cancelled —
+  // never more than one of these sections at once, and once it moves to
+  // Completed/Cancelled it's out of Upcoming for good.
+  const sections = useMemo(() => {
+    const upcoming = trips.filter((t) => t.status === "scheduled" || t.status === "boarding" || t.status === "departed");
+    const completed = trips.filter((t) => t.status === "arrived");
+    const cancelled = trips.filter((t) => t.status === "cancelled");
+    return { upcoming, completed, cancelled };
   }, [trips]);
+
+  const activeTrips = sections[section];
+
+  const statuses = useMemo(() => {
+    const seen = new Set(activeTrips.map((t) => t.status));
+    return ["all", ...Array.from(seen)];
+  }, [activeTrips]);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    return trips.filter((t) => {
+    return activeTrips.filter((t) => {
       if (status !== "all" && t.status !== status) return false;
       if (!q) return true;
       return (
@@ -45,7 +62,7 @@ export function TimetableList({ trips }: { trips: AdminTrip[] }) {
         (t.bus?.reg_no.toLowerCase().includes(q) ?? false)
       );
     });
-  }, [trips, query, status]);
+  }, [activeTrips, query, status]);
 
   const byDate = useMemo(() => {
     const map = new Map<string, AdminTrip[]>();
@@ -58,9 +75,35 @@ export function TimetableList({ trips }: { trips: AdminTrip[] }) {
     return map;
   }, [filtered]);
 
+  const tabs: { id: Section; label: string }[] = [
+    { id: "upcoming", label: "Upcoming" },
+    { id: "completed", label: "Completed" },
+    { id: "cancelled", label: "Cancelled" },
+  ];
+
   return (
     <div>
-      <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
+      <div className="ui mt-6 flex flex-wrap gap-1 rounded-xl bg-slate-100 p-1 dark:bg-zinc-800">
+        {tabs.map((t) => (
+          <button
+            key={t.id}
+            type="button"
+            onClick={() => {
+              setSection(t.id);
+              setStatus("all");
+            }}
+            className={`rounded-lg px-3 py-1.5 text-sm font-semibold transition-colors ${
+              section === t.id
+                ? "bg-white text-slate-900 shadow-sm dark:bg-zinc-950 dark:text-white"
+                : "text-slate-500 hover:text-slate-700 dark:text-zinc-400 dark:hover:text-zinc-200"
+            }`}
+          >
+            {t.label} <span className="font-normal text-slate-400 dark:text-zinc-500">({sections[t.id].length})</span>
+          </button>
+        ))}
+      </div>
+
+      <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center">
         <div className="relative flex-1">
           <Search
             size={16}
@@ -73,23 +116,25 @@ export function TimetableList({ trips }: { trips: AdminTrip[] }) {
             className="field pl-9 text-sm focus:ring-0"
           />
         </div>
-        <select
-          value={status}
-          onChange={(e) => setStatus(e.target.value)}
-          className="field w-full text-sm capitalize focus:ring-0 sm:w-40"
-        >
-          {statuses.map((s) => (
-            <option key={s} value={s} className="capitalize">
-              {s === "all" ? "All statuses" : s}
-            </option>
-          ))}
-        </select>
+        {statuses.length > 2 && (
+          <select
+            value={status}
+            onChange={(e) => setStatus(e.target.value)}
+            className="field w-full text-sm capitalize focus:ring-0 sm:w-40"
+          >
+            {statuses.map((s) => (
+              <option key={s} value={s} className="capitalize">
+                {s === "all" ? "All statuses" : s}
+              </option>
+            ))}
+          </select>
+        )}
       </div>
 
       {byDate.size === 0 ? (
         <div className="card mt-6 p-10 text-center text-sm text-slate-500 dark:text-zinc-400">
           <CalendarRange size={28} className="mx-auto mb-3 text-slate-300 dark:text-zinc-700" />
-          {trips.length === 0 ? "No upcoming trips scheduled by any operator yet." : `No trips match "${query}".`}
+          {activeTrips.length === 0 ? `No ${section} trips.` : `No trips match "${query}".`}
         </div>
       ) : (
         <div className="mt-6 flex flex-col gap-6">

@@ -1,6 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { HandCoins, Loader2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { listAdminPayouts, ApiError, type AdminPayoutRow } from "@/lib/api";
@@ -18,6 +19,7 @@ function dateTime(iso: string) {
 type Bucket = "ready" | "locked" | "paid";
 
 export default function AdminPayoutsPage() {
+  const searchParams = useSearchParams();
   const [token, setToken] = useState<string | null>(null);
   const [rows, setRows] = useState<AdminPayoutRow[]>([]);
   const [loading, setLoading] = useState(true);
@@ -25,6 +27,10 @@ export default function AdminPayoutsPage() {
   const [settleTrip, setSettleTrip] = useState<AdminPayoutRow | null>(null);
   const [viewTripId, setViewTripId] = useState<string | null>(null);
   const [selected, setSelected] = useState<Bucket>("ready");
+  // Deep-linked from a trip's own detail page (Timetable's Completed
+  // section) via ?tripId= — auto-opens Settle once that trip's row has
+  // loaded, instead of making the admin hunt for it in the list.
+  const deepLinkTripId = searchParams.get("tripId");
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -53,6 +59,20 @@ export default function AdminPayoutsPage() {
   useEffect(() => {
     void load();
   }, [load]);
+
+  // Only ever auto-open once — otherwise closing the modal without settling
+  // (or settling it) would reopen it the moment anything else reloads
+  // `rows` while ?tripId= is still sitting in the URL.
+  const deepLinkHandled = useRef(false);
+  useEffect(() => {
+    if (deepLinkHandled.current || !deepLinkTripId || rows.length === 0) return;
+    const row = rows.find((r) => r.id === deepLinkTripId);
+    if (row?.settleable) {
+      deepLinkHandled.current = true;
+      setSettleTrip(row);
+      setSelected("ready");
+    }
+  }, [rows, deepLinkTripId]);
 
   if (loading) {
     return (
