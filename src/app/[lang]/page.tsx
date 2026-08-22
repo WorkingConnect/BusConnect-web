@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import {
   Armchair,
   ShieldCheck,
@@ -14,7 +15,6 @@ import { SectionHeading } from "@/components/ui";
 import { getDictionary, type Dictionary } from "@/lib/i18n/dictionaries";
 import { isLocale, defaultLocale, type Locale } from "@/lib/i18n/config";
 import { localizePath } from "@/lib/i18n/navigation";
-import { HeroVideo } from "./hero-video";
 
 export default async function Home({ params }: { params: Promise<{ lang: string }> }) {
   const { lang } = await params;
@@ -24,7 +24,6 @@ export default async function Home({ params }: { params: Promise<{ lang: string 
   return (
     <>
       <Hero locations={locations} dict={dict} />
-      <Stats />
       <PopularRoutes routes={popularRoutes} dict={dict} locale={locale} />
       <HowItWorks />
       <OperatorCta dict={dict} />
@@ -42,61 +41,61 @@ function Hero({
   dict: Dictionary;
 }) {
   return (
-    <section className="relative flex min-h-[100dvh] items-start overflow-hidden sm:min-h-screen sm:items-center">
-      {/* Full-screen background video, swapped per theme + breakpoint. Only
-          one <video> is ever mounted (picked in JS) so the browser fetches a
-          single ~5-30MB clip instead of all four candidates at once. */}
-      <HeroVideo />
-      {/* Scrim so heading/search text stays readable over the moving footage,
-          fading into the page background at the bottom edge. */}
-      <div className="absolute inset-0 bg-white/10 dark:bg-black/25" />
-      <div className="absolute inset-x-0 bottom-0 h-56 bg-gradient-to-b from-transparent to-white dark:h-32 dark:to-background" />
+    <section className="relative overflow-hidden">
+      <div className="absolute inset-0 -z-10 bg-gradient-to-b from-brand-soft/50 via-transparent to-transparent dark:from-brand-soft-dark/25" />
 
-      <div className="relative mx-auto w-full max-w-7xl px-4 pb-10 pt-8 sm:px-6 sm:pt-20 lg:px-8">
-        <div className="mx-auto max-w-3xl text-center">
-          <h1 className="mt-2 font-heading text-4xl font-bold leading-[1.08] tracking-tight text-white sm:mt-5 sm:text-6xl sm:text-foreground">
-            {dict.home.heroTitlePrefix}{" "}
-            <span className="text-blue-400 sm:text-brand sm:dark:text-blue-400">{dict.home.heroTitleAccent}</span>
-          </h1>
-          <p className="mx-auto mt-3 max-w-xl text-sm font-normal text-zinc-300 sm:mt-4 sm:text-lg sm:font-medium sm:text-slate-800 sm:dark:font-normal sm:dark:text-zinc-400">
-            {dict.home.heroSubtitle}
-          </p>
-        </div>
-
-        <div className="mx-auto mt-10 max-w-4xl rounded-lg border border-white/30 p-3 sm:mt-9 sm:border-border sm:bg-card/40 sm:p-6 sm:shadow-sm sm:shadow-black/[0.04] sm:backdrop-blur-md sm:transition-colors sm:duration-300 sm:dark:shadow-none">
-          <SearchForm locations={locations} />
-          {locations.length === 0 && (
-            <p className="ui mt-3 text-center text-sm text-zinc-500 sm:text-slate-500 sm:dark:text-zinc-500">
-              {dict.home.searchEmpty}
+      <div className="mx-auto w-full max-w-7xl px-4 pb-14 pt-8 sm:px-6 sm:pb-16 sm:pt-10 lg:px-8 lg:pb-20 lg:pt-12">
+        <div className="grid gap-8 lg:grid-cols-2 lg:items-center lg:gap-14">
+          <div>
+            <h1 className="font-heading text-4xl font-bold leading-[1.08] tracking-tight sm:text-5xl lg:text-6xl">
+              {dict.home.heroTitlePrefix}{" "}
+              <span className="text-brand dark:text-blue-400">{dict.home.heroTitleAccent}</span>
+            </h1>
+            <p className="mt-4 max-w-xl text-base text-slate-600 dark:text-zinc-400 sm:text-lg">
+              {dict.home.heroSubtitle}
             </p>
-          )}
-        </div>
-      </div>
-    </section>
-  );
-}
+          </div>
 
-/* ── Trust stats ───────────────────────────────────────────────────────── */
-function Stats() {
-  const stats = [
-    ["50+", "Routes"],
-    ["3", "Languages"],
-    ["24/7", "Support"],
-    ["100%", "Secure"],
-  ];
-  return (
-    <section className="mx-auto w-full max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        {stats.map(([value, label]) => (
-          <div key={label} className="card px-4 py-5 text-center">
-            <div className="font-heading text-2xl font-bold text-brand dark:text-blue-400 sm:text-3xl">
-              {value}
+          <div className="relative hidden lg:block">
+            <div className="relative aspect-[4/3] w-full">
+              <Image
+                src="/hero-image.png"
+                alt="Passengers boarding a BusConnect bus"
+                fill
+                sizes="(min-width: 1024px) 40vw, 0px"
+                className="object-contain"
+                priority
+              />
             </div>
-            <div className="ui mt-1 text-xs uppercase tracking-wide text-slate-500 dark:text-zinc-500">
-              {label}
+
+            <div className="absolute -left-6 top-10 flex items-center gap-2.5 rounded-2xl bg-card px-4 py-3 shadow-xl shadow-black/10 dark:shadow-black/40">
+              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand-soft text-brand dark:bg-brand-soft-dark dark:text-blue-300">
+                <Ticket size={17} />
+              </span>
+              <div>
+                <p className="font-heading text-sm font-bold leading-none">Instant QR ticket</p>
+                <p className="ui mt-0.5 text-xs text-slate-500 dark:text-zinc-500">Scan & board</p>
+              </div>
+            </div>
+
+            <div className="absolute -right-4 bottom-4 flex items-center gap-2.5 rounded-2xl bg-card px-4 py-3 shadow-xl shadow-black/10 dark:shadow-black/40">
+              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand-soft text-brand dark:bg-brand-soft-dark dark:text-blue-300">
+                <Armchair size={17} />
+              </span>
+              <div>
+                <p className="font-heading text-sm font-bold leading-none">Live seat maps</p>
+                <p className="ui mt-0.5 text-xs text-slate-500 dark:text-zinc-500">Pick your exact seat</p>
+              </div>
             </div>
           </div>
-        ))}
+        </div>
+
+        <div className="mt-6 rounded-2xl border border-border bg-card p-4 shadow-xl shadow-black/10 sm:p-6 dark:shadow-black/40">
+          <SearchForm locations={locations} />
+          {locations.length === 0 && (
+            <p className="ui mt-3 text-center text-sm text-slate-500 dark:text-zinc-500">{dict.home.searchEmpty}</p>
+          )}
+        </div>
       </div>
     </section>
   );

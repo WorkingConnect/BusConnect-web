@@ -79,17 +79,6 @@
 }
 
 @layer components {
-  /* Hero background video — purely decorative and always looping; some
-     browsers (notably Safari) add their own play/cast overlay chrome on tap
-     regardless of the `controls` attribute, so strip it explicitly. */
-  .hero-video::-webkit-media-controls,
-  .hero-video::-webkit-media-controls-panel,
-  .hero-video::-webkit-media-controls-start-playback-button,
-  .hero-video::-webkit-media-controls-overlay-play-button {
-    display: none !important;
-    -webkit-appearance: none;
-  }
-
   /* Primary CTA — cobalt with soft colored shadow */
   .btn-primary {
     font-family: var(--font-inter), var(--font-sinhala), var(--font-tamil), sans-serif;

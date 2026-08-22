@@ -152,12 +152,26 @@ function TripCard({ trip }: { trip: TripSearchResult }) {
   );
 }
 
+const BUS_CLASS_LABELS: Record<string, string> = {
+  super_luxury: "Super Luxury",
+  luxury: "Luxury (A/C)",
+  semi_luxury: "Semi Luxury",
+  normal: "Normal",
+};
+
 export default async function SearchResultsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ from?: string; to?: string; routeCardId?: string; routeId?: string; date?: string }>;
+  searchParams: Promise<{
+    from?: string;
+    to?: string;
+    routeCardId?: string;
+    routeId?: string;
+    date?: string;
+    class?: string;
+  }>;
 }) {
-  const { from, to, routeCardId, routeId, date } = await searchParams;
+  const { from, to, routeCardId, routeId, date, class: busClass } = await searchParams;
 
   if (!(from && to) && !routeCardId && !routeId) {
     return (
@@ -175,7 +189,9 @@ export default async function SearchResultsPage({
 
   // No date in the URL yet (e.g. a bookmarked link) — default to today.
   const effectiveDate = date || todayIso();
-  const baseQuery = from && to ? `from=${from}&to=${to}` : routeCardId ? `routeCardId=${routeCardId}` : `routeId=${routeId}`;
+  const baseQuery =
+    (from && to ? `from=${from}&to=${to}` : routeCardId ? `routeCardId=${routeCardId}` : `routeId=${routeId}`) +
+    (busClass ? `&class=${busClass}` : "");
 
   let trips: TripSearchResult[] = [];
   let error: string | null = null;
@@ -187,6 +203,11 @@ export default async function SearchResultsPage({
   } catch (e) {
     error = e instanceof ApiError ? e.message : "Could not reach BusConnect-api. Is it running?";
   }
+
+  // Class filtering happens here rather than in search_trips itself — every
+  // trip already carries bus_type_class, so there's no need for a new RPC
+  // parameter just to drop rows the client can filter directly.
+  const filteredTrips = busClass ? trips.filter((t) => t.bus_type_class === busClass) : trips;
 
   return (
     <div className="mx-auto w-full max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
@@ -203,14 +224,16 @@ export default async function SearchResultsPage({
         </p>
       )}
 
-      {!error && trips.length === 0 && (
+      {!error && filteredTrips.length === 0 && (
         <div className="card p-12 text-center text-slate-500 dark:text-zinc-400">
-          No trips found for this route on {effectiveDate}. Try another date above.
+          {trips.length === 0
+            ? `No trips found for this route on ${effectiveDate}. Try another date above.`
+            : `No ${BUS_CLASS_LABELS[busClass ?? ""] ?? busClass} buses on this route for ${effectiveDate}.`}
         </div>
       )}
 
       <div className="flex flex-col gap-3.5">
-        {trips.map((trip) => (
+        {filteredTrips.map((trip) => (
           <TripCard key={`${trip.trip_id}-${trip.from_stop_id}-${trip.to_stop_id}`} trip={trip} />
         ))}
       </div>

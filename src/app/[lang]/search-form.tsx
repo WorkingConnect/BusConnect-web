@@ -2,8 +2,16 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ArrowLeftRight, Calendar, MapPin, Search } from "lucide-react";
+import { ArrowLeftRight, Bus, Calendar, MapPin, Search } from "lucide-react";
 import type { Location } from "@/lib/locations";
+
+const BUS_CLASSES = [
+  { value: "", label: "Any class" },
+  { value: "super_luxury", label: "Super Luxury" },
+  { value: "luxury", label: "Luxury (A/C)" },
+  { value: "semi_luxury", label: "Semi Luxury" },
+  { value: "normal", label: "Normal" },
+] as const;
 
 function todayIso() {
   return new Date().toISOString().slice(0, 10);
@@ -14,6 +22,7 @@ export function SearchForm({ locations }: { locations: Location[] }) {
   const [fromId, setFromId] = useState(locations[0]?.id ?? "");
   const [toId, setToId] = useState(locations[1]?.id ?? locations[0]?.id ?? "");
   const [date, setDate] = useState(todayIso());
+  const [busClass, setBusClass] = useState("");
 
   const hasLocations = locations.length > 0;
 
@@ -24,14 +33,15 @@ export function SearchForm({ locations }: { locations: Location[] }) {
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    const qs = new URLSearchParams({ from: fromId, to: toId, date }).toString();
-    router.push(`/search?${qs}`);
+    const qs = new URLSearchParams({ from: fromId, to: toId, date });
+    if (busClass) qs.set("class", busClass);
+    router.push(`/search?${qs.toString()}`);
   }
 
   return (
     <form
       onSubmit={handleSubmit}
-      className="grid grid-cols-1 items-end gap-2 sm:gap-3 lg:grid-cols-[1fr_auto_1fr_1fr_auto]"
+      className="grid grid-cols-1 items-end gap-2 sm:gap-3 lg:grid-cols-[1fr_auto_1fr_1fr_1fr_auto] lg:gap-2"
     >
       <Field label="From" icon={<MapPin size={15} />}>
         <LocationCombobox
@@ -47,7 +57,7 @@ export function SearchForm({ locations }: { locations: Location[] }) {
         type="button"
         onClick={swap}
         aria-label="Swap origin and destination"
-        className="hidden h-12 w-12 shrink-0 items-center justify-center self-end rounded-xl border border-slate-200 text-slate-500 transition-colors duration-300 hover:bg-slate-50 hover:text-brand dark:border-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-900 lg:flex"
+        className="hidden h-11.5 w-11.5 shrink-0 items-center justify-center self-end rounded-xl border border-slate-200 text-slate-500 transition-colors duration-300 hover:bg-slate-50 hover:text-brand dark:border-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-900 lg:flex"
       >
         <ArrowLeftRight size={16} />
       </button>
@@ -69,11 +79,25 @@ export function SearchForm({ locations }: { locations: Location[] }) {
           min={todayIso()}
           onChange={(e) => setDate(e.target.value)}
           required
-          className="field w-full min-w-0 bg-[#3A3B3C]/40 py-2 text-[#E4E6EB] backdrop-blur-sm sm:bg-muted/40 sm:text-foreground sm:py-2.5"
+          className="field w-full min-w-0 py-3"
         />
       </Field>
 
-      <button type="submit" disabled={!fromId || !toId} className="btn-primary py-2 sm:py-2.5">
+      <Field label="Class" icon={<Bus size={15} />}>
+        <select
+          value={busClass}
+          onChange={(e) => setBusClass(e.target.value)}
+          className="field w-full min-w-0 appearance-none py-3"
+        >
+          {BUS_CLASSES.map((c) => (
+            <option key={c.value} value={c.value}>
+              {c.label}
+            </option>
+          ))}
+        </select>
+      </Field>
+
+      <button type="submit" disabled={!fromId || !toId} className="btn-primary py-3">
         <Search size={17} />
         Search
       </button>
@@ -170,7 +194,7 @@ function LocationCombobox({
         }}
         onFocus={() => setOpen(true)}
         onKeyDown={handleKeyDown}
-        className="field appearance-none bg-[#3A3B3C]/40 py-2 text-[#E4E6EB] backdrop-blur-sm sm:bg-muted/40 sm:text-foreground sm:py-2.5"
+        className="field appearance-none py-3"
       />
       {open && results.length > 0 && (
         <ul className="absolute inset-x-0 top-full z-20 mt-1 max-h-56 overflow-auto rounded-lg border border-border bg-card p-1 shadow-lg">
@@ -205,7 +229,7 @@ function Field({
 }) {
   return (
     <label className="flex min-w-0 flex-col gap-1 sm:gap-1.5">
-      <span className="ui flex items-center gap-1.5 text-xs font-medium text-[#B0B3B8] sm:text-slate-600 sm:dark:text-zinc-400 sm:text-sm">
+      <span className="ui flex items-center gap-1.5 text-xs font-medium text-slate-600 dark:text-zinc-400 sm:text-sm">
         {icon}
         {label}
       </span>

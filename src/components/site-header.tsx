@@ -71,9 +71,6 @@ export function SiteHeader() {
               <Ticket size={15} />
               {t("myTickets")}
             </Link>
-            <span className="ui ml-auto flex items-center gap-1.5 py-3 text-sm font-medium text-white/80">
-              <Ticket size={15} /> {t("instantETickets")}
-            </span>
           </nav>
         </div>
 
