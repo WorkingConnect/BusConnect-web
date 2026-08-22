@@ -23,15 +23,17 @@ export function SectionHeading({
   title,
   subtitle,
   id,
+  centered,
 }: {
   icon?: ReactNode;
   title: string;
   subtitle?: string;
   id?: string;
+  centered?: boolean;
 }) {
   return (
-    <div id={id} className="scroll-mt-28">
-      <div className="flex items-center gap-2.5">
+    <div id={id} className={`scroll-mt-28 ${centered ? "text-center" : ""}`}>
+      <div className={`flex items-center gap-2.5 ${centered ? "justify-center" : ""}`}>
         {icon && (
           <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand-soft text-brand dark:bg-brand-soft-dark dark:text-blue-300">
             {icon}

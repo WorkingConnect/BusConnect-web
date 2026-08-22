@@ -56,19 +56,19 @@ function Hero({
             </p>
           </div>
 
-          <div className="relative hidden lg:block">
+          <div className="relative mx-auto w-full max-w-sm lg:mx-0 lg:max-w-none">
             <div className="relative aspect-[4/3] w-full">
               <Image
                 src="/hero-image.png"
                 alt="Passengers boarding a BusConnect bus"
                 fill
-                sizes="(min-width: 1024px) 40vw, 0px"
+                sizes="(min-width: 1024px) 40vw, 90vw"
                 className="object-contain"
                 priority
               />
             </div>
 
-            <div className="absolute -left-6 top-10 flex items-center gap-2.5 rounded-2xl bg-card px-4 py-3 shadow-xl shadow-black/10 dark:shadow-black/40">
+            <div className="absolute left-0 top-4 hidden items-center gap-2.5 rounded-2xl bg-card px-4 py-3 shadow-xl shadow-black/10 sm:flex lg:-left-6 lg:top-10 dark:shadow-black/40">
               <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand-soft text-brand dark:bg-brand-soft-dark dark:text-blue-300">
                 <Ticket size={17} />
               </span>
@@ -78,7 +78,7 @@ function Hero({
               </div>
             </div>
 
-            <div className="absolute -right-4 bottom-4 flex items-center gap-2.5 rounded-2xl bg-card px-4 py-3 shadow-xl shadow-black/10 dark:shadow-black/40">
+            <div className="absolute bottom-0 right-0 hidden items-center gap-2.5 rounded-2xl bg-card px-4 py-3 shadow-xl shadow-black/10 sm:flex lg:-right-4 lg:bottom-4 dark:shadow-black/40">
               <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand-soft text-brand dark:bg-brand-soft-dark dark:text-blue-300">
                 <Armchair size={17} />
               </span>
@@ -104,29 +104,26 @@ function Hero({
 /* ── Feature grid ──────────────────────────────────────────────────────── */
 function Features() {
   const features = [
-    [Armchair, "Real-time seat maps", "See exactly which seats are free and pick yours before you pay — no double bookings, ever."],
-    [ShieldCheck, "Secure payments", "Pay by card, eZ Cash or bank through PCI-compliant gateways. Your money is protected."],
-    [Ticket, "Instant e-tickets", "Get a QR e-ticket by SMS and email the moment you pay. Scan and board — even offline."],
-    [MapPinned, "Live bus tracking", "Follow your bus on the map with predicted arrival at your boarding point."],
-    [Languages, "Three languages", "Book fully in English, Sinhala or Tamil — whichever you prefer."],
-    [RefreshCw, "Easy refunds", "Cancel or reschedule yourself in a tap. No phone calls, no queues."],
+    [Armchair, "Real-time seat maps", "Pick your exact seat before you pay."],
+    [ShieldCheck, "Secure payments", "Pay by card, eZ Cash or bank securely."],
+    [Ticket, "Instant e-tickets", "QR e-ticket by SMS the moment you pay."],
+    [MapPinned, "Live bus tracking", "Track your bus with live arrival times."],
+    [Languages, "Three languages", "Book in English, Sinhala or Tamil."],
+    [RefreshCw, "Easy refunds", "Cancel or reschedule in a tap."],
   ] as const;
 
   return (
-    <section className="mx-auto hidden max-w-7xl px-4 py-14 sm:block sm:px-6 lg:px-8">
-      <SectionHeading
-        title="Why BusConnect"
-        subtitle="Everything the old booking sites do,done smarter, faster and in your language."
-      />
-      <div className="mt-9 grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
+    <section className="mx-auto w-full max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
+      <SectionHeading title="Why BusConnect" centered />
+      <div className="mt-9 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {features.map(([Icon, title, body]) => (
-          <div key={title} className="card card-hover p-4 sm:p-6">
-            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand-soft text-brand dark:bg-brand-soft-dark dark:text-blue-300 sm:h-11 sm:w-11">
-              <Icon size={18} className="sm:hidden" />
-              <Icon size={21} className="hidden sm:block" />
+          <div key={title} className="card card-hover p-4">
+            <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-brand-soft text-brand dark:bg-brand-soft-dark dark:text-blue-300 sm:h-9 sm:w-9">
+              <Icon size={16} className="sm:hidden" />
+              <Icon size={18} className="hidden sm:block" />
             </span>
-            <h3 className="mt-3 font-heading text-base font-semibold sm:mt-4 sm:text-lg">{title}</h3>
-            <p className="mt-1 text-sm text-slate-600 dark:text-zinc-400 sm:mt-1.5">{body}</p>
+            <h3 className="mt-3 font-heading text-sm font-semibold sm:text-base">{title}</h3>
+            <p className="mt-1 text-xs text-slate-600 dark:text-zinc-400 sm:text-sm">{body}</p>
           </div>
         ))}
       </div>
@@ -157,12 +154,8 @@ function PopularRoutes({
   const today = new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Colombo" });
 
   return (
-    <section className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-      <SectionHeading
-        id="routes"
-        title={dict.home.popularRoutesTitle}
-        subtitle={dict.home.popularRoutesSubtitle}
-      />
+    <section className="mx-auto w-full max-w-7xl px-4 pb-8 pt-14 sm:px-6 sm:pt-16 lg:px-8">
+      <SectionHeading id="routes" title={dict.home.popularRoutesTitle} centered />
       {routes.length === 0 ? (
         <p className="ui mt-9 text-sm text-slate-500 dark:text-zinc-500">{dict.home.noRoutes}</p>
       ) : (
@@ -254,10 +247,10 @@ function HowItWorks() {
   ];
   return (
     <section className="mx-auto w-full max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
-      <SectionHeading id="how" title="How it works" />
-      <div className="mt-9 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <SectionHeading id="how" title="How to book a ticket" centered />
+      <div className="card mt-9 flex flex-col divide-y divide-slate-100 sm:flex-row sm:divide-x sm:divide-y-0 dark:divide-zinc-800">
         {steps.map(([title, body], i) => (
-          <div key={title} className="card p-6">
+          <div key={title} className="flex-1 p-6">
             <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand font-heading font-bold text-brand-fg">
               {i + 1}
             </span>
