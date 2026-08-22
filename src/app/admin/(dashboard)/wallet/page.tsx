@@ -81,13 +81,9 @@ export default function AdminWalletPage() {
         </div>
       </div>
 
-      <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3">
+      <div className="mt-6 grid grid-cols-2 gap-3">
         <Stat label="Total wallet balance" value={money(overview.totalBalance, overview.currency)} accent />
         <Stat label="Users with a balance" value={String(overview.holderCount)} />
-        <Stat
-          label="Average balance"
-          value={money(overview.holderCount ? overview.totalBalance / overview.holderCount : 0, overview.currency)}
-        />
       </div>
 
       <div className="relative mt-6 max-w-md">

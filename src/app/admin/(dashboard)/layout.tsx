@@ -1,5 +1,14 @@
 import { createClient } from "@/lib/supabase/server";
-import { getMyRoles, getAdminAnalytics, listAdminBuses, listAdminPilots, listAdminJourneys, ApiError } from "@/lib/api";
+import {
+  getMyRoles,
+  getAdminAnalytics,
+  listAdminBuses,
+  listAdminPilots,
+  listAdminJourneys,
+  listCancellationRequests,
+  listAdminPayouts,
+  ApiError,
+} from "@/lib/api";
 import { AdminNav } from "./admin-nav";
 
 // Mirrors operator/(dashboard)/layout.tsx: this is the ONLY thing that
@@ -40,18 +49,22 @@ export default async function AdminDashboardLayout({
   let pilotsPending = 0;
   let refundsPending = 0;
   let reviewPending = 0;
+  let payoutsPending = 0;
   try {
-    const [analytics, buses, pilots, journeys] = await Promise.all([
+    const [analytics, buses, pilots, journeys, cancellationRequests, payouts] = await Promise.all([
       getAdminAnalytics(session!.access_token),
       listAdminBuses(session!.access_token),
       listAdminPilots(session!.access_token),
       listAdminJourneys(session!.access_token),
+      listCancellationRequests(session!.access_token),
+      listAdminPayouts(session!.access_token),
     ]);
     operatorsPending = analytics.pendingOperators;
     refundsPending = analytics.pendingRefundsCount;
     fleetPending = buses.filter((b) => b.status === "pending").length;
     pilotsPending = pilots.filter((p) => p.status === "pending").length;
-    reviewPending = journeys.filter((j) => j.review_status === "pending").length;
+    reviewPending = journeys.filter((j) => j.review_status === "pending").length + cancellationRequests.length;
+    payoutsPending = payouts.filter((p) => p.settleable).length;
   } catch (e) {
     if (!(e instanceof ApiError)) throw e;
   }
@@ -70,6 +83,7 @@ export default async function AdminDashboardLayout({
             pilots: pilotsPending,
             refunds: refundsPending,
             review: reviewPending,
+            payouts: payoutsPending,
           }}
         />
       </aside>

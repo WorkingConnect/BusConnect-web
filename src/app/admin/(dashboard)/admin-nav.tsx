@@ -24,7 +24,14 @@ const items = [
 export function AdminNav({
   counts,
 }: {
-  counts?: { operators?: number; fleet?: number; pilots?: number; refunds?: number; review?: number };
+  counts?: {
+    operators?: number;
+    fleet?: number;
+    pilots?: number;
+    refunds?: number;
+    review?: number;
+    payouts?: number;
+  };
 }) {
   const pathname = usePathname();
   const badgeFor: Record<string, number | undefined> = {
@@ -33,6 +40,7 @@ export function AdminNav({
     "/admin/pilots": counts?.pilots,
     "/admin/refunds": counts?.refunds,
     "/admin/review": counts?.review,
+    "/admin/payouts": counts?.payouts,
   };
 
   return (
