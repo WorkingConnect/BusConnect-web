@@ -666,6 +666,27 @@ export function requestNoShowRefund(accessToken: string, tripId: string, booking
   );
 }
 
+/** Admin-only: refund specific seat(s) of a booking at a chosen %, freeing
+ *  them for rebooking — works on any confirmed booking regardless of trip
+ *  status, unlike requestNoShowRefund's arrived-trip/no-show restriction.
+ *  Only queues (goes to the admin Refunds page); never moves money itself. */
+export function refundTicketSeats(
+  accessToken: string,
+  tripId: string,
+  bookingId: string,
+  seats: string[],
+  refundPct: number,
+) {
+  return request<{ ok: true; refundAmount: number; refundStatus: string; remainingSeats: string[] }>(
+    `/admin/trips/${tripId}/bookings/${bookingId}/refund`,
+    {
+      method: 'POST',
+      body: JSON.stringify({ seats, refund_pct: refundPct }),
+      accessToken,
+    },
+  );
+}
+
 /** Withdraws (owner) or rejects (admin-context) a pending cancellation request. */
 export function clearCancellationRequest(accessToken: string, tripId: string) {
   return request<{ ok: true }>(`/operator/trips/${tripId}/cancellation-request`, {

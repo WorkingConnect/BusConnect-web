@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { User, Phone, UserCheck, ChevronRight, ChevronUp, ChevronDown, X, ArrowUp, ArrowDown, Undo2 } from "lucide-react";
 import type { OperatorManifest, OperatorManifestBooking, OperatorManifestStop } from "@/lib/api";
-import { requestNoShowRefund, ApiError } from "@/lib/api";
+import { requestNoShowRefund, refundTicketSeats, ApiError } from "@/lib/api";
 import { createClient } from "@/lib/supabase/client";
 import { ConductorSeatMap } from "./conductor-seat-map";
 
@@ -15,7 +15,15 @@ const STATUS_STYLE: Record<string, string> = {
   refunded: "bg-slate-100 text-slate-600 dark:bg-zinc-800 dark:text-zinc-400",
 };
 
-export function ManifestPanel({ manifest, isPilot }: { manifest: OperatorManifest; isPilot: boolean }) {
+export function ManifestPanel({
+  manifest,
+  isPilot,
+  isAdmin = false,
+}: {
+  manifest: OperatorManifest;
+  isPilot: boolean;
+  isAdmin?: boolean;
+}) {
   const [selectedBookingId, setSelectedBookingId] = useState<string | null>(null);
   const [selectedStopId, setSelectedStopId] = useState<string | null>(null);
   const [passengersExpanded, setPassengersExpanded] = useState(true);
@@ -189,6 +197,7 @@ export function ManifestPanel({ manifest, isPilot }: { manifest: OperatorManifes
         <PassengerDetailModal
           booking={selectedBooking}
           showFare={!isPilot}
+          isAdmin={isAdmin}
           tripId={manifest.trip_id}
           tripStatus={manifest.status}
           onClose={() => setSelectedBookingId(null)}
@@ -228,12 +237,14 @@ function ModalShell({ onClose, children }: { onClose: () => void; children: Reac
 function PassengerDetailModal({
   booking,
   showFare,
+  isAdmin,
   tripId,
   tripStatus,
   onClose,
 }: {
   booking: OperatorManifestBooking;
   showFare: boolean;
+  isAdmin: boolean;
   tripId: string;
   tripStatus: string;
   onClose: () => void;
@@ -243,6 +254,11 @@ function PassengerDetailModal({
   // the passenger list already shows via the "Not boarded" badge.
   const noShowEligible =
     tripStatus === "arrived" && booking.status === "confirmed" && !booking.boarded && !booking.is_walkup;
+  // Admin's general refund is broader — any confirmed, non-walkup booking
+  // with at least one seat that hasn't boarded yet, regardless of trip
+  // status (not just arrived/no-show).
+  const refundableSeats = booking.seats.filter((s) => !booking.boarded_seats.includes(s));
+  const adminRefundEligible = isAdmin && booking.status === "confirmed" && !booking.is_walkup && refundableSeats.length > 0;
 
   return (
     <ModalShell onClose={onClose}>
@@ -281,6 +297,14 @@ function PassengerDetailModal({
 
       {noShowEligible && (
         <NoShowRefundSection tripId={tripId} bookingId={booking.id} amount={booking.amount} showFare={showFare} />
+      )}
+      {adminRefundEligible && (
+        <AdminRefundTicketSection
+          tripId={tripId}
+          booking={booking}
+          refundableSeats={refundableSeats}
+          showFare={showFare}
+        />
       )}
     </ModalShell>
   );
@@ -383,6 +407,161 @@ function NoShowRefundSection({
           onClick={submit}
           disabled={submitting}
           className="ui flex-1 rounded-lg bg-brand py-2 text-xs font-semibold text-brand-fg disabled:opacity-60"
+        >
+          {submitting ? "Queuing…" : "Confirm refund"}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/** Admin-only. Unlike no-show refunds (whole booking, arrived trips only),
+ *  this lets admin refund just some of a multi-seat booking's seats — e.g.
+ *  two friends booked together but only one wants to cancel — at any point,
+ *  for any reason. Already-boarded seats aren't selectable at all. */
+function AdminRefundTicketSection({
+  tripId,
+  booking,
+  refundableSeats,
+  showFare,
+}: {
+  tripId: string;
+  booking: OperatorManifestBooking;
+  refundableSeats: string[];
+  showFare: boolean;
+}) {
+  const router = useRouter();
+  const [open, setOpen] = useState(false);
+  const [selected, setSelected] = useState<Set<string>>(new Set(refundableSeats));
+  const [pct, setPct] = useState("100");
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [done, setDone] = useState<string | null>(null);
+
+  const parsedPct = Math.max(0, Math.min(100, Number(pct) || 0));
+  const farePerSeat = booking.amount / booking.seats.length;
+  const segmentAmount = Math.round(farePerSeat * selected.size * 100) / 100;
+  const refundAmount = Math.round(segmentAmount * (parsedPct / 100) * 100) / 100;
+
+  function toggleSeat(seat: string) {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(seat)) next.delete(seat);
+      else next.add(seat);
+      return next;
+    });
+  }
+
+  async function submit() {
+    if (selected.size === 0) {
+      setError("Select at least one seat.");
+      return;
+    }
+    setError(null);
+    setSubmitting(true);
+    try {
+      const supabase = createClient();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (!session) return;
+      const result = await refundTicketSeats(session.access_token, tripId, booking.id, [...selected], parsedPct);
+      setDone(
+        result.refundStatus === "pending_manual"
+          ? "Queued — process it from the Refunds page."
+          : "Recorded at 0% — nothing owed.",
+      );
+      router.refresh();
+    } catch (e) {
+      setError(e instanceof ApiError ? e.message : "Could not queue this refund.");
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  if (done) {
+    return (
+      <div className="ui mt-4 rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-xs text-emerald-700 dark:border-emerald-900/50 dark:bg-emerald-950/40 dark:text-emerald-300">
+        {done}
+      </div>
+    );
+  }
+
+  if (!open) {
+    return (
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        className="ui mt-4 flex w-full items-center justify-center gap-2 rounded-xl border border-red-200 py-3 text-sm font-semibold text-red-600 transition-colors hover:bg-red-50 dark:border-red-900/50 dark:text-red-400 dark:hover:bg-red-950/30"
+      >
+        <Undo2 size={15} /> Refund ticket
+      </button>
+    );
+  }
+
+  return (
+    <div className="ui mt-4 rounded-xl border border-slate-200 p-3 dark:border-zinc-800">
+      {booking.seats.length > 1 && (
+        <>
+          <p className="text-xs font-semibold text-slate-500 dark:text-zinc-400">Seats to refund</p>
+          <div className="mt-2 flex flex-wrap gap-1.5">
+            {booking.seats.map((seat) => {
+              const boarded = booking.boarded_seats.includes(seat);
+              const isSelected = selected.has(seat);
+              return (
+                <button
+                  key={seat}
+                  type="button"
+                  disabled={boarded}
+                  onClick={() => toggleSeat(seat)}
+                  className={`ui rounded-lg border px-2.5 py-1 text-xs font-semibold ${
+                    boarded
+                      ? "cursor-not-allowed border-slate-100 text-slate-300 dark:border-zinc-900 dark:text-zinc-700"
+                      : isSelected
+                        ? "border-brand bg-brand-soft text-brand dark:bg-brand-soft-dark dark:text-blue-300"
+                        : "border-slate-200 text-slate-600 dark:border-zinc-800 dark:text-zinc-300"
+                  }`}
+                >
+                  {seat}
+                  {boarded && " · boarded"}
+                </button>
+              );
+            })}
+          </div>
+        </>
+      )}
+      <p className="mt-3 text-xs font-semibold text-slate-500 dark:text-zinc-400">Refund %</p>
+      <div className="mt-2 flex items-center gap-2">
+        <input
+          type="number"
+          min={0}
+          max={100}
+          value={pct}
+          onChange={(e) => setPct(e.target.value)}
+          className="ui w-20 rounded-lg border border-slate-200 px-2 py-1.5 text-sm dark:border-zinc-800 dark:bg-zinc-900"
+        />
+        <span className="text-sm text-slate-500 dark:text-zinc-400">%</span>
+        {showFare && (
+          <span className="ui ml-auto text-xs text-slate-500 dark:text-zinc-400">
+            = LKR {refundAmount.toLocaleString("en-LK")} of {segmentAmount.toLocaleString("en-LK")}
+          </span>
+        )}
+      </div>
+      {error && <p className="mt-2 text-xs text-red-600 dark:text-red-400">{error}</p>}
+      <div className="mt-3 flex gap-2">
+        <button
+          type="button"
+          onClick={() => setOpen(false)}
+          disabled={submitting}
+          className="ui flex-1 rounded-lg border border-slate-200 py-2 text-xs font-semibold text-slate-600 dark:border-zinc-800 dark:text-zinc-300"
+        >
+          Cancel
+        </button>
+        <button
+          type="button"
+          onClick={submit}
+          disabled={submitting || selected.size === 0}
+          className="ui flex-1 rounded-lg bg-red-600 py-2 text-xs font-semibold text-white disabled:opacity-60"
         >
           {submitting ? "Queuing…" : "Confirm refund"}
         </button>

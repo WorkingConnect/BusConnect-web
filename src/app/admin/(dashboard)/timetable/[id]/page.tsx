@@ -133,7 +133,7 @@ export default async function AdminTripPage({ params }: { params: Promise<{ id: 
         </div>
       </div>
 
-      <ManifestPanel manifest={manifest} isPilot={false} />
+      <ManifestPanel manifest={manifest} isPilot={false} isAdmin />
     </div>
   );
 }
