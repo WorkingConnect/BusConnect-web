@@ -1,9 +1,9 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Users, ChevronDown, Loader2, Trash2 } from "lucide-react";
+import { Users, ChevronDown, Loader2, Trash2, Download } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
-import { hideOperatorRevenueRow, ApiError, type OperatorRevenueRow } from "@/lib/api";
+import { hideOperatorRevenueRow, getOperatorPayoutSlipUrl, ApiError, type OperatorRevenueRow } from "@/lib/api";
 
 const TRIP_STATUS_STYLE: Record<string, string> = {
   scheduled: "bg-slate-100 text-slate-600 dark:bg-zinc-800 dark:text-zinc-400",
@@ -222,11 +222,9 @@ function RevenueSection({
                 </div>
                 <div className="flex items-center justify-between gap-4 sm:justify-end">
                   <div className="text-right">
-                    <p className="ui text-xs text-slate-400 dark:text-zinc-500">
-                      {money(r.gross)} − {r.commission_pct}%
-                    </p>
                     <p className="font-heading text-lg font-bold text-brand dark:text-blue-400">{money(r.net_amount)}</p>
                   </div>
+                  {r.payout_status === "paid" && r.has_slip && <DownloadReceiptButton tripId={r.trip_id} />}
                   {r.payout_status === "paid" && <DeleteRevenueRowButton tripId={r.trip_id} onHidden={() => onHidden(r.trip_id)} />}
                 </div>
               </div>
@@ -235,6 +233,57 @@ function RevenueSection({
         )}
       </div>
     </section>
+  );
+}
+
+function DownloadReceiptButton({ tripId }: { tripId: string }) {
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function download() {
+    setError(null);
+    setBusy(true);
+    try {
+      const supabase = createClient();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (!session) return;
+      const { url } = await getOperatorPayoutSlipUrl(session.access_token, tripId);
+      // Fetch as a blob rather than just pointing an <a download> at the
+      // signed URL — a cross-origin href's `download` attribute is ignored
+      // by most browsers, so this is what actually guarantees a save
+      // instead of a plain navigation.
+      const res = await fetch(url);
+      const blob = await res.blob();
+      const blobUrl = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = blobUrl;
+      a.download = `payout-receipt-${tripId}`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(blobUrl);
+    } catch (e) {
+      setError(e instanceof ApiError ? e.message : "Could not download the receipt.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="flex flex-col items-end gap-1">
+      <button
+        type="button"
+        onClick={() => void download()}
+        disabled={busy}
+        aria-label="Download receipt"
+        className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700 disabled:opacity-60 dark:hover:bg-zinc-800 dark:hover:text-zinc-200"
+      >
+        {busy ? <Loader2 size={14} className="animate-spin" /> : <Download size={14} />}
+      </button>
+      {error && <span className="ui text-[11px] text-red-600 dark:text-red-400">{error}</span>}
+    </div>
   );
 }
 
