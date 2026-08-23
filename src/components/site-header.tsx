@@ -24,46 +24,47 @@ export function SiteHeader() {
   const [open, setOpen] = useState(false);
   const t = useT("nav");
   const locale = useLocale();
+  const pathname = usePathname();
+
+  const tabs = [...navItems, { key: "myTickets", href: "/tickets", icon: Ticket }] as const;
 
   return (
     <>
-      <header className="relative z-50 sm:sticky sm:top-0">
-        {/* Top bar — utility */}
-        <div className="bg-transparent transition-colors duration-300 sm:border-b sm:border-border sm:bg-card/80 sm:backdrop-blur-md">
-          <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
+      <header className="relative z-50">
+        {/* Single row — logo, centered pill nav (desktop), utility icons */}
+        <div className="bg-transparent">
+          <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3 sm:px-6 lg:px-8">
             <Logo href={localizePath(locale, "/")} height={44} />
 
-            <div className="ui flex items-center gap-3 text-sm">
+            <nav className="ui hidden items-center gap-1 rounded-full border border-border bg-muted/60 p-1 lg:flex">
+              {tabs.map(({ key, href, icon: Icon }) => {
+                const localized = localizePath(locale, href);
+                const active = href === "/" ? pathname === localized : pathname.startsWith(localized);
+                return (
+                  <Link
+                    key={key}
+                    href={localized}
+                    className={`flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-medium transition-colors duration-300 ${
+                      active
+                        ? "bg-card text-foreground shadow-sm"
+                        : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    <Icon size={15} />
+                    {t(key)}
+                  </Link>
+                );
+              })}
+            </nav>
+
+            <div className="ui flex items-center gap-4 text-sm">
               <LanguageSwitcher />
               <ThemeToggle />
               <span className="hidden sm:inline-flex">
-                <UserMenu />
+                <UserMenu signInVariant="link" />
               </span>
             </div>
           </div>
-        </div>
-
-        {/* Bottom bar — primary nav (brand) */}
-        <div className="hidden bg-brand text-brand-fg lg:block">
-          <nav className="mx-auto flex max-w-7xl items-center gap-1 px-4 sm:px-6 lg:px-8">
-            {navItems.map(({ key, href, icon: Icon }) => (
-              <Link
-                key={key}
-                href={localizePath(locale, href)}
-                className="ui flex items-center gap-2 border-b-2 border-transparent px-3 py-3 text-sm font-medium text-white/90 transition-colors duration-300 hover:border-white hover:text-white"
-              >
-                <Icon size={15} />
-                {t(key)}
-              </Link>
-            ))}
-            <Link
-              href={localizePath(locale, "/tickets")}
-              className="ui flex items-center gap-2 border-b-2 border-transparent px-3 py-3 text-sm font-medium text-white/90 transition-colors duration-300 hover:border-white hover:text-white"
-            >
-              <Ticket size={15} />
-              {t("myTickets")}
-            </Link>
-          </nav>
         </div>
 
         <MobileDrawer open={open} onClose={() => setOpen(false)} />

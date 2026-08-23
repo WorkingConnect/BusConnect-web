@@ -38,7 +38,10 @@
     "appPromoTitle": "Get the BusConnect app for better experience.",
     "appPromoBody": "Pay instantly from your wallet or card, track your bus live on the map, and get notified about your journey.",
     "appStoreAlt": "Download on the App Store",
-    "playStoreAlt": "Get it on Google Play"
+    "playStoreAlt": "Get it on Google Play",
+    "operatorsShowcaseTitle": "Book with Sri Lanka's trusted operators",
+    "operatorsShowcaseSubtitle": "See each operator's fleet and live routes before you book.",
+    "noOperators": "No operators listed yet"
   },
   "footer": {
     "brandBlurb": "BusConnect is Sri Lanka's smartest online bus booking platform, making intercity travel simple with live seat availability, operator and fare comparisons, secure online booking, and instant QR e-tickets.",

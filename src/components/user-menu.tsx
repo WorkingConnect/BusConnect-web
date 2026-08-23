@@ -8,7 +8,15 @@ import { useIdentity } from "@/lib/use-identity";
 import { useT, useLocale } from "@/lib/i18n/provider";
 import { localizePath } from "@/lib/i18n/navigation";
 
-export function UserMenu({ workspace = "passenger" }: { workspace?: "passenger" | "operator" | "admin" }) {
+export function UserMenu({
+  workspace = "passenger",
+  signInVariant = "button",
+}: {
+  workspace?: "passenger" | "operator" | "admin";
+  /** "link" renders signed-out "Sign in" as plain text (e.g. the public site
+   *  header's flat utility row) instead of the default filled button. */
+  signInVariant?: "button" | "link";
+}) {
   const router = useRouter();
   const { identity, roles, signOut: doSignOut } = useIdentity();
   const [open, setOpen] = useState(false);
@@ -39,7 +47,11 @@ export function UserMenu({ workspace = "passenger" }: { workspace?: "passenger" 
     return (
       <Link
         href={localizePath(locale, "/login")}
-        className="rounded-xl bg-brand px-4 py-2 font-semibold text-brand-fg transition-colors duration-300 hover:bg-brand-hover"
+        className={
+          signInVariant === "link"
+            ? "font-medium text-foreground transition-colors duration-300 hover:text-brand dark:hover:text-blue-400"
+            : "rounded-xl bg-brand px-4 py-2 font-semibold text-brand-fg transition-colors duration-300 hover:bg-brand-hover"
+        }
       >
         {t("signIn")}
       </Link>
