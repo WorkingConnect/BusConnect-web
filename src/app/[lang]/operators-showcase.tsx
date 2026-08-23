@@ -47,14 +47,11 @@ export function OperatorsShowcase({
               <div className="min-w-0 flex-1">
                 <p className="truncate font-heading text-sm font-semibold sm:text-base">{op.name}</p>
                 <p className="ui mt-0.5 flex items-center gap-1 text-xs text-slate-500 dark:text-zinc-500">
-                  {op.rating > 0 ? (
-                    <>
-                      <Star size={12} className="fill-amber-400 text-amber-400" />
-                      {op.rating.toFixed(1)}
-                    </>
-                  ) : (
-                    "Not yet rated"
-                  )}
+                  <Star
+                    size={12}
+                    className={op.rating > 0 ? "fill-amber-400 text-amber-400" : "text-slate-300 dark:text-zinc-700"}
+                  />
+                  {op.rating.toFixed(1)}
                 </p>
               </div>
               <ChevronRight size={18} className="shrink-0 text-slate-300 dark:text-zinc-700" />
