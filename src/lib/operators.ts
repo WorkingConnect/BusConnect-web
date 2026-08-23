@@ -5,6 +5,8 @@ export interface OperatorSummary {
   id: string;
   name: string;
   logoUrl: string | null;
+  rating: number;
+  reliabilityScore: number;
 }
 
 export interface FleetGroup {
@@ -80,7 +82,7 @@ export const listActiveOperators = unstable_cache(
     const supabase = createPublicClient();
     const { data, error } = await supabase
       .from('operators')
-      .select('id, name, logo_url')
+      .select('id, name, logo_url, rating, reliability_score')
       .eq('status', 'active')
       .order('name');
 
@@ -88,7 +90,13 @@ export const listActiveOperators = unstable_cache(
       console.error('listActiveOperators: falling back to empty list —', error.message);
       return [];
     }
-    return (data ?? []).map((o) => ({ id: o.id, name: o.name, logoUrl: o.logo_url }));
+    return (data ?? []).map((o) => ({
+      id: o.id,
+      name: o.name,
+      logoUrl: o.logo_url,
+      rating: o.rating,
+      reliabilityScore: o.reliability_score,
+    }));
   },
   ['active-operators'],
   { revalidate: 300 },

@@ -139,10 +139,14 @@ export default async function OperatorPage({
               </p>
 
               <div className="ui mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-slate-600 dark:text-zinc-400">
-                <span className="flex items-center gap-1 font-medium text-slate-900 dark:text-white">
-                  <Star size={15} className="fill-amber-400 text-amber-400" />
-                  {profile.rating.toFixed(1)}
-                </span>
+                {profile.rating > 0 ? (
+                  <span className="flex items-center gap-1 font-medium text-slate-900 dark:text-white">
+                    <Star size={15} className="fill-amber-400 text-amber-400" />
+                    {profile.rating.toFixed(1)}
+                  </span>
+                ) : (
+                  <span className="font-medium text-slate-900 dark:text-white">Not yet rated</span>
+                )}
               </div>
             </div>
 

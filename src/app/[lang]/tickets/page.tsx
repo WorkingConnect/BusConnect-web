@@ -10,6 +10,7 @@ interface BookingRow {
   status: string;
   created_at: string;
   trip: {
+    id: string;
     depart_at: string;
     status: string;
     route: { name: string } | null;
@@ -43,12 +44,14 @@ export default async function TicketsPage() {
   // only belongs in "my tickets" once it's confirmed or explicitly cancelled.
   // hidden_by_passenger excludes cancelled/refunded bookings the passenger
   // has removed from their list (see TicketsList's delete action) — mirrors
-  // BusConnect-mobile's listMyBookings() query.
+  // BusConnect-mobile's listMyBookings() query. Arrived+boarded bookings are
+  // no longer auto-hidden (see reviews feature) — they stay visible as trip
+  // history with a "Rate this trip" prompt.
   const { data } = await supabase
     .from("bookings")
     .select(
       `id, seats, amount, status, created_at,
-       trip:trips ( depart_at, status,
+       trip:trips ( id, depart_at, status,
          route:routes ( name ),
          bus:buses ( reg_no, bus_type:bus_types ( name, class ),
            operator:operators ( name, logo_url ) ) ),
@@ -58,15 +61,7 @@ export default async function TicketsPage() {
     .eq("hidden_by_passenger", false)
     .order("created_at", { ascending: false });
 
-  // A confirmed booking whose trip has arrived and whose ticket was fully
-  // scanned at boarding has nothing left to show — no QR to present, no trip
-  // to track. Hidden here only; the row stays in the database untouched
-  // (revenue/refund/payout math still reads it).
-  const rows = ((data ?? []) as unknown as BookingRow[]).filter((b) => {
-    if (b.status !== "confirmed") return true;
-    const ticket = b.tickets?.[0];
-    return !(b.trip?.status === "arrived" && ticket?.status === "used");
-  });
+  const rows = (data ?? []) as unknown as BookingRow[];
 
   // Pre-render the QR (the signed Ed25519 token itself, so a conductor's
   // scanner verifies authenticity fully offline) for confirmed bookings.
@@ -97,6 +92,8 @@ export default async function TicketsPage() {
         regNo: b.trip?.bus?.reg_no ?? null,
         qrDataUrl,
         ticketStatus: ticket?.status ?? null,
+        tripId: b.trip?.id ?? null,
+        tripStatus: b.trip?.status ?? null,
       };
     }),
   );

@@ -5,6 +5,7 @@ import { useState } from "react";
 import { Bus, CalendarDays, CheckCircle2, ChevronDown, Loader2, MapPin, QrCode, Trash2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { hideBooking, ApiError } from "@/lib/api";
+import { RateTripButton } from "./rate-trip-button";
 
 export interface TicketBooking {
   id: string;
@@ -22,6 +23,8 @@ export interface TicketBooking {
   regNo: string | null;
   qrDataUrl: string | null;
   ticketStatus: string | null;
+  tripId: string | null;
+  tripStatus: string | null;
 }
 
 type Tab = "confirmed" | "cancelled";
@@ -143,6 +146,7 @@ function TicketCard({ b, t, onDeleted }: { b: TicketBooking; t: Tab; onDeleted: 
   const [deleting, setDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const boarded = b.ticketStatus === "used";
+  const arrived = b.tripStatus === "arrived";
 
   async function confirmDelete() {
     setDeleteError(null);
@@ -201,17 +205,7 @@ function TicketCard({ b, t, onDeleted }: { b: TicketBooking; t: Tab; onDeleted: 
 
       {/* actions */}
       <div className="mt-4">
-        {t === "confirmed" && b.qrDataUrl ? (
-          <button
-            type="button"
-            onClick={() => setOpen((v) => !v)}
-            className="inline-flex items-center gap-2 rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-brand-fg transition-opacity hover:opacity-90"
-          >
-            <QrCode size={15} />
-            {open ? "Hide QR" : "Show QR ticket"}
-            <ChevronDown size={14} className={`transition-transform ${open ? "rotate-180" : ""}`} />
-          </button>
-        ) : confirming ? (
+        {confirming ? (
           <div className="flex flex-wrap items-center gap-2">
             <span className="ui text-xs text-slate-500 dark:text-zinc-400">Remove this ticket from your list?</span>
             <button
@@ -233,7 +227,19 @@ function TicketCard({ b, t, onDeleted }: { b: TicketBooking; t: Tab; onDeleted: 
             </button>
           </div>
         ) : (
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
+            {t === "confirmed" && arrived && b.tripId && <RateTripButton tripId={b.tripId} />}
+            {t === "confirmed" && !arrived && b.qrDataUrl && (
+              <button
+                type="button"
+                onClick={() => setOpen((v) => !v)}
+                className="inline-flex items-center gap-2 rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-brand-fg transition-opacity hover:opacity-90"
+              >
+                <QrCode size={15} />
+                {open ? "Hide QR" : "Show QR ticket"}
+                <ChevronDown size={14} className={`transition-transform ${open ? "rotate-180" : ""}`} />
+              </button>
+            )}
             <Link
               href={`/bookings/${b.id}`}
               className="inline-flex items-center gap-2 rounded-lg border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-900"
