@@ -31,9 +31,11 @@ export interface OperatorRoute {
   todayCount: number;
   nextDateIso: string | null;
   minFare: number | null;
-  /** "6:00 AM" style time-of-day — null if nothing's scheduled. */
-  firstDeparture: string | null;
-  lastDeparture: string | null;
+  /** "6:00 AM" style time-of-day for the soonest upcoming trip on this
+   *  route — null if nothing's scheduled. departureTime/arrivalTime are
+   *  this same trip's start and end, not two different trips' departures. */
+  departureTime: string | null;
+  arrivalTime: string | null;
 }
 
 export interface OperatorProfile {
@@ -227,16 +229,19 @@ export const getOperatorProfile = unstable_cache(
     }
 
     // ── This operator's own upcoming trips on those routes — today's count,
-    //    fastest duration, cheapest fare, and first/last departure time, all
-    //    matching popular_route_card_activity()'s semantics (0062) but
-    //    filtered to just this operator's buses instead of every operator's. ─
+    //    fastest duration, cheapest fare, and the soonest upcoming trip's
+    //    departure/arrival, all matching popular_route_card_activity()'s
+    //    semantics (0062) but filtered to just this operator's buses instead
+    //    of every operator's. ──────────────────────────────────────────────
     interface RouteStats {
       todayCount: number;
       nextDateIso: string | null;
       durationMinutes: number | null;
       minFare: number | null;
-      firstDeparture: string;
-      lastDeparture: string;
+      /** The soonest upcoming trip found so far — departure and its own
+       *  arrival, not the earliest/latest departure across all trips. */
+      nextTripDepartAt: string;
+      nextTripArriveAt: string | null;
     }
     const statsByKey = new Map<string, RouteStats>();
     if (routeIds.length > 0 && busIds.length > 0) {
@@ -269,8 +274,8 @@ export const getOperatorProfile = unstable_cache(
               nextDateIso: dateIso,
               durationMinutes,
               minFare: fare,
-              firstDeparture: departAt,
-              lastDeparture: departAt,
+              nextTripDepartAt: departAt,
+              nextTripArriveAt: arriveEst,
             });
           } else {
             if (dateIso === todayIso) existing.todayCount += 1;
@@ -279,8 +284,10 @@ export const getOperatorProfile = unstable_cache(
               existing.durationMinutes = durationMinutes;
             }
             if (fare != null && (existing.minFare == null || fare < existing.minFare)) existing.minFare = fare;
-            if (departAt < existing.firstDeparture) existing.firstDeparture = departAt;
-            if (departAt > existing.lastDeparture) existing.lastDeparture = departAt;
+            if (departAt < existing.nextTripDepartAt) {
+              existing.nextTripDepartAt = departAt;
+              existing.nextTripArriveAt = arriveEst;
+            }
           }
         }
       }
@@ -301,8 +308,8 @@ export const getOperatorProfile = unstable_cache(
           todayCount: stats?.todayCount ?? 0,
           nextDateIso: stats?.nextDateIso ?? null,
           minFare: stats?.minFare ?? null,
-          firstDeparture: stats ? formatDepartureTime(stats.firstDeparture) : null,
-          lastDeparture: stats ? formatDepartureTime(stats.lastDeparture) : null,
+          departureTime: stats ? formatDepartureTime(stats.nextTripDepartAt) : null,
+          arrivalTime: stats?.nextTripArriveAt ? formatDepartureTime(stats.nextTripArriveAt) : null,
         };
       })
       .sort((a, b) => b.todayCount - a.todayCount || a.name.localeCompare(b.name));

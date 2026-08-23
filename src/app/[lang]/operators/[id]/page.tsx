@@ -91,7 +91,6 @@ export default async function OperatorPage({
   );
   const coverageStats: [string, number][] = [
     ["Daily departures", dailyDepartures],
-    ["Cities served", profile.citiesServed],
     ["Routes", profile.routes.length],
     ["Buses", totalBuses],
   ];
@@ -127,7 +126,7 @@ export default async function OperatorPage({
                 )}
                 <span className="ui inline-flex items-center gap-1.5 text-xs font-bold text-black dark:text-white">
                   Verified Operator
-                  <Image src="/verified-badge.jpg" alt="" width={16} height={16} className="rounded-sm" />
+                  <Image src="/verified-badge.png" alt="" width={16} height={16} className="rounded-sm" />
                 </span>
               </div>
 
@@ -177,9 +176,9 @@ export default async function OperatorPage({
             <p className="ui mt-4 text-sm text-slate-500 dark:text-zinc-500">No routes assigned yet.</p>
           ) : (
             <div className="card mt-4 divide-y divide-border overflow-hidden">
-              <div className="ui hidden grid-cols-[minmax(0,1.6fr)_minmax(0,1.3fr)_minmax(0,1fr)_minmax(0,0.8fr)_minmax(0,0.9fr)_auto] gap-4 bg-muted/60 px-5 py-3 text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-zinc-500 sm:grid">
+              <div className="ui hidden grid-cols-[minmax(0,1.6fr)_minmax(0,1.3fr)_minmax(0,1fr)_minmax(0,0.8fr)_minmax(0,0.9fr)_9.5rem] gap-4 bg-muted/60 px-5 py-3 text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-zinc-500 sm:grid">
                 <span>Route</span>
-                <span>First and last departures</span>
+                <span>Departure &amp; arrival</span>
                 <span>Departures</span>
                 <span>Duration</span>
                 <span>Fare</span>
@@ -192,13 +191,13 @@ export default async function OperatorPage({
                   <Link
                     key={r.routeCardId ?? r.routeId}
                     href={localizePath(locale, `/search?${query}&date=${today}&operator=${profile.id}`)}
-                    className="flex flex-col gap-2 px-5 py-4 transition-colors hover:bg-muted sm:grid sm:grid-cols-[minmax(0,1.6fr)_minmax(0,1.3fr)_minmax(0,1fr)_minmax(0,0.8fr)_minmax(0,0.9fr)_auto] sm:items-center sm:gap-4"
+                    className="flex flex-col gap-2 px-5 py-4 transition-colors hover:bg-muted sm:grid sm:grid-cols-[minmax(0,1.6fr)_minmax(0,1.3fr)_minmax(0,1fr)_minmax(0,0.8fr)_minmax(0,0.9fr)_9.5rem] sm:items-center sm:gap-4"
                   >
                     <span className="font-heading font-semibold">{r.name}</span>
                     <span className="ui text-sm text-slate-600 dark:text-zinc-400">
-                      {r.firstDeparture && r.lastDeparture
-                        ? `${r.firstDeparture} — ${r.lastDeparture}`
-                        : "—"}
+                      {r.departureTime && r.arrivalTime
+                        ? `${r.departureTime} — ${r.arrivalTime}`
+                        : r.departureTime || "—"}
                     </span>
                     <div className="flex items-center justify-between sm:contents">
                       <span className="ui text-sm text-slate-600 dark:text-zinc-400">
@@ -272,7 +271,7 @@ export default async function OperatorPage({
                     <div className="min-w-0">
                       <p className="truncate font-medium">{classLabel(f.class)}</p>
                       <p className="ui text-xs text-slate-500 dark:text-zinc-500">
-                        {f.seatCount} seats · {f.busCount} {f.busCount === 1 ? "bus" : "buses"}
+                        {f.busCount} {f.busCount === 1 ? "bus" : "buses"}
                       </p>
                     </div>
                     <div className="flex shrink-0 items-center gap-1.5 text-slate-400 dark:text-zinc-600">
