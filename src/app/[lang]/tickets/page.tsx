@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import QRCode from "qrcode";
 import { createClient } from "@/lib/supabase/server";
 import { TicketsList, type TicketBooking } from "./tickets-list";
@@ -30,13 +31,7 @@ export default async function TicketsPage() {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    return (
-      <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
-        <Link href="/login?next=/tickets" className="font-medium text-brand underline dark:text-blue-400">
-          Sign in to see your tickets
-        </Link>
-      </div>
-    );
+    redirect("/login?next=/tickets");
   }
 
   // RLS restricts bookings + tickets to the signed-in user's own rows.
