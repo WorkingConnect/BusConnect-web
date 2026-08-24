@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getOperatorManifest, ApiError, type OperatorManifest } from "@/lib/api";
 import { ManifestPanel } from "./manifest-panel";
 import { RequestCancellationButton } from "../../timetable/request-cancellation-button";
+import { BookingStatusToggle } from "../../timetable/booking-status-toggle";
 
 function dateTime(iso: string) {
   return new Date(iso).toLocaleString("en-LK", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" });
@@ -65,6 +66,9 @@ export default async function OperatorManifestPage({
           </p>
         </div>
         <div className="flex shrink-0 items-center gap-2">
+          {(manifest.status === "scheduled" || manifest.status === "boarding") && (
+            <BookingStatusToggle tripId={manifest.trip_id} bookingClosed={manifest.booking_closed} />
+          )}
           {!isPilot && (manifest.status === "scheduled" || manifest.status === "boarding") && (
             <RequestCancellationButton
               tripId={manifest.trip_id}

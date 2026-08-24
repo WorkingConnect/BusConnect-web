@@ -102,6 +102,7 @@ export interface TripSearchResult {
   depart_at: string;
   arrive_est: string | null;
   status: string;
+  booking_closed: boolean;
   bus_reg_no: string;
   bus_amenities: string[];
   bus_images: string[];
@@ -429,6 +430,7 @@ export interface OperatorManifest {
   role: "owner" | "pilot";
   status: string;
   location_sharing: boolean;
+  booking_closed: boolean;
   cancellation_requested_at: string | null;
   cancellation_reason: string | null;
   route_name: string | null;
@@ -712,6 +714,18 @@ export function refundTicketSeats(
 export function clearCancellationRequest(accessToken: string, tripId: string) {
   return request<{ ok: true }>(`/operator/trips/${tripId}/cancellation-request`, {
     method: 'DELETE',
+    accessToken,
+  });
+}
+
+/** Owner/pilot/admin-context: stop or resume new bookings on a trip,
+ *  independent of trip status. Also set automatically once a trip starts
+ *  boarding (see setTripStatus's server-side behavior) — this lets it be
+ *  reopened, or closed early before boarding if the bus is already full. */
+export function setTripBookingStatus(accessToken: string, tripId: string, closed: boolean) {
+  return request<{ id: string; booking_closed: boolean }>(`/operator/trips/${tripId}/booking-status`, {
+    method: 'PATCH',
+    body: JSON.stringify({ closed }),
     accessToken,
   });
 }

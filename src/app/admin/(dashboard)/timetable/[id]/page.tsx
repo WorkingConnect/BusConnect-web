@@ -5,6 +5,7 @@ import { getOperatorManifest, ApiError, type OperatorManifest } from "@/lib/api"
 import { ManifestPanel } from "@/app/operator/(dashboard)/trips/[id]/manifest-panel";
 import { CancelTripButton } from "./cancel-trip-button";
 import { PayoutActions } from "./payout-actions";
+import { BookingStatusToggle } from "@/app/operator/(dashboard)/timetable/booking-status-toggle";
 
 function dateTime(iso: string) {
   return new Date(iso).toLocaleString("en-LK", {
@@ -87,14 +88,19 @@ export default async function AdminTripPage({ params }: { params: Promise<{ id: 
             {dateTime(manifest.depart_at)} · Bus {manifest.bus?.reg_no ?? "—"}
           </p>
         </div>
-        {(manifest.status === "scheduled" || manifest.status === "boarding") && (
-          <CancelTripButton
-            tripId={id}
-            cancellationRequestedAt={manifest.cancellation_requested_at}
-            cancellationReason={manifest.cancellation_reason}
-          />
-        )}
-        {(manifest.status === "arrived" || manifest.status === "cancelled") && <PayoutActions tripId={id} />}
+        <div className="flex shrink-0 items-center gap-2">
+          {(manifest.status === "scheduled" || manifest.status === "boarding") && (
+            <BookingStatusToggle tripId={id} bookingClosed={manifest.booking_closed} />
+          )}
+          {(manifest.status === "scheduled" || manifest.status === "boarding") && (
+            <CancelTripButton
+              tripId={id}
+              cancellationRequestedAt={manifest.cancellation_requested_at}
+              cancellationReason={manifest.cancellation_reason}
+            />
+          )}
+          {(manifest.status === "arrived" || manifest.status === "cancelled") && <PayoutActions tripId={id} />}
+        </div>
       </div>
 
       {/* stat tiles */}

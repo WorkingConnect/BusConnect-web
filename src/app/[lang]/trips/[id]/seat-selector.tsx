@@ -169,7 +169,11 @@ export function SeatSelector(props: Props) {
       });
       router.push(`/bookings/${booking.booking_id}`);
     } catch (e) {
-      if (e instanceof ApiError && e.status === 409) {
+      if (e instanceof ApiError && e.status === 409 && e.message.includes("Booking has been closed")) {
+        setError(e.message);
+        setSelected(new Set());
+        setGenders(new Map());
+      } else if (e instanceof ApiError && e.status === 409) {
         setError("Some of those seats were just taken. Please pick again.");
         setSelected(new Set());
         setGenders(new Map());
@@ -268,8 +272,8 @@ export function SeatSelector(props: Props) {
         </div>
       </div>
 
-      {/* sticky summary card — boarding/drop-off, seat total, and continue all in one place */}
-      <div className="sticky bottom-4 mt-6 rounded-2xl border border-slate-200 bg-white/90 p-3 backdrop-blur-md dark:border-zinc-800 dark:bg-zinc-900/90">
+      {/* summary card — boarding/drop-off, seat total, and continue all in one place, right under the seat map */}
+      <div className="mt-6 rounded-2xl border border-slate-200 bg-white/90 p-3 backdrop-blur-md dark:border-zinc-800 dark:bg-zinc-900/90">
         {stops.length > 0 && (
           <div className="grid grid-cols-1 gap-3 border-b border-slate-200 pb-3 sm:grid-cols-2 dark:border-zinc-800">
             <label className="ui flex flex-col gap-1.5 text-xs font-medium text-slate-600 dark:text-zinc-400">

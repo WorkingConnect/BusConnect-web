@@ -32,7 +32,7 @@ function TripCard({ trip }: { trip: TripSearchResult }) {
   const amenities = trip.bus_amenities.slice(0, 4);
 
   return (
-    <div className="card card-hover overflow-hidden">
+    <div className={["card overflow-hidden", trip.booking_closed ? "opacity-60" : "card-hover"].join(" ")}>
       <div className="flex flex-col sm:flex-row">
         {/* thumbnail — flush to the card edge, full height on desktop */}
         <div className="relative h-36 w-full shrink-0 sm:h-auto sm:w-56">
@@ -64,6 +64,11 @@ function TripCard({ trip }: { trip: TripSearchResult }) {
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-3">
             <span className="pill">{trip.bus_type_class.replace("_", " ")}</span>
+            {trip.booking_closed && (
+              <span className="ui rounded-full bg-red-100 px-2.5 py-1 text-xs font-semibold text-red-700 dark:bg-red-950/50 dark:text-red-300">
+                Booking closed
+              </span>
+            )}
             <span className="ui flex items-center gap-1.5 text-sm font-medium text-slate-600 dark:text-zinc-400">
               <Bus size={14} className="shrink-0 text-slate-400 dark:text-zinc-500" />
               {trip.operator_name} <span className="text-slate-300 dark:text-zinc-700">·</span>{" "}
@@ -123,12 +128,16 @@ function TripCard({ trip }: { trip: TripSearchResult }) {
               {Number(trip.fare).toLocaleString("en-LK")}
             </p>
           </div>
-          <Link
-            href={`/trips/${trip.trip_id}?from=${trip.from_stop_id}&to=${trip.to_stop_id}`}
-            className="btn-primary"
-          >
-            Select seats
-          </Link>
+          {trip.booking_closed ? (
+            <span className="btn-primary pointer-events-none opacity-60">Booking closed</span>
+          ) : (
+            <Link
+              href={`/trips/${trip.trip_id}?from=${trip.from_stop_id}&to=${trip.to_stop_id}`}
+              className="btn-primary"
+            >
+              Select seats
+            </Link>
+          )}
         </div>
       </div>
       </div>
