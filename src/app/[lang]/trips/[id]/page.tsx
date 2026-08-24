@@ -122,9 +122,6 @@ export default async function TripPage({
             <Star size={13} className="fill-amber-300 text-amber-300" />
             {(operator?.rating ?? 0).toFixed(1)}
           </span>
-          <span className="rounded-lg bg-white/20 px-3 py-1.5 font-medium text-white">
-            {(operator?.reliability_score ?? 0).toFixed(0)}% on-time
-          </span>
         </div>
       </header>
 

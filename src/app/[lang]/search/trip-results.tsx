@@ -71,7 +71,7 @@ function TripCard({ trip }: { trip: TripSearchResult }) {
             </span>
             <span className="ui ml-auto flex shrink-0 items-center gap-1 text-xs font-medium text-slate-500 dark:text-zinc-500">
               <Star size={12} className="fill-amber-400 text-amber-400" />
-              {trip.operator_rating.toFixed(1)} · {trip.operator_reliability_score.toFixed(0)}%
+              {trip.operator_rating.toFixed(1)}
             </span>
           </div>
 
