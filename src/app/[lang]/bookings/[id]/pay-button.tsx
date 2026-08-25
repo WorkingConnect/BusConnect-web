@@ -88,6 +88,15 @@ export function PayButton({ bookingId }: { bookingId: string }) {
 
       const { sessionId, checkoutJsUrl } = await checkoutBooking(session.access_token, bookingId);
 
+      // Starts DNS/TLS setup for MPGS's domain before loadMpgsScript()'s
+      // <script> tag actually requests it — an external, cold-connection
+      // origin, so this overlaps a real (if modest) chunk of that handshake
+      // with the JS still running here rather than paying for it serially.
+      const preconnect = document.createElement("link");
+      preconnect.rel = "preconnect";
+      preconnect.href = new URL(checkoutJsUrl).origin;
+      document.head.appendChild(preconnect);
+
       // data-error / data-cancel are function *names* the MPGS SDK looks up
       // on window — not URLs. They only fire for a problem before the
       // browser leaves this page (bad/expired session); once the payer

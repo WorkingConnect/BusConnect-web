@@ -4,7 +4,6 @@ import { ArrowLeft, CheckCircle2, TicketCheck, Ban } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { getBooking, ApiError, type Booking } from "@/lib/api";
 import { PayButton } from "./pay-button";
-import { CancelButton } from "./cancel-button";
 import { HoldTimer } from "./hold-timer";
 
 export default async function BookingPage({
@@ -66,10 +65,6 @@ export default async function BookingPage({
   const latestPayment = booking.payments?.[booking.payments.length - 1];
   const paidAmount = isConfirmed && latestPayment ? Number(latestPayment.amount) : null;
   const totalWithFee = Number(booking.amount) * (1 + convenienceFeePct / 100);
-  const hasDeparted = booking.trip
-    ? new Date(booking.trip.depart_at).getTime() <= Date.now()
-    : false;
-  const isCancellable = (isConfirmed || isPayable) && !hasDeparted;
   const latestRefund = booking.refunds?.[booking.refunds.length - 1];
 
   const ticket = booking.tickets?.[0];
@@ -256,16 +251,6 @@ export default async function BookingPage({
       {isPayable && (
         <div className="mt-6">
           <PayButton bookingId={booking.id} />
-        </div>
-      )}
-
-      {isCancellable && booking.trip && (
-        <div className="mt-6">
-          <CancelButton
-            bookingId={booking.id}
-            amount={Number(booking.amount)}
-            departAt={booking.trip.depart_at}
-          />
         </div>
       )}
 
