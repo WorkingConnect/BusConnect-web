@@ -131,6 +131,28 @@ export function formatPrice(amount: number, priceType: string): string {
   return `${formatted} / ${formatPriceType(priceType) ?? priceType}`;
 }
 
+/** Which contact buttons a listing's detail page should show. No
+ * preference set (older listings) keeps the old behavior of showing
+ * whichever contact info exists. A preference that needs WhatsApp but has
+ * no WhatsApp number on file falls back to Call rather than showing a
+ * dead button. */
+export function getContactVisibility(listing: {
+  contact_whatsapp: string | null;
+  preferred_contact_method: string | null;
+}): { showCall: boolean; showWhatsapp: boolean } {
+  const hasWhatsapp = !!listing.contact_whatsapp;
+  switch (listing.preferred_contact_method) {
+    case 'call':
+      return { showCall: true, showWhatsapp: false };
+    case 'whatsapp':
+      return hasWhatsapp ? { showCall: false, showWhatsapp: true } : { showCall: true, showWhatsapp: false };
+    case 'both':
+      return { showCall: true, showWhatsapp: hasWhatsapp };
+    default:
+      return { showCall: true, showWhatsapp: hasWhatsapp };
+  }
+}
+
 /**
  * Public read under RLS (0092: moderation_status = 'approved' and not
  * is_archived, or posted_by = auth.uid() — an anonymous/public client only

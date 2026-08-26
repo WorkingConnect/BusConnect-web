@@ -584,6 +584,7 @@ export function HireListingDetailCard({ listing }: { listing: AdminHireListing }
                 <option value="">Not specified</option>
                 <option value="call">Call</option>
                 <option value="whatsapp">WhatsApp</option>
+                <option value="both">Both</option>
               </Select>
             </FieldLabel>
           </div>

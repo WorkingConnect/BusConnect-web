@@ -8,6 +8,7 @@ import {
   formatFeature,
   formatSuitableFor,
   formatPrice,
+  getContactVisibility,
 } from "@/lib/hire-listings";
 import { isLocale, defaultLocale, type Locale } from "@/lib/i18n/config";
 import { localizePath } from "@/lib/i18n/navigation";
@@ -68,6 +69,7 @@ export default async function HireListingPage({
   }
 
   const whatsappDigits = listing.contact_whatsapp?.replace(/\D/g, "");
+  const { showCall, showWhatsapp } = getContactVisibility(listing);
 
   const badgeParts = [
     formatBusType(listing.bus_type) ?? listing.bus_type,
@@ -165,10 +167,12 @@ export default async function HireListingPage({
             Contact {listing.contact_name}
           </p>
           <div className="mt-4 flex flex-wrap gap-3">
-            <a href={`tel:${listing.contact_phone}`} className="btn-primary">
-              <Phone size={16} /> {formatPhone(listing.contact_phone)}
-            </a>
-            {whatsappDigits && (
+            {showCall && (
+              <a href={`tel:${listing.contact_phone}`} className="btn-primary">
+                <Phone size={16} /> {formatPhone(listing.contact_phone)}
+              </a>
+            )}
+            {showWhatsapp && whatsappDigits && (
               <a
                 href={`https://wa.me/${whatsappDigits}`}
                 target="_blank"
