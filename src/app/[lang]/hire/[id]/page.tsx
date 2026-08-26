@@ -12,6 +12,7 @@ import {
 } from "@/lib/hire-listings";
 import { isLocale, defaultLocale, type Locale } from "@/lib/i18n/config";
 import { localizePath } from "@/lib/i18n/navigation";
+import { stripCountryCode } from "@/lib/phone";
 import { ImageGallery } from "./image-gallery";
 
 // Same pill style as the operator amenities section
@@ -68,7 +69,12 @@ export default async function HireListingPage({
     );
   }
 
-  const whatsappDigits = listing.contact_whatsapp?.replace(/\D/g, "");
+  // Posters type the local format ("0771234567"); wa.me needs the country
+  // code with no leading 0, so strip whatever prefix is there and add
+  // +94's digits back on.
+  const whatsappDigits = listing.contact_whatsapp
+    ? `94${stripCountryCode(listing.contact_whatsapp)}`
+    : undefined;
   const { showCall, showWhatsapp } = getContactVisibility(listing);
 
   const badgeParts = [
