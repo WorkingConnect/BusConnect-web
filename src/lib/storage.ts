@@ -93,3 +93,17 @@ export async function uploadRouteImage(userId: string, file: File): Promise<stri
   if (error) throw error;
   return supabase.storage.from('route-images').getPublicUrl(path).data.publicUrl;
 }
+
+/** Public bucket, folder-per-uploader (see 0088_bus_hire_listings.sql) — the
+ * uploader's own uid, not the listing's poster, so this works whether a
+ * passenger or an admin (editing the listing) is the one uploading. */
+export async function uploadHireListingPhoto(userId: string, file: File): Promise<string> {
+  const supabase = createClient();
+  const ext = file.name.split('.').pop() ?? 'jpg';
+  const path = `${userId}/${Date.now()}-${Math.random().toString(36).slice(2, 6)}.${ext}`;
+  const { error } = await supabase.storage
+    .from('bus-hire-photos')
+    .upload(path, file, { upsert: true, contentType: file.type });
+  if (error) throw error;
+  return supabase.storage.from('bus-hire-photos').getPublicUrl(path).data.publicUrl;
+}

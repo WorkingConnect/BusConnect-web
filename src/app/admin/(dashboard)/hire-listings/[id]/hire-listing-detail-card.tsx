@@ -14,9 +14,10 @@ import {
   RotateCcw,
   Trash2,
   MapPin,
-  Plus,
+  ImagePlus,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { uploadHireListingPhoto } from "@/lib/storage";
 import {
   updateAdminHireListing,
   setAdminHireListingReviewStatus,
@@ -40,6 +41,8 @@ import {
   formatPrice,
 } from "@/lib/hire-listings";
 import { HIRE_PROVINCES, districtsFor } from "../province-districts";
+
+const MAX_PHOTOS = 4;
 
 type BusType = AdminHireListingInput["busType"];
 type PriceType = AdminHireListingInput["priceType"];
@@ -161,6 +164,8 @@ export function HireListingDetailCard({ listing }: { listing: AdminHireListing }
     (listing.driver_included as DriverIncluded) ?? "",
   );
   const [images, setImages] = useState<string[]>(listing.images);
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [photoError, setPhotoError] = useState<string | null>(null);
 
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -206,11 +211,27 @@ export function HireListingDetailCard({ listing }: { listing: AdminHireListing }
     setDistrict(districtsFor(next)[0] ?? "");
   }
 
-  function updateImageAt(i: number, value: string) {
-    setImages((prev) => prev.map((u, idx) => (idx === i ? value : u)));
-  }
   function removeImageAt(i: number) {
     setImages((prev) => prev.filter((_, idx) => idx !== i));
+  }
+
+  async function addPhoto(file: File | undefined) {
+    if (!file || images.length >= MAX_PHOTOS || uploadingPhoto) return;
+    setUploadingPhoto(true);
+    setPhotoError(null);
+    try {
+      const supabase = createClient();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (!session) return;
+      const url = await uploadHireListingPhoto(session.user.id, file);
+      setImages((prev) => [...prev, url]);
+    } catch {
+      setPhotoError("Photo upload failed. Try again.");
+    } finally {
+      setUploadingPhoto(false);
+    }
   }
 
   async function save(e: React.FormEvent) {
@@ -572,33 +593,49 @@ export function HireListingDetailCard({ listing }: { listing: AdminHireListing }
           <h2 className="ui text-xs font-semibold uppercase tracking-wide text-slate-400 dark:text-zinc-600">
             Photos
           </h2>
-          <div className="mt-4 flex flex-col gap-2">
+          <div className="mt-4 flex flex-wrap gap-3">
             {images.map((url, i) => (
-              <div key={i} className="flex items-center gap-2">
-                <input
-                  value={url}
-                  onChange={(e) => updateImageAt(i, e.target.value)}
-                  className="field text-sm"
-                  placeholder="Image URL"
+              <div key={url} className="relative h-20 w-20 shrink-0">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={url}
+                  alt={`Listing photo ${i + 1}`}
+                  className="h-20 w-20 rounded-lg border border-slate-200 object-cover dark:border-zinc-800"
                 />
                 <button
                   type="button"
                   onClick={() => removeImageAt(i)}
                   aria-label="Remove image"
-                  className="shrink-0 rounded-lg p-2 text-slate-400 transition-colors hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/30"
+                  className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-slate-900 text-white shadow-sm transition-colors hover:bg-slate-700 dark:bg-zinc-700 dark:hover:bg-zinc-600"
                 >
-                  <X size={16} />
+                  <X size={11} />
                 </button>
               </div>
             ))}
-            <button
-              type="button"
-              onClick={() => setImages((prev) => [...prev, ""])}
-              className="btn-secondary mt-1 w-fit"
-            >
-              <Plus size={16} /> Add image URL
-            </button>
+            {images.length < MAX_PHOTOS && (
+              <label className="ui flex h-20 w-20 shrink-0 cursor-pointer flex-col items-center justify-center gap-1 rounded-lg border border-dashed border-slate-300 text-slate-400 transition-colors hover:border-brand hover:text-brand dark:border-zinc-700 dark:text-zinc-600">
+                {uploadingPhoto ? (
+                  <Loader2 size={18} className="animate-spin" />
+                ) : (
+                  <>
+                    <ImagePlus size={18} />
+                    <span className="text-[11px] font-medium">Add photo</span>
+                  </>
+                )}
+                <input
+                  type="file"
+                  accept="image/*"
+                  disabled={uploadingPhoto}
+                  onChange={(e) => {
+                    void addPhoto(e.target.files?.[0]);
+                    e.target.value = "";
+                  }}
+                  className="sr-only"
+                />
+              </label>
+            )}
           </div>
+          {photoError && <p className="ui mt-2 text-xs text-red-600 dark:text-red-400">{photoError}</p>}
         </section>
 
         {error && <p className="ui text-sm text-red-600 dark:text-red-400">{error}</p>}
