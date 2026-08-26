@@ -27,7 +27,12 @@ export function SiteHeader() {
   const locale = useLocale();
   const pathname = usePathname();
 
-  const tabs = [...navItems, { key: "myTickets", href: "/tickets", icon: Ticket }] as const;
+  const tabs = [
+    navItems[0],
+    navItems[1],
+    { key: "myTickets", href: "/tickets", icon: Ticket },
+    navItems[2],
+  ] as const;
 
   return (
     <>

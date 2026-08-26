@@ -98,6 +98,21 @@ export const HIRE_SUITABLE_FOR: { value: string; label: string }[] = [
   { value: 'other', label: 'Other' },
 ];
 
+/** Sri Lanka's 9 provinces, each with their districts — same data as
+ * BusConnect-mobile's post form, used here for the browse-page filter. */
+export const HIRE_PROVINCE_DISTRICTS: { province: string; districts: string[] }[] = [
+  { province: 'Western', districts: ['Colombo', 'Gampaha', 'Kalutara'] },
+  { province: 'Central', districts: ['Kandy', 'Matale', 'Nuwara Eliya'] },
+  { province: 'Southern', districts: ['Galle', 'Matara', 'Hambantota'] },
+  { province: 'Northern', districts: ['Jaffna', 'Kilinochchi', 'Mannar', 'Vavuniya', 'Mullaitivu'] },
+  { province: 'Eastern', districts: ['Trincomalee', 'Batticaloa', 'Ampara'] },
+  { province: 'North Western', districts: ['Kurunegala', 'Puttalam'] },
+  { province: 'North Central', districts: ['Anuradhapura', 'Polonnaruwa'] },
+  { province: 'Uva', districts: ['Badulla', 'Monaragala'] },
+  { province: 'Sabaragamuwa', districts: ['Ratnapura', 'Kegalle'] },
+];
+export const HIRE_PROVINCES: string[] = HIRE_PROVINCE_DISTRICTS.map((p) => p.province);
+
 function formatFrom(list: { value: string; label: string }[], value: string | null): string | null {
   return list.find((t) => t.value === value)?.label ?? value;
 }

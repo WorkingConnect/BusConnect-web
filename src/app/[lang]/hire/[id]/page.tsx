@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ChevronRight, Bus, MapPin, Phone, MessageCircle } from "lucide-react";
+import { ChevronRight, MapPin, Phone } from "lucide-react";
 import {
   getHireListing,
   formatBusType,
@@ -11,6 +11,34 @@ import {
 } from "@/lib/hire-listings";
 import { isLocale, defaultLocale, type Locale } from "@/lib/i18n/config";
 import { localizePath } from "@/lib/i18n/navigation";
+import { ImageGallery } from "./image-gallery";
+
+// Same pill style as the operator amenities section
+// (src/app/[lang]/operators/[id]/page.tsx) — bg-muted pill, no icon.
+function InfoPill({ label }: { label: string }) {
+  return (
+    <span className="ui inline-flex items-center rounded-full bg-muted px-3 py-1.5 text-xs font-medium text-slate-700 dark:text-zinc-300">
+      {label}
+    </span>
+  );
+}
+
+function WhatsAppIcon({ size = 16 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.29.173-1.414-.074-.124-.272-.198-.57-.347z" />
+      <path d="M12.001 2C6.478 2 2 6.477 2 12c0 1.876.52 3.633 1.417 5.134L2 22l5.008-1.394A9.94 9.94 0 0 0 12 22c5.523 0 10-4.477 10-10S17.523 2 12.001 2zm0 18.09a8.06 8.06 0 0 1-4.393-1.297l-.315-.188-3.16.878.86-3.13-.203-.32A8.058 8.058 0 0 1 3.909 12c0-4.464 3.628-8.09 8.092-8.09 4.464 0 8.09 3.626 8.09 8.09 0 4.464-3.626 8.09-8.09 8.09z" />
+    </svg>
+  );
+}
+
+/** "0712345678" -> "071 234 5678"; anything that isn't a 10-digit Sri
+ *  Lankan number just passes through unchanged. */
+function formatPhone(phone: string): string {
+  const digits = phone.replace(/\D/g, "");
+  if (digits.length !== 10) return phone;
+  return `${digits.slice(0, 3)} ${digits.slice(3, 6)} ${digits.slice(6)}`;
+}
 
 // Browse-only, same as the listing page — no edit/delete/status UI here at
 // all, posting only exists in BusConnect-mobile.
@@ -42,7 +70,7 @@ export default async function HireListingPage({
   const whatsappDigits = listing.contact_whatsapp?.replace(/\D/g, "");
 
   const badgeParts = [
-    formatBusType(listing.bus_type),
+    formatBusType(listing.bus_type) ?? listing.bus_type,
     `${listing.seat_count} seats`,
     listing.is_ac ? "A/C" : "Non-A/C",
     listing.condition ? formatCondition(listing.condition) : null,
@@ -66,120 +94,91 @@ export default async function HireListingPage({
         <span className="font-medium text-slate-700 dark:text-zinc-300">{listing.title}</span>
       </nav>
 
-      <div className="mt-4 overflow-hidden rounded-2xl border border-border">
-        {listing.images.length > 0 ? (
-          <div className="grid grid-cols-2 gap-1 bg-slate-100 dark:bg-zinc-800 sm:grid-cols-3">
-            {listing.images.slice(0, 4).map((src, i) => (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                key={src}
-                src={src}
-                alt={`${listing.title} photo ${i + 1}`}
-                className={`h-40 w-full object-cover ${i === 0 ? "col-span-2 h-64 sm:col-span-2" : ""}`}
-              />
-            ))}
-          </div>
-        ) : (
-          <div
-            className="flex h-56 w-full items-center justify-center"
-            style={{ background: "linear-gradient(135deg, #004aad 0%, #062b63 100%)" }}
-          >
-            <Bus size={40} className="text-white/70" />
-          </div>
-        )}
-      </div>
+      <div className="mt-4">
+        <ImageGallery images={listing.images} title={listing.title} />
 
-      <p className="font-heading mt-6 text-2xl font-bold text-brand dark:text-blue-400">
-        {formatPrice(listing.price_amount, listing.price_type)}
-      </p>
-      <h1 className="font-heading mt-1 text-xl font-bold tracking-tight">{listing.title}</h1>
-
-      <div className="ui mt-2 flex items-center gap-1.5 text-sm text-slate-600 dark:text-zinc-400">
-        <MapPin size={14} />
-        {listing.city}, {listing.district}, {listing.province}
-      </div>
-
-      <div className="ui mt-3 flex flex-wrap gap-2">
-        {badgeParts.map((part) => (
-          <span key={part} className="pill">
-            {part}
-          </span>
-        ))}
-      </div>
-
-      {detailRows.length > 0 && (
         <div className="card mt-6 divide-y divide-border overflow-hidden">
-          {detailRows.map((row) => (
-            <div key={row.label} className="ui flex items-center justify-between px-4 py-2.5 text-sm">
-              <span className="text-slate-500 dark:text-zinc-400">{row.label}</span>
-              <span className="font-medium">{row.value}</span>
+          <div className="p-5 sm:p-6">
+            <p className="font-heading text-2xl font-bold text-brand dark:text-blue-400">
+              {formatPrice(listing.price_amount, listing.price_type)}
+            </p>
+            <h1 className="font-heading mt-1 text-xl font-bold tracking-tight">{listing.title}</h1>
+            <div className="ui mt-2 flex items-center gap-1.5 text-sm text-slate-600 dark:text-zinc-400">
+              <MapPin size={14} />
+              {listing.city}, {listing.district}, {listing.province}
             </div>
-          ))}
-        </div>
-      )}
-
-      {listing.features.length > 0 && (
-        <div className="mt-6">
-          <h2 className="ui text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-zinc-500">
-            Features & Facilities
-          </h2>
-          <div className="mt-2 flex flex-wrap gap-2">
-            {listing.features.map((f) => (
-              <span key={f} className="pill">
-                {formatFeature(f)}
-              </span>
-            ))}
+            <div className="ui mt-3 flex flex-wrap gap-2">
+              {badgeParts.map((part) => (
+                <InfoPill key={part} label={part} />
+              ))}
+            </div>
           </div>
-        </div>
-      )}
 
-      {listing.suitable_for.length > 0 && (
-        <div className="mt-6">
-          <h2 className="ui text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-zinc-500">
-            Suitable For
-          </h2>
-          <div className="mt-2 flex flex-wrap gap-2">
-            {listing.suitable_for.map((s) => (
-              <span key={s} className="pill">
-                {formatSuitableFor(s)}
-              </span>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {listing.description && (
-        <div className="mt-6">
-          <h2 className="ui text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-zinc-500">
-            Description
-          </h2>
-          <p className="mt-2 whitespace-pre-line text-sm leading-relaxed text-slate-700 dark:text-zinc-300">
-            {listing.description}
-          </p>
-        </div>
-      )}
-
-      <div className="card mt-8 p-5">
-        <p className="ui text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-zinc-500">
-          Contact {listing.contact_name}
-        </p>
-        <p className="ui mt-1 text-xs text-slate-500 dark:text-zinc-500">
-          BusConnect doesn&apos;t handle payment or booking for private hires — arrange details directly.
-        </p>
-        <div className="mt-4 flex flex-wrap gap-3">
-          <a href={`tel:${listing.contact_phone}`} className="btn-primary">
-            <Phone size={16} /> Call {listing.contact_phone}
-          </a>
-          {whatsappDigits && (
-            <a
-              href={`https://wa.me/${whatsappDigits}`}
-              target="_blank"
-              rel="noreferrer"
-              className="ui inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-emerald-700"
-            >
-              <MessageCircle size={16} /> WhatsApp
-            </a>
+          {detailRows.length > 0 && (
+            <div className="p-5 sm:p-6">
+              <h2 className="font-heading text-base font-bold sm:text-lg">Details</h2>
+              <dl className="mt-3 divide-y divide-border">
+                {detailRows.map((row) => (
+                  <div key={row.label} className="flex items-center justify-between py-2.5 text-sm">
+                    <dt className="text-slate-600 dark:text-zinc-400">{row.label}</dt>
+                    <dd className="font-heading font-bold">{row.value}</dd>
+                  </div>
+                ))}
+              </dl>
+            </div>
           )}
+
+          {listing.features.length > 0 && (
+            <div className="p-5 sm:p-6">
+              <h2 className="font-heading text-base font-bold sm:text-lg">Features &amp; Facilities</h2>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {listing.features.map((f) => (
+                  <InfoPill key={f} label={formatFeature(f)} />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {listing.suitable_for.length > 0 && (
+            <div className="p-5 sm:p-6">
+              <h2 className="font-heading text-base font-bold sm:text-lg">Suitable For</h2>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {listing.suitable_for.map((s) => (
+                  <InfoPill key={s} label={formatSuitableFor(s)} />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {listing.description && (
+            <div className="p-5 sm:p-6">
+              <h2 className="font-heading text-base font-bold sm:text-lg">Description</h2>
+              <p className="mt-2 whitespace-pre-line text-sm leading-relaxed text-slate-700 dark:text-zinc-300">
+                {listing.description}
+              </p>
+            </div>
+          )}
+        </div>
+
+        <div className="card mt-6 p-5 sm:p-6">
+          <p className="ui text-xs font-semibold uppercase tracking-wide text-slate-400 dark:text-zinc-600">
+            Contact {listing.contact_name}
+          </p>
+          <div className="mt-4 flex flex-wrap gap-3">
+            <a href={`tel:${listing.contact_phone}`} className="btn-primary">
+              <Phone size={16} /> {formatPhone(listing.contact_phone)}
+            </a>
+            {whatsappDigits && (
+              <a
+                href={`https://wa.me/${whatsappDigits}`}
+                target="_blank"
+                rel="noreferrer"
+                className="ui inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-emerald-700"
+              >
+                <WhatsAppIcon size={16} /> WhatsApp
+              </a>
+            )}
+          </div>
         </div>
       </div>
     </div>
