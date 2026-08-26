@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Building2, Wallet, PiggyBank, Search, Bus, Route, Images, IdCard, CalendarRange, HandCoins, TrendingUp, Users, ClipboardCheck } from "lucide-react";
+import { LayoutDashboard, Building2, Wallet, PiggyBank, Search, Bus, Route, Images, IdCard, CalendarRange, HandCoins, TrendingUp, Users, ClipboardCheck, Megaphone } from "lucide-react";
 
 const items = [
   { label: "Overview", href: "/admin", icon: LayoutDashboard },
@@ -19,6 +19,7 @@ const items = [
   { label: "Pilots", href: "/admin/pilots", icon: IdCard },
   { label: "Refunds", href: "/admin/refunds", icon: Wallet },
   { label: "Bookings", href: "/admin/bookings", icon: Search },
+  { label: "Hire Listings", href: "/admin/hire-listings", icon: Megaphone },
 ] as const;
 
 export function AdminNav({

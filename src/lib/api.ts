@@ -1448,6 +1448,104 @@ export function deleteAdminRefund(accessToken: string, refundId: string) {
   return request<{ ok: true }>(`/admin/refunds/${refundId}`, { method: 'DELETE', accessToken });
 }
 
+export interface AdminHireListing {
+  id: string;
+  posted_by: string;
+  title: string;
+  description: string | null;
+  bus_type: string;
+  condition: string | null;
+  seat_count: number;
+  is_ac: boolean;
+  bus_model: string | null;
+  manufacturing_year: number | null;
+  features: string[];
+  price_amount: number;
+  price_type: string;
+  min_hire_duration: string | null;
+  area: string | null;
+  suitable_for: string[];
+  province: string;
+  district: string;
+  city: string;
+  contact_name: string;
+  contact_phone: string;
+  contact_whatsapp: string | null;
+  preferred_contact_method: string | null;
+  driver_included: string | null;
+  images: string[];
+  moderation_status: 'pending' | 'approved' | 'rejected';
+  is_archived: boolean;
+  created_at: string;
+  poster: { name: string | null; phone: string | null } | null;
+}
+
+export interface AdminHireListingInput {
+  title: string;
+  description?: string;
+  busType:
+    | 'mini_bus'
+    | 'midi_bus'
+    | 'standard_bus'
+    | 'luxury_coach'
+    | 'super_luxury_coach'
+    | 'double_decker'
+    | 'other';
+  condition?: 'new' | 'good' | 'average';
+  seatCount: number;
+  isAc: boolean;
+  busModel?: string;
+  manufacturingYear?: number;
+  features?: string[];
+  priceAmount: number;
+  priceType: 'per_day' | 'per_trip' | 'per_km' | 'negotiable';
+  minHireDuration?: string;
+  area?: string;
+  suitableFor?: string[];
+  province: string;
+  district: string;
+  city: string;
+  contactName: string;
+  contactPhone: string;
+  contactWhatsapp?: string;
+  preferredContactMethod?: 'call' | 'whatsapp';
+  driverIncluded?: 'included' | 'not_included' | 'on_request';
+  images?: string[];
+}
+
+export function listAdminHireListings(accessToken: string, reviewStatus?: 'pending' | 'approved' | 'rejected') {
+  const qs = reviewStatus ? `?reviewStatus=${encodeURIComponent(reviewStatus)}` : '';
+  return request<AdminHireListing[]>(`/admin/hire-listings${qs}`, { accessToken });
+}
+
+export function getAdminHireListing(accessToken: string, id: string) {
+  return request<AdminHireListing>(`/admin/hire-listings/${id}`, { accessToken });
+}
+
+export function updateAdminHireListing(accessToken: string, id: string, input: AdminHireListingInput) {
+  return request<AdminHireListing>(`/admin/hire-listings/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify(input),
+    accessToken,
+  });
+}
+
+export function setAdminHireListingReviewStatus(
+  accessToken: string,
+  id: string,
+  reviewStatus: 'pending' | 'approved' | 'rejected',
+) {
+  return request<AdminHireListing>(`/admin/hire-listings/${id}/review-status`, {
+    method: 'PATCH',
+    body: JSON.stringify({ reviewStatus }),
+    accessToken,
+  });
+}
+
+export function deleteAdminHireListing(accessToken: string, id: string) {
+  return request<{ ok: true }>(`/admin/hire-listings/${id}`, { method: 'DELETE', accessToken });
+}
+
 export function getAdminAnalytics(accessToken: string) {
   return request<AdminAnalytics>('/admin/analytics', { accessToken });
 }

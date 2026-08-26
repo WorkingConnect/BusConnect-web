@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import { useState } from "react";
-import { Menu, X, Search, Route, Ticket, UserCircle, LogOut } from "lucide-react";
+import { Menu, X, Search, Route, Ticket, UserCircle, LogOut, Bus } from "lucide-react";
 import { Logo } from "./logo";
 import { ThemeToggle } from "./theme-toggle";
 import { UserMenu, Avatar } from "./user-menu";
@@ -18,6 +18,7 @@ import { localizePath } from "@/lib/i18n/navigation";
 const navItems = [
   { key: "searchBuses", href: "/", icon: Search },
   { key: "popularRoutes", href: "/#routes", icon: Route },
+  { key: "hireBus", href: "/hire", icon: Bus },
 ] as const;
 
 export function SiteHeader() {
