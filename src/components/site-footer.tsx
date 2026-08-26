@@ -76,10 +76,10 @@ export function SiteFooter() {
           <FooterCol
             title={t("support")}
             links={[
-              [t("helpCentre"), lp("/#help")],
-              [t("refunds"), lp("/#refunds")],
-              [t("cancellations"), lp("/#cancellations")],
-              [t("terms"), lp("/#terms")],
+              [t("helpCentre"), lp("/help")],
+              [t("refunds"), lp("/refunds")],
+              [t("cancellations"), lp("/cancellations")],
+              [t("terms"), lp("/terms")],
             ]}
           />
 

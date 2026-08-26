@@ -88,6 +88,7 @@ function MobileBottomNav({ onOpenMenu }: { onOpenMenu: () => void }) {
     { key: "tabSearch", href: "/", icon: Search },
     { key: "tabRoutes", href: "/#routes", icon: Route },
     { key: "tabTickets", href: "/tickets", icon: Ticket },
+    { key: "tabHire", href: "/hire", icon: Bus },
   ] as const;
 
   return (
@@ -95,7 +96,7 @@ function MobileBottomNav({ onOpenMenu }: { onOpenMenu: () => void }) {
       className="fixed inset-x-0 bottom-0 z-40 rounded-t-3xl bg-card/95 pb-[env(safe-area-inset-bottom)] shadow-[0_-2px_12px_rgba(0,0,0,0.12)] backdrop-blur-md lg:hidden"
       aria-label="Primary"
     >
-      <div className="grid grid-cols-4">
+      <div className="grid grid-cols-5">
         {tabs.map(({ key, href, icon: Icon }) => {
           const localized = localizePath(locale, href);
           const active = href === "/" ? pathname === localized : pathname.startsWith(localized);
