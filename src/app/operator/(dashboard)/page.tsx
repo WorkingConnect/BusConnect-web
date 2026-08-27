@@ -211,11 +211,7 @@ export default async function OperatorOverviewPage() {
             <h1 className="font-heading text-2xl font-bold tracking-tight">{operator.name}</h1>
           </div>
         </div>
-        {role === "owner" ? (
-          <Link href="/operator/journeys/new" className="btn-primary shrink-0">
-            <PlusCircle size={16} /> Create journey
-          </Link>
-        ) : (
+        {role !== "owner" && (
           <Link href="/operator/scan" className="btn-primary shrink-0">
             <ScanLine size={16} /> Scan tickets
           </Link>
