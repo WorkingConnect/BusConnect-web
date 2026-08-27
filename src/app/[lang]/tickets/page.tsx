@@ -8,6 +8,8 @@ interface BookingRow {
   id: string;
   seats: string[];
   amount: number;
+  refunded_seats: string[];
+  refunded_amount: number;
   status: string;
   created_at: string;
   trip: {
@@ -45,7 +47,7 @@ export default async function TicketsPage() {
   const { data } = await supabase
     .from("bookings")
     .select(
-      `id, seats, amount, status, created_at,
+      `id, seats, amount, refunded_seats, refunded_amount, status, created_at,
        trip:trips ( id, depart_at, status,
          route:routes ( name ),
          bus:buses ( reg_no, bus_type:bus_types ( name, class ),
@@ -76,6 +78,8 @@ export default async function TicketsPage() {
         code: b.id.slice(0, 6).toUpperCase(),
         seats: b.seats,
         amount: Number(b.amount),
+        refundedSeats: b.refunded_seats ?? [],
+        refundedAmount: Number(b.refunded_amount ?? 0),
         status: b.status,
         createdAt: b.created_at,
         departAt: b.trip?.depart_at ?? null,

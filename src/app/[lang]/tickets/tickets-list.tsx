@@ -12,6 +12,8 @@ export interface TicketBooking {
   code: string;
   seats: string[];
   amount: number;
+  refundedSeats: string[];
+  refundedAmount: number;
   status: string;
   createdAt: string;
   departAt: string | null;
@@ -201,6 +203,12 @@ function TicketCard({ b, t, onDeleted }: { b: TicketBooking; t: Tab; onDeleted: 
         <Stat label={b.seats.length === 1 ? "Seat" : "Seats"} value={b.seats.join(", ")} />
         <Stat label="Total paid" value={b.status === "confirmed" ? money(b.amount) : "—"} />
         <Stat label="Booked on" value={dateOnly(b.createdAt)} />
+        {b.status === "confirmed" && b.refundedAmount > 0 && (
+          <Stat
+            label="Refunded"
+            value={`${money(b.refundedAmount)} (balance ${money(b.amount - b.refundedAmount)})`}
+          />
+        )}
       </dl>
 
       {/* actions */}
