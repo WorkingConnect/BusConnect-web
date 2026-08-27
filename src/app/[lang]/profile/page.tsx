@@ -4,7 +4,8 @@ import { createClient } from "@/lib/supabase/server";
 import { getMyProfile, ApiError, type MyProfile } from "@/lib/api";
 import { ProfileForm } from "./profile-form";
 
-const SUPPORT_WHATSAPP_NUMBER = "94000000000"; // TODO: real BusConnect support WhatsApp number
+// Same number used for phone support on the Help Centre page.
+const SUPPORT_WHATSAPP_NUMBER = "94764670645";
 
 export default async function ProfilePage() {
   const supabase = await createClient();

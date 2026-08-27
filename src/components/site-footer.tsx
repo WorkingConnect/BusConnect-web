@@ -80,6 +80,7 @@ export function SiteFooter() {
               [t("refunds"), lp("/refunds")],
               [t("cancellations"), lp("/cancellations")],
               [t("terms"), lp("/terms")],
+              [t("privacy"), lp("/privacy")],
             ]}
           />
 
