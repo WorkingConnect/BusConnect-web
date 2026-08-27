@@ -32,10 +32,18 @@ export function UserMenu({
     return () => document.removeEventListener("mousedown", onClickOutside);
   }, []);
 
+  // localizePath assumes it's operating within the passenger app (the only
+  // place "/" and "/login" are actually under app/[lang]/) — on the
+  // operator/admin subdomains those same paths already resolve correctly
+  // on their own via the subdomain rewrite, and prefixing them with a
+  // locale (e.g. "/en") points at a route that doesn't exist there at all.
+  const rootHref = workspace === "passenger" ? localizePath(locale, "/") : "/";
+  const loginHref = workspace === "passenger" ? localizePath(locale, "/login") : "/login";
+
   async function signOut() {
     await doSignOut();
     setOpen(false);
-    router.push(localizePath(locale, "/"));
+    router.push(rootHref);
     router.refresh();
   }
 
@@ -46,7 +54,7 @@ export function UserMenu({
   if (identity === null) {
     return (
       <Link
-        href={localizePath(locale, "/login")}
+        href={loginHref}
         className={
           signInVariant === "link"
             ? "font-medium text-foreground transition-colors duration-300 hover:text-brand dark:hover:text-blue-400"
@@ -82,10 +90,12 @@ export function UserMenu({
           </div>
 
           <div className="p-1.5">
-            {/* An operator whose application hasn't been approved yet has no
-                passenger identity to speak of here — profile/tickets only
-                make sense once they're through review. */}
-            {!(roles?.isOperator && roles.operatorStatus === "pending") && (
+            {/* Passenger-only routes — not under /operator or /admin at all,
+                so this workspace's own dashboard link (below) is the only
+                sensible entry here. An operator whose application hasn't
+                been approved yet also has no passenger identity to speak of
+                here — profile/tickets only make sense once approved. */}
+            {workspace === "passenger" && !(roles?.isOperator && roles.operatorStatus === "pending") && (
               <>
                 <MenuLink href={localizePath(locale, "/profile")} icon={UserCircle} onClick={() => setOpen(false)}>
                   {t("profile")}

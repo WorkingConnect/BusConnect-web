@@ -10,6 +10,11 @@ import { UserMenu } from "./user-menu";
  * their own sidebar nav (OperatorNav/AdminNav). Keeping this separate from
  * SiteHeader is what actually makes these feel like distinct workspaces
  * instead of the passenger site with an extra sidebar bolted on.
+ *
+ * The operator workspace skips UserMenu entirely — OperatorNav's own
+ * sign-out at the bottom of the sidebar covers that, and duplicating it in
+ * a dropdown here was redundant. Admin still gets it (no sidebar
+ * equivalent yet).
  */
 export function WorkspaceHeader({
   label,
@@ -31,7 +36,7 @@ export function WorkspaceHeader({
         </div>
         <div className="ui flex items-center gap-3 text-sm">
           <ThemeToggle />
-          <UserMenu workspace={workspace} />
+          {workspace === "admin" && <UserMenu workspace={workspace} />}
         </div>
       </div>
     </header>

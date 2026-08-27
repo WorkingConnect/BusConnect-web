@@ -1,8 +1,19 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { LayoutDashboard, Bus, CalendarClock, CalendarRange, Wallet, UserPlus, UserCircle, ScanLine } from "lucide-react";
+import { usePathname, useRouter } from "next/navigation";
+import {
+  LayoutDashboard,
+  Bus,
+  CalendarClock,
+  CalendarRange,
+  Wallet,
+  UserPlus,
+  UserCircle,
+  ScanLine,
+  LogOut,
+} from "lucide-react";
+import { useIdentity } from "@/lib/use-identity";
 
 const items = [
   { label: "Overview", href: "/operator", icon: LayoutDashboard, ownerOnly: false },
@@ -23,11 +34,21 @@ export function OperatorNav({
   counts?: { fleet?: number; pilots?: number };
 }) {
   const pathname = usePathname();
+  const router = useRouter();
+  const { signOut } = useIdentity();
   const visible = items.filter((item) => !item.ownerOnly || role === "owner");
   const badgeFor: Record<string, number | undefined> = {
     "/operator/fleet": counts?.fleet,
     "/operator/pilots": counts?.pilots,
   };
+
+  async function handleSignOut() {
+    await signOut();
+    // Plain "/login", not localizePath — operator routes aren't locale
+    // prefixed, so /en/login would 404 (see WorkspaceHeader/UserMenu).
+    router.push("/login");
+    router.refresh();
+  }
 
   return (
     <nav className="flex flex-row gap-1 overflow-x-auto lg:flex-col lg:overflow-visible">
@@ -54,6 +75,14 @@ export function OperatorNav({
           </Link>
         );
       })}
+      <button
+        type="button"
+        onClick={handleSignOut}
+        className="ui flex shrink-0 items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-medium text-red-600 transition-colors hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/30 lg:mt-4 lg:border-t lg:border-slate-200 lg:pt-4 dark:lg:border-zinc-800"
+      >
+        <LogOut size={16} />
+        Sign out
+      </button>
     </nav>
   );
 }
