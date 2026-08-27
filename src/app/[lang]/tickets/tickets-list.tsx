@@ -246,14 +246,16 @@ function TicketCard({ b, t, onDeleted }: { b: TicketBooking; t: Tab; onDeleted: 
             >
               View booking
             </Link>
-            <button
-              type="button"
-              onClick={() => setConfirming(true)}
-              aria-label="Remove this ticket"
-              className="inline-flex items-center justify-center rounded-lg border border-slate-200 p-2.5 text-red-600 transition-colors hover:bg-red-50 dark:border-zinc-700 dark:hover:bg-red-950/30"
-            >
-              <Trash2 size={16} />
-            </button>
+            {t !== "confirmed" && (
+              <button
+                type="button"
+                onClick={() => setConfirming(true)}
+                aria-label="Remove this ticket"
+                className="inline-flex items-center justify-center rounded-lg border border-slate-200 p-2.5 text-red-600 transition-colors hover:bg-red-50 dark:border-zinc-700 dark:hover:bg-red-950/30"
+              >
+                <Trash2 size={16} />
+              </button>
+            )}
           </div>
         )}
         {deleteError && <p className="ui mt-2 text-xs text-red-600 dark:text-red-400">{deleteError}</p>}
