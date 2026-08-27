@@ -401,6 +401,8 @@ export interface OperatorManifestBooking {
   id: string;
   seats: string[];
   amount: number;
+  refunded_seats: string[];
+  refunded_amount: number;
   status: string;
   created_at: string;
   passenger_name: string | null;
