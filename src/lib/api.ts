@@ -410,6 +410,7 @@ export interface OperatorManifestBooking {
   boarded_seats: string[];
   from_location: string | null;
   to_location: string | null;
+  refund_status: "pending_manual" | "processed" | null;
 }
 
 export interface OperatorManifestStop {

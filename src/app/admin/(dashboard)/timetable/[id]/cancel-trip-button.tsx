@@ -48,7 +48,10 @@ export function CancelTripButton({
       const token = await getToken();
       if (!token) return;
       await cancelOperatorTrip(token, tripId, force);
-      router.push("/admin/timetable");
+      // Stay on this trip's detail page (just re-fetch it) instead of
+      // bouncing back to the timetable list — admin still needs to see the
+      // now-cancelled trip's passenger list and refund status, and delete
+      // it from here if they want to.
       router.refresh();
     } catch (e) {
       setError(e instanceof ApiError ? e.message : "Could not cancel this trip.");

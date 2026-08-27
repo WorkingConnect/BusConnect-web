@@ -13,7 +13,32 @@ const STATUS_STYLE: Record<string, string> = {
   pending: "bg-amber-100 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300",
   reserved_unpaid: "bg-amber-100 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300",
   refunded: "bg-slate-100 text-slate-600 dark:bg-zinc-800 dark:text-zinc-400",
+  cancelled: "bg-slate-100 text-slate-600 dark:bg-zinc-800 dark:text-zinc-400",
 };
+
+/** Cancelled-booking refund state, shown instead of the plain "Cancelled"
+ *  badge once the trip itself (and every booking on it) has been cancelled. */
+function refundBadge(refundStatus: "pending_manual" | "processed" | null) {
+  if (refundStatus === "processed") {
+    return (
+      <span className="ui rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-semibold text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300">
+        Refunded
+      </span>
+    );
+  }
+  if (refundStatus === "pending_manual") {
+    return (
+      <span className="ui rounded-full bg-amber-100 px-2.5 py-1 text-xs font-semibold text-amber-700 dark:bg-amber-950/50 dark:text-amber-300">
+        Refund pending
+      </span>
+    );
+  }
+  return (
+    <span className="ui rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-500 dark:bg-zinc-800 dark:text-zinc-400">
+      Cancelled
+    </span>
+  );
+}
 
 export function ManifestPanel({
   manifest,
@@ -39,7 +64,12 @@ export function ManifestPanel({
   const seatRows = useMemo(
     () =>
       manifest.bookings
-        .filter((b) => b.status !== "cancelled")
+        // A booking self-cancelled while the trip is still live is dropped
+        // (it's no one's seat anymore); once the trip itself is cancelled
+        // every booking on it was force-cancelled too, and those stay
+        // visible with their refund status so the passenger list doesn't
+        // just go empty.
+        .filter((b) => b.status !== "cancelled" || manifest.status === "cancelled")
         .flatMap((b) =>
           b.seats.map((seat) => ({
             key: `${b.id}:${seat}`,
@@ -48,6 +78,7 @@ export function ManifestPanel({
             passengerName: b.passenger_name,
             passengerPhone: b.passenger_phone,
             status: b.status,
+            refundStatus: b.refund_status,
             boarded: b.boarded_seats.includes(seat),
           })),
         ),
@@ -130,6 +161,8 @@ export function ManifestPanel({
                           Not boarded
                         </span>
                       )
+                    ) : r.status === "cancelled" ? (
+                      refundBadge(r.refundStatus)
                     ) : (
                       <span
                         className={`ui rounded-full px-2.5 py-1 text-xs font-semibold capitalize ${
@@ -284,6 +317,18 @@ function PassengerDetailModal({
         <DetailRow label="Boarding" value={booking.from_location ?? "—"} />
         <DetailRow label="Drop-off" value={booking.to_location ?? "—"} />
         {showFare && <DetailRow label="Fare" value={`LKR ${Number(booking.amount).toLocaleString("en-LK")}`} />}
+        {booking.status === "cancelled" && (
+          <DetailRow
+            label="Refund"
+            value={
+              booking.refund_status === "processed"
+                ? "Refunded"
+                : booking.refund_status === "pending_manual"
+                  ? "Pending"
+                  : "Not applicable"
+            }
+          />
+        )}
       </dl>
 
       {booking.passenger_phone && (
