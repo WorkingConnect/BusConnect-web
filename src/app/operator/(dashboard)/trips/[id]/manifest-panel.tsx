@@ -153,19 +153,25 @@ export function ManifestPanel({
                   </div>
                   <div className="flex shrink-0 items-center gap-2">
                     {r.status === "confirmed" ? (
-                      r.refunded ? (
-                        <span className="ui rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-500 dark:bg-zinc-800 dark:text-zinc-400">
-                          Refunded
-                        </span>
-                      ) : r.boarded ? (
-                        <span className="ui flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-semibold text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300">
-                          <UserCheck size={12} /> Boarded
-                        </span>
-                      ) : (
-                        <span className="ui rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-500 dark:bg-zinc-800 dark:text-zinc-400">
-                          Not boarded
-                        </span>
-                      )
+                      <>
+                        {r.boarded ? (
+                          <span className="ui flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-semibold text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300">
+                            <UserCheck size={12} /> Boarded
+                          </span>
+                        ) : (
+                          <span className="ui rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-500 dark:bg-zinc-800 dark:text-zinc-400">
+                            Not boarded
+                          </span>
+                        )}
+                        {/* A refunded seat can never be boarded (enforced
+                            server-side), so this only ever appears alongside
+                            "Not boarded", never "Boarded". */}
+                        {r.refunded && (
+                          <span className="ui rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-500 dark:bg-zinc-800 dark:text-zinc-400">
+                            Refunded
+                          </span>
+                        )}
+                      </>
                     ) : r.status === "cancelled" ? (
                       refundBadge(r.refundStatus)
                     ) : (
