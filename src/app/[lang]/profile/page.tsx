@@ -1,7 +1,8 @@
 import Link from "next/link";
-import { MessageCircle, Trash2 } from "lucide-react";
+import { ChevronRight, MessageCircle, ShieldCheck, Trash2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { getMyProfile, ApiError, type MyProfile } from "@/lib/api";
+import { formatPhoneDisplay } from "@/lib/phone";
 import { ProfileForm } from "./profile-form";
 
 // Same number used for phone support on the Help Centre page.
@@ -48,26 +49,55 @@ export default async function ProfilePage() {
         Your personal details on file with BusConnect.
       </p>
 
-      <div className="card-lg mt-6 p-6">
-        <ProfileForm profile={profile} />
+      <div className="card mt-6 p-5 sm:p-6">
+        <div className="flex items-center gap-3">
+          <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-brand-soft font-heading text-lg font-bold text-brand dark:bg-brand-soft-dark dark:text-blue-300">
+            {(profile.name || "?").slice(0, 1).toUpperCase()}
+          </span>
+          <div className="min-w-0">
+            <p className="truncate font-heading text-base font-bold">{profile.name || "Your account"}</p>
+            <p className="ui truncate text-sm text-slate-600 dark:text-zinc-400">
+              {formatPhoneDisplay(profile.phone)}
+            </p>
+          </div>
+        </div>
+
+        <div className="mt-6 border-t border-border pt-6">
+          <ProfileForm profile={profile} />
+        </div>
       </div>
 
-      <a
-        href={`https://wa.me/${SUPPORT_WHATSAPP_NUMBER}?text=${encodeURIComponent("Hi, I need help with my BusConnect booking.")}`}
-        target="_blank"
-        rel="noreferrer"
-        className="card-lg mt-6 flex items-center gap-3 p-4 hover:bg-slate-50 dark:hover:bg-zinc-900"
-      >
-        <MessageCircle size={18} className="text-slate-500 dark:text-zinc-400" />
-        <span className="font-medium">Help center</span>
-      </a>
+      <p className="ui mt-6 text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-zinc-500">
+        Support
+      </p>
+      <div className="card mt-2 divide-y divide-border overflow-hidden">
+        <a
+          href={`https://wa.me/${SUPPORT_WHATSAPP_NUMBER}?text=${encodeURIComponent("Hi, I need help with my BusConnect booking.")}`}
+          target="_blank"
+          rel="noreferrer"
+          className="ui flex items-center gap-3 p-5 text-sm font-medium transition-colors hover:bg-muted sm:p-6"
+        >
+          <MessageCircle size={18} className="text-brand dark:text-blue-400" />
+          Help center
+          <ChevronRight size={16} className="ml-auto shrink-0 text-slate-400 dark:text-zinc-600" />
+        </a>
+
+        <Link
+          href="/privacy"
+          className="ui flex items-center gap-3 p-5 text-sm font-medium transition-colors hover:bg-muted sm:p-6"
+        >
+          <ShieldCheck size={18} className="text-brand dark:text-blue-400" />
+          Privacy policy
+          <ChevronRight size={16} className="ml-auto shrink-0 text-slate-400 dark:text-zinc-600" />
+        </Link>
+      </div>
 
       <Link
         href="/delete-account"
-        className="ui card-lg mt-6 flex items-center gap-3 p-4 text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/20"
+        className="ui mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-red-600 px-5 py-2.5 text-sm font-semibold text-white transition-colors duration-300 hover:bg-red-700 dark:bg-red-600 dark:hover:bg-red-500"
       >
-        <Trash2 size={18} />
-        <span className="font-medium">Delete account</span>
+        <Trash2 size={16} />
+        Delete account
       </Link>
     </div>
   );
