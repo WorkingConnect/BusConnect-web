@@ -214,48 +214,62 @@ function PayoutSection({
         {active.rows.length === 0 ? (
           <div className="card p-6 text-center text-sm text-slate-500 dark:text-zinc-400">{active.emptyMessage}</div>
         ) : (
-          active.rows.map((r) => (
-            <div key={r.id} className="card p-4">
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <div className="min-w-0">
-                  <p className="truncate font-heading font-semibold">{r.route?.name ?? "—"}</p>
-                  <p className="ui mt-0.5 text-sm text-slate-500 dark:text-zinc-400">
-                    {r.bus?.operator?.name ?? "—"} · Bus {r.bus?.reg_no ?? "—"} · {dateTime(r.depart_at)}
-                  </p>
-                  <p className="ui mt-0.5 text-xs text-slate-400 dark:text-zinc-500">
-                    {r.seats_sold} seat{r.seats_sold === 1 ? "" : "s"} · {r.booking_count} booking
-                    {r.booking_count === 1 ? "" : "s"}
-                  </p>
-                </div>
-                <div className="flex items-center justify-between gap-4 sm:justify-end">
-                  <div className="text-right">
-                    <p className="ui text-xs text-slate-400 dark:text-zinc-500">
-                      {money(r.gross)} − {money(r.commission_amount)} ({r.commission_pct}%)
+          active.rows.map((r) => {
+            const operatorId = r.bus?.operator?.id;
+            // Same entry point the Timetable list uses to open a trip's
+            // detail page — it sets the admin_operator_id cookie a real GET
+            // redirect needs, so this has to be a full navigation
+            // (window.location), not client-side routing.
+            const href = operatorId ? `/admin/trip-enter?operatorId=${operatorId}&tripId=${r.id}` : null;
+            return (
+              <div
+                key={r.id}
+                onClick={href ? () => { window.location.href = href; } : undefined}
+                className={`card p-4 ${href ? "card-hover cursor-pointer" : ""}`}
+              >
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="min-w-0">
+                    <p className="truncate font-heading font-semibold">{r.route?.name ?? "—"}</p>
+                    <p className="ui mt-0.5 text-sm text-slate-500 dark:text-zinc-400">
+                      {r.bus?.operator?.name ?? "—"} · Bus {r.bus?.reg_no ?? "—"} · {dateTime(r.depart_at)}
                     </p>
-                    <p className="font-heading text-lg font-bold text-brand dark:text-blue-400">{money(r.net_amount)}</p>
+                    <p className="ui mt-0.5 text-xs text-slate-400 dark:text-zinc-500">
+                      {r.seats_sold} seat{r.seats_sold === 1 ? "" : "s"} · {r.booking_count} booking
+                      {r.booking_count === 1 ? "" : "s"}
+                    </p>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => onView(r.id)}
-                    className="ui shrink-0 rounded-lg border border-slate-200 px-2.5 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 dark:border-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-800"
-                  >
-                    View
-                  </button>
-                  {r.payout_status === "paid" ? (
-                    <PaidRowActions token={token} tripId={r.id} reference={r.reference} onChange={onChange} />
-                  ) : r.settleable ? (
-                    <button type="button" onClick={() => onSettle(r)} className="btn-primary shrink-0 py-2">
-                      Settle
-                    </button>
-                  ) : (
-                    <span className="ui shrink-0 whitespace-nowrap text-xs text-slate-400 dark:text-zinc-500">
-                      Departs {dateTime(r.depart_at)}
-                    </span>
-                  )}
+                  <div className="flex items-center justify-between gap-4 sm:justify-end">
+                    <div className="text-right">
+                      <p className="ui text-xs text-slate-400 dark:text-zinc-500">
+                        {money(r.gross)} − {money(r.commission_amount)} ({r.commission_pct}%)
+                      </p>
+                      <p className="font-heading text-lg font-bold text-brand dark:text-blue-400">{money(r.net_amount)}</p>
+                    </div>
+                    <div className="flex shrink-0 items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                      <button
+                        type="button"
+                        onClick={() => onView(r.id)}
+                        className="ui shrink-0 rounded-lg border border-slate-200 px-2.5 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 dark:border-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-800"
+                      >
+                        View
+                      </button>
+                      {r.payout_status === "paid" ? (
+                        <PaidRowActions token={token} tripId={r.id} reference={r.reference} onChange={onChange} />
+                      ) : r.settleable ? (
+                        <button type="button" onClick={() => onSettle(r)} className="btn-primary shrink-0 py-2">
+                          Settle
+                        </button>
+                      ) : (
+                        <span className="ui shrink-0 whitespace-nowrap text-xs text-slate-400 dark:text-zinc-500">
+                          Departs {dateTime(r.depart_at)}
+                        </span>
+                      )}
+                    </div>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))
+            );
+          })
         )}
       </div>
     </section>

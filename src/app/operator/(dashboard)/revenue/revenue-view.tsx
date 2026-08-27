@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Users, ChevronDown, Loader2, Trash2, Download } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { hideOperatorRevenueRow, getOperatorPayoutSlipUrl, ApiError, type OperatorRevenueRow } from "@/lib/api";
@@ -163,6 +164,7 @@ function RevenueSection({
 }) {
   const active = sections[selected];
   const order: Bucket[] = ["ready", "locked", "paid"];
+  const router = useRouter();
 
   return (
     <section className="mt-8">
@@ -192,7 +194,11 @@ function RevenueSection({
           <div className="card p-6 text-center text-sm text-slate-500 dark:text-zinc-400">{active.emptyMessage}</div>
         ) : (
           active.rows.map((r) => (
-            <div key={r.trip_id} className="card p-4">
+            <div
+              key={r.trip_id}
+              onClick={() => router.push(`/operator/trips/${r.trip_id}`)}
+              className="card card-hover cursor-pointer p-4"
+            >
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div className="min-w-0">
                   <div className="flex items-center gap-2">
@@ -224,8 +230,12 @@ function RevenueSection({
                   <div className="text-right">
                     <p className="font-heading text-lg font-bold text-brand dark:text-blue-400">{money(r.net_amount)}</p>
                   </div>
-                  {r.payout_status === "paid" && r.has_slip && <DownloadReceiptButton tripId={r.trip_id} />}
-                  {r.payout_status === "paid" && <DeleteRevenueRowButton tripId={r.trip_id} onHidden={() => onHidden(r.trip_id)} />}
+                  {r.payout_status === "paid" && (
+                    <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+                      {r.has_slip && <DownloadReceiptButton tripId={r.trip_id} />}
+                      <DeleteRevenueRowButton tripId={r.trip_id} onHidden={() => onHidden(r.trip_id)} />
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
