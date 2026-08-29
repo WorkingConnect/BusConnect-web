@@ -58,8 +58,8 @@ export default async function HelpCentrePage({ params }: { params: Promise<{ lan
         <div className="card mt-3 px-5 sm:px-6">
           <Faq question="What payment methods are supported?">
             <p>
-              Bookings are paid through our secure payment gateway, or from your BusConnect wallet balance
-              if you&apos;ve topped one up.
+              We support Visa, Mastercard, and JustPay from LankaPay, as well as your BusConnect wallet
+              balance if you&apos;ve topped one up.
             </p>
           </Faq>
           <Faq question="What is the BusConnect wallet?">
@@ -80,8 +80,16 @@ export default async function HelpCentrePage({ params }: { params: Promise<{ lan
         <div className="card mt-3 px-5 sm:px-6">
           <Faq question="How do I cancel a booking?">
             <p>
-              Open My Tickets, select the booking, and tap Cancel Booking. No need to contact support.
-              Full details are in our{" "}
+              Contact the BusConnect team on our{" "}
+              <a
+                href="https://wa.me/94764670645"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-brand underline dark:text-blue-400"
+              >
+                WhatsApp hotline
+              </a>{" "}
+              with the booking you&apos;d like to cancel. Full details are in our{" "}
               <Link href={lp("/cancellations")} className="text-brand underline dark:text-blue-400">
                 Cancellation Policy
               </Link>

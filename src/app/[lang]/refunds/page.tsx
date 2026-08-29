@@ -8,9 +8,9 @@ export const metadata = {
 };
 
 const TIERS = [
-  { window: "24 hours or more before departure", amount: "100%", tone: "emerald" },
-  { window: "3 to 24 hours before departure", amount: "50%", tone: "amber" },
-  { window: "Less than 3 hours before departure", amount: "No refund", tone: "red" },
+  { window: "24 hours or more before departure", amount: "70%", tone: "emerald" },
+  { window: "10 to 24 hours before departure", amount: "50%", tone: "amber" },
+  { window: "Less than 10 hours before departure", amount: "No refund", tone: "red" },
 ] as const;
 
 const toneClasses: Record<(typeof TIERS)[number]["tone"], string> = {

@@ -17,18 +17,29 @@ export default async function CancellationsPage({ params }: { params: Promise<{ 
     <div className="mx-auto w-full max-w-3xl px-4 py-10 sm:px-6 lg:px-8">
       <h1 className="font-heading text-2xl font-bold tracking-tight sm:text-3xl">Cancellation Policy</h1>
       <p className="ui mt-3 text-sm leading-relaxed text-slate-600 dark:text-zinc-400">
-        You can cancel a booking yourself, right from the app or website, no need to contact support.
+        To cancel a booking, contact the BusConnect team on our WhatsApp hotline.
       </p>
 
       <div className="card mt-6 p-5 sm:p-6">
         <h2 className="font-heading text-base font-bold sm:text-lg">How to cancel</h2>
         <ol className="ui mt-3 space-y-2 text-sm leading-relaxed text-slate-600 dark:text-zinc-400">
-          <li>1. Open My Tickets.</li>
-          <li>2. Select the booking you want to cancel.</li>
-          <li>3. Tap Cancel Booking and confirm.</li>
+          <li>
+            1. Message us on WhatsApp at{" "}
+            <a
+              href="https://wa.me/94764670645"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-brand underline dark:text-blue-400"
+            >
+              +94 76 467 0645
+            </a>
+            .
+          </li>
+          <li>2. Tell us the booking you&apos;d like to cancel.</li>
+          <li>3. Our team cancels it and confirms once it&apos;s done.</li>
         </ol>
         <p className="ui mt-3 text-sm text-slate-600 dark:text-zinc-400">
-          Your seat is released immediately and your ticket is voided.
+          Your seat is released and your ticket is voided once the cancellation is processed.
         </p>
       </div>
 
