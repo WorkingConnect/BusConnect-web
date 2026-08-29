@@ -119,7 +119,7 @@ export default async function HireListingsPage({
               href={localizePath(locale, `/hire/${listing.id}`)}
               className="card card-hover flex items-center overflow-hidden"
             >
-              <div className="relative h-32 w-32 shrink-0 self-stretch bg-slate-100 sm:h-auto sm:w-48 dark:bg-zinc-800">
+              <div className="relative aspect-square w-32 shrink-0 bg-slate-100 sm:aspect-[4/3] sm:w-48 dark:bg-zinc-800">
                 {listing.images[0] ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
