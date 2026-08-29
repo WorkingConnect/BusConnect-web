@@ -70,6 +70,11 @@ export function SiteFooter() {
                   {tn("howItWorks")}
                 </Link>
               </li>
+              <li>
+                <Link href={lp("/about")} className="transition-colors hover:text-foreground">
+                  {t("about")}
+                </Link>
+              </li>
               <OperatorFooterLink />
             </ul>
           </div>
