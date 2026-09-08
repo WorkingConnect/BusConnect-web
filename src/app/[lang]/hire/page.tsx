@@ -18,9 +18,8 @@ function InfoPill({ label }: { label: string }) {
 }
 
 // Same store-badge assets/links as the homepage's AppPromo section
-// (src/app/[lang]/page.tsx) — iOS link is still a "#" placeholder there
-// until the app is published on App Store Connect.
-const IOS_APP_STORE_URL = "#";
+// (src/app/[lang]/page.tsx)
+const IOS_APP_STORE_URL = "https://apps.apple.com/app/busconnect/id6794645415";
 const ANDROID_PLAY_STORE_URL = "https://play.google.com/store/apps/details?id=lk.busconnect.app";
 
 function AppPromoBar() {

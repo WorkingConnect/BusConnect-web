@@ -110,9 +110,7 @@ function Hero({
 }
 
 /* ── App download promo ────────────────────────────────────────────────── */
-// TODO: swap for the real App Store URL once BusConnect is published (Apple
-// only allocates an id after the app is created in App Store Connect).
-const IOS_APP_STORE_URL = "#";
+const IOS_APP_STORE_URL = "https://apps.apple.com/app/busconnect/id6794645415";
 const ANDROID_PLAY_STORE_URL = "https://play.google.com/store/apps/details?id=lk.busconnect.app";
 
 function AppPromo({ dict }: { dict: Dictionary }) {
