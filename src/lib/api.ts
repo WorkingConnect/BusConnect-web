@@ -1175,6 +1175,8 @@ export interface AdminLocation {
   name_ta: string | null;
   lat: number | null;
   lng: number | null;
+  is_public: boolean;
+  route_count: number;
 }
 
 export interface AdminBusType {
@@ -1585,6 +1587,14 @@ export function createAdminLocation(
   return request<AdminLocation>('/admin/locations', {
     method: 'POST',
     body: JSON.stringify(body),
+    accessToken,
+  });
+}
+
+export function setAdminLocationVisibility(accessToken: string, id: string, isPublic: boolean) {
+  return request<AdminLocation>(`/admin/locations/${id}/visibility`, {
+    method: 'PATCH',
+    body: JSON.stringify({ isPublic }),
     accessToken,
   });
 }
