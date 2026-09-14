@@ -6,6 +6,7 @@ import { useParams } from "next/navigation";
 import { ArrowLeft, Loader2, Trash2, User, Building2, IdCard, ShieldCheck, Ticket, ArrowUpRight, Wallet } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { getAdminUser, hideAdminBooking, ApiError, type AdminUserDetail, type AdminUserBooking } from "@/lib/api";
+import { DeleteUserButton } from "./delete-user-button";
 
 function money(n: number) {
   return `LKR ${Number(n).toLocaleString("en-LK", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
@@ -204,6 +205,21 @@ export default function AdminUserDetailPage() {
           </div>
         )}
       </Section>
+
+      {/* ── Danger zone ─────────────────────────────────────────────────────── */}
+      <div className="card-lg mt-8 border-red-200/60 p-6 dark:border-red-900/40">
+        <h2 className="ui text-xs font-semibold uppercase tracking-wide text-red-500/80 dark:text-red-400/70">
+          Danger zone
+        </h2>
+        <div className="mt-3 flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center">
+          <p className="ui text-xs text-slate-600 dark:text-zinc-400">
+            Deleting removes this account for good. Only possible if it has no booking history and
+            isn&apos;t linked to an operator or pilot login — accounts with real history should stay
+            as-is instead.
+          </p>
+          <DeleteUserButton userId={detail.id} userName={displayName} />
+        </div>
+      </div>
     </div>
   );
 }

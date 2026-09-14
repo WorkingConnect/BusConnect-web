@@ -1383,6 +1383,13 @@ export function getAdminUser(accessToken: string, userId: string) {
   return request<AdminUserDetail>(`/admin/users/${userId}`, { accessToken });
 }
 
+export function deleteAdminUser(accessToken: string, userId: string) {
+  return request<{ ok: true }>(`/admin/users/${userId}`, {
+    method: 'DELETE',
+    accessToken,
+  });
+}
+
 /** Admin-side equivalent of the passenger's own "remove ticket" — same
  *  hidden_by_passenger flag, just not restricted to cancelled/refunded. */
 export function hideAdminBooking(accessToken: string, bookingId: string) {
@@ -1595,6 +1602,13 @@ export function setAdminLocationVisibility(accessToken: string, id: string, isPu
   return request<AdminLocation>(`/admin/locations/${id}/visibility`, {
     method: 'PATCH',
     body: JSON.stringify({ isPublic }),
+    accessToken,
+  });
+}
+
+export function deleteAdminLocation(accessToken: string, id: string) {
+  return request<{ ok: true }>(`/admin/locations/${id}`, {
+    method: 'DELETE',
     accessToken,
   });
 }

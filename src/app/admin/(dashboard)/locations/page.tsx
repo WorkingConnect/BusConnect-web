@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
-import { listAdminLocations, ApiError, type AdminLocation } from "@/lib/api";
+import { listAdminLocations, listAdminRoutes, ApiError, type AdminLocation, type AdminRoute } from "@/lib/api";
 import { LocationList } from "./location-list";
 
 export default async function AdminLocationsPage() {
@@ -18,9 +18,13 @@ export default async function AdminLocationsPage() {
   }
 
   let locations: AdminLocation[] = [];
+  let routes: AdminRoute[] = [];
   let error: string | null = null;
   try {
-    locations = await listAdminLocations(session.access_token);
+    [locations, routes] = await Promise.all([
+      listAdminLocations(session.access_token),
+      listAdminRoutes(session.access_token),
+    ]);
   } catch (e) {
     error =
       e instanceof ApiError
@@ -42,11 +46,11 @@ export default async function AdminLocationsPage() {
     <div>
       <h1 className="font-heading text-2xl font-bold tracking-tight">Locations</h1>
       <p className="ui mt-1 text-sm text-slate-600 dark:text-zinc-400">
-        Every stop created via the route editor — hide a location to pull it from the public From/To search
-        without touching the routes it&apos;s already on.
+        Every stop created via the route editor, grouped by the route it&apos;s on — hide a location to pull
+        it from the public From/To search without touching the routes it&apos;s already on.
       </p>
 
-      <LocationList locations={locations} />
+      <LocationList locations={locations} routes={routes} />
     </div>
   );
 }
