@@ -19,9 +19,9 @@ const STATUS_LABEL: Record<string, string> = {
 };
 
 const STATUS_CAPTION: Record<string, string> = {
-  active: "Approved — this pilot can be assigned to one of their operator's buses.",
-  pending: "Awaiting your review — approve to let the operator assign them to a bus.",
-  rejected: "Rejected — this pilot cannot be assigned to a fleet.",
+  active: "Approved. This pilot can be assigned to one of their operator's buses.",
+  pending: "Awaiting your review. Approve to let the operator assign them to a bus.",
+  rejected: "Rejected. This pilot cannot be assigned to a fleet.",
 };
 
 function Field({
@@ -178,8 +178,8 @@ export default async function AdminPilotDetailPage({
         </h2>
         <p className="ui mt-3 text-sm text-slate-600 dark:text-zinc-400">
           {pilot.user_id
-            ? "Linked — this pilot can sign in and scan boarding tickets for their assigned trips."
-            : "Not linked yet — the operator can link this pilot to a BusConnect account once approved."}
+            ? "Linked. This pilot can sign in and scan boarding tickets for their assigned trips."
+            : "Not linked yet. The operator can link this pilot to a BusConnect account once approved."}
         </p>
       </div>
     </div>

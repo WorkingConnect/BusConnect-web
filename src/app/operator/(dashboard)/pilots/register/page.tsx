@@ -14,7 +14,7 @@ export default function RegisterPilotPage() {
 
       <h1 className="mt-4 font-heading text-2xl font-bold tracking-tight">Register a pilot</h1>
       <p className="ui mt-1 text-sm text-slate-600 dark:text-zinc-400">
-        Add a driver or conductor — they&apos;re active immediately, so you can assign them to a bus as soon as
+        Add a driver or conductor. They&apos;re active immediately, so you can assign them to a bus as soon as
         they&apos;re registered.
       </p>
 

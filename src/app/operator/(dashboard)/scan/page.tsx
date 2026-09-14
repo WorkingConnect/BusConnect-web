@@ -26,7 +26,7 @@ export default async function ScanPage() {
         <div>
           <h1 className="font-heading text-2xl font-bold tracking-tight">Scan tickets</h1>
           <p className="ui text-sm text-slate-500 dark:text-zinc-400">
-            Point the camera at a passenger&apos;s QR — it works for any trip on your bus.
+            Point the camera at a passenger&apos;s QR. It works for any trip on your bus.
           </p>
         </div>
       </div>

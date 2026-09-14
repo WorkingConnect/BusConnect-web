@@ -14,7 +14,7 @@ export default function NewJourneyPage() {
 
       <h1 className="mt-4 font-heading text-2xl font-bold tracking-tight">Create a journey</h1>
       <p className="ui mt-1 text-sm text-slate-600 dark:text-zinc-400">
-        A journey is a reusable service — a route, bus, crew, times and fare. Once saved, schedule the
+        A journey is a reusable service: a route, bus, crew, times and fare. Once saved, schedule the
         dates it runs from the Timetable.
       </p>
 

@@ -108,7 +108,7 @@ export default function AdminPayoutsPage() {
     },
     locked: {
       title: "Locked payouts",
-      subtitle: "Upcoming or in-progress trips — revenue is still provisional until the trip arrives.",
+      subtitle: "Upcoming or in-progress trips. Revenue is still provisional until the trip arrives.",
       rows: locked,
       emptyMessage: "No upcoming or in-progress trips.",
     },

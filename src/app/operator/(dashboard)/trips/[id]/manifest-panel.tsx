@@ -419,8 +419,8 @@ function AdminRefundTicketSection({
       const result = await refundTicketSeats(session.access_token, tripId, booking.id, [...selected], parsedPct);
       setDone(
         result.refundStatus === "pending_manual"
-          ? "Queued — process it from the Refunds page."
-          : "Recorded at 0% — nothing owed.",
+          ? "Queued. Process it from the Refunds page."
+          : "Recorded at 0%. Nothing owed.",
       );
       router.refresh();
     } catch (e) {

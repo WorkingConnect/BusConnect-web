@@ -49,56 +49,27 @@ function Hero({
   dict: Dictionary;
 }) {
   return (
-    <section className="relative overflow-hidden">
-      <div className="absolute inset-0 -z-10 bg-gradient-to-b from-brand-soft/50 via-transparent to-transparent dark:from-brand-soft-dark/25" />
+    <section className="relative">
+      {/* Full-bleed banner photo, text directly on it (redbus-style, no box).
+          A soft left-to-right dark gradient keeps the white text legible over
+          the busier left side of hero.jpg without the heaviness of a panel;
+          drop-shadow on the text carries the rest. The search bar overlaps
+          the bottom edge, so the band is kept short. */}
+      <div className="relative h-56 w-full overflow-hidden sm:h-64 lg:h-72">
+        <Image src="/hero.jpg" alt="" fill sizes="100vw" className="object-cover" priority />
+        <div className="absolute inset-0 bg-gradient-to-r from-black/45 via-black/15 to-transparent" />
 
-      <div className="mx-auto w-full max-w-7xl px-4 pb-14 pt-8 sm:px-6 sm:pb-16 sm:pt-10 lg:px-8 lg:pb-20 lg:pt-12">
-        <div className="grid gap-8 lg:grid-cols-2 lg:items-center lg:gap-14">
-          <div>
-            <h1 className="font-heading text-4xl font-bold leading-[1.08] tracking-tight sm:text-5xl lg:text-6xl">
-              {dict.home.heroTitlePrefix}{" "}
-              <span className="text-brand dark:text-blue-400">{dict.home.heroTitleAccent}</span>
+        <div className="relative mx-auto flex h-full w-full max-w-7xl items-center px-4 sm:px-6 lg:px-8">
+          <div className="max-w-xl [text-shadow:0_1px_12px_rgb(0_0_0_/_0.45)]">
+            <h1 className="font-heading text-4xl font-bold leading-[1.05] tracking-tight text-white sm:text-5xl lg:text-6xl">
+              {dict.home.heroTitlePrefix} {dict.home.heroTitleAccent}
             </h1>
-            <p className="mt-4 max-w-xl text-base text-slate-600 dark:text-zinc-400 sm:text-lg">
-              {dict.home.heroSubtitle}
-            </p>
-          </div>
-
-          <div className="relative mx-auto w-full max-w-sm lg:mx-0 lg:max-w-none">
-            <div className="relative aspect-[4/3] w-full">
-              <Image
-                src="/hero-image.png"
-                alt="Passengers boarding a BusConnect bus"
-                fill
-                sizes="(min-width: 1024px) 40vw, 90vw"
-                className="object-contain"
-                priority
-              />
-            </div>
-
-            <div className="absolute left-0 top-4 hidden items-center gap-2.5 rounded-2xl bg-card px-4 py-3 shadow-xl shadow-black/10 sm:flex lg:-left-6 lg:top-10 dark:shadow-black/40">
-              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand-soft text-brand dark:bg-brand-soft-dark dark:text-blue-300">
-                <Ticket size={17} />
-              </span>
-              <div>
-                <p className="font-heading text-sm font-bold leading-none">Instant QR ticket</p>
-                <p className="ui mt-0.5 text-xs text-slate-500 dark:text-zinc-500">Scan & board</p>
-              </div>
-            </div>
-
-            <div className="absolute bottom-0 right-0 hidden items-center gap-2.5 rounded-2xl bg-card px-4 py-3 shadow-xl shadow-black/10 sm:flex lg:-right-4 lg:bottom-4 dark:shadow-black/40">
-              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand-soft text-brand dark:bg-brand-soft-dark dark:text-blue-300">
-                <Armchair size={17} />
-              </span>
-              <div>
-                <p className="font-heading text-sm font-bold leading-none">Live seat maps</p>
-                <p className="ui mt-0.5 text-xs text-slate-500 dark:text-zinc-500">Pick your exact seat</p>
-              </div>
-            </div>
           </div>
         </div>
+      </div>
 
-        <div className="mt-6 rounded-2xl border border-border bg-card p-4 shadow-xl shadow-black/10 sm:p-6 dark:shadow-black/40">
+      <div className="relative z-10 mx-auto w-full max-w-7xl px-4 pb-14 sm:px-6 sm:pb-16 lg:px-8 lg:pb-20">
+        <div className="-mt-12 sm:-mt-14">
           <SearchForm locations={locations} />
           {locations.length === 0 && (
             <p className="ui mt-3 text-center text-sm text-slate-500 dark:text-zinc-500">{dict.home.searchEmpty}</p>

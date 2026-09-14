@@ -62,7 +62,7 @@ export function DeleteAccountForm({ phone }: { phone: string | null }) {
       const {
         data: { session },
       } = await supabase.auth.getSession();
-      if (!session) throw new Error("Session expired — sign in again to delete your account.");
+      if (!session) throw new Error("Session expired. Sign in again to delete your account.");
       await deleteMyAccount(session.access_token);
       await supabase.auth.signOut();
       router.replace("/");

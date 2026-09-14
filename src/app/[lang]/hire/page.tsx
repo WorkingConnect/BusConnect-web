@@ -53,7 +53,7 @@ function AppPromoBar() {
 
 export const metadata = {
   title: "Hire a Bus",
-  description: "Browse buses posted for private hire by their owners — weddings, school trips, tours.",
+  description: "Browse buses posted for private hire by their owners, for weddings, school trips, and tours.",
 };
 
 // Browse-only — posting only exists in BusConnect-mobile, this page (and its
@@ -107,7 +107,7 @@ export default async function HireListingsPage({
       {listings.length === 0 ? (
         <div className="card mt-8 p-12 text-center">
           <p className="text-slate-600 dark:text-zinc-400">
-            {hasFilters ? "No listings match your filters." : "No listings yet — check back soon."}
+            {hasFilters ? "No listings match your filters." : "No listings yet. Check back soon."}
           </p>
         </div>
       ) : (

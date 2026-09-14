@@ -31,7 +31,7 @@ export default async function ScanTicketPage({ params }: { params: Promise<{ id:
 
       <h1 className="mt-4 font-heading text-2xl font-bold tracking-tight">Scan boarding ticket</h1>
       <p className="ui mt-1 text-sm text-slate-600 dark:text-zinc-400">
-        Only staff of the ticket&apos;s own operator can validate it — scanning here works for any
+        Only staff of the ticket&apos;s own operator can validate it. Scanning here works for any
         of your trips.
       </p>
 

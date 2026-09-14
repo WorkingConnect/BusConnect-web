@@ -109,7 +109,7 @@ export function RegisterPilotForm() {
         Profile photo
         <AvatarSlot preview={photoPreview} onChange={onPhotoChange} />
         <span className="text-xs text-slate-400 dark:text-zinc-500">
-          Kept private — only visible to you and BusConnect admins.
+          Kept private. Only visible to you and BusConnect admins.
         </span>
       </div>
 

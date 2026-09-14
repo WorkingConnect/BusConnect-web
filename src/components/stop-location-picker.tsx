@@ -121,7 +121,7 @@ export function StopLocationPicker({
       <div className="card-lg flex w-full max-w-xl flex-col p-6">
         <div className="flex items-center justify-between">
           <h3 className="font-heading text-lg font-semibold">
-            Set location — <span className="font-normal text-slate-500 dark:text-zinc-400">{stopName}</span>
+            Set location: <span className="font-normal text-slate-500 dark:text-zinc-400">{stopName}</span>
           </h3>
           <button
             type="button"

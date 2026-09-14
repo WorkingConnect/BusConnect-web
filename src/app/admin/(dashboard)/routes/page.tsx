@@ -182,7 +182,7 @@ export default function AdminRoutesPage() {
         <div>
           <h1 className="font-heading text-2xl font-bold tracking-tight">Routes</h1>
           <p className="ui mt-1 text-sm text-slate-600 dark:text-zinc-400">
-            Shared route catalog — each route is an ordered list of stops from origin to
+            Shared route catalog. Each route is an ordered list of stops from origin to
             destination. A route is only usable by the operators explicitly assigned to it.
           </p>
         </div>
@@ -530,11 +530,25 @@ function RouteEditor({
     }
     for (const s of stops) {
       if (!s.isWaypoint && !s.locationId) {
-        setError("Every real stop needs a location — search and pick one, or mark it as a waypoint.");
+        setError("Every real stop needs a location. Search and pick one, or mark it as a waypoint.");
         return;
       }
-      if (s.lat == null || s.lng == null) {
-        setError(`Pin every stop on the map first — “${s.name ?? "waypoint"}” has no location set.`);
+    }
+    // Only the origin, destination, and any waypoints (which are nothing but
+    // a map pin — nothing else identifies them) must be pinned. An
+    // intermediate real stop can be saved without one and pinned later; the
+    // path preview/regenerate features just skip it until it's pinned.
+    if (first.lat == null || first.lng == null) {
+      setError("Pin the origin stop on the map first.");
+      return;
+    }
+    if (last.lat == null || last.lng == null) {
+      setError("Pin the destination stop on the map first.");
+      return;
+    }
+    for (const s of stops) {
+      if (s.isWaypoint && (s.lat == null || s.lng == null)) {
+        setError("Every waypoint needs a pin on the map — it has no name to fall back on.");
         return;
       }
     }
@@ -550,8 +564,8 @@ function RouteEditor({
         name: editor.name.trim(),
         stops: stops.map((s) => ({
           locationId: s.isWaypoint ? null : s.locationId,
-          lat: s.lat as number,
-          lng: s.lng as number,
+          lat: s.lat,
+          lng: s.lng,
           isWaypoint: s.isWaypoint,
         })),
         pathCoordinates: editor.path ?? undefined,
@@ -612,7 +626,7 @@ function RouteEditor({
                       : "text-slate-400 hover:bg-slate-100 dark:hover:bg-zinc-800"
                   }`}
                   aria-label="Set location on map"
-                  title={s.lat != null ? "Pinned — click to move" : "Set location on map"}
+                  title={s.lat != null ? "Pinned. Click to move" : "Set location on map"}
                 >
                   <MapPin size={14} />
                 </button>
@@ -630,8 +644,8 @@ function RouteEditor({
                     isEndpoint
                       ? "Origin and destination can't be waypoints"
                       : s.isWaypoint
-                        ? "Hidden from passengers — click to make it a visible stop"
-                        : "Visible to passengers — click to make it a hidden shaping waypoint"
+                        ? "Hidden from passengers. Click to make it a visible stop"
+                        : "Visible to passengers. Click to make it a hidden shaping waypoint"
                   }
                 >
                   {s.isWaypoint ? <EyeOff size={14} /> : <Eye size={14} />}
@@ -679,7 +693,7 @@ function RouteEditor({
       </div>
       <p className="ui mt-2 text-xs text-slate-400 dark:text-zinc-500">
         A hidden waypoint bends the road path onto the correct road but is never shown to
-        passengers — use it when the generated path takes a wrong turn.
+        passengers. Use it when the generated path takes a wrong turn.
       </p>
     </>
   );
@@ -780,7 +794,7 @@ function RouteEditor({
         </p>
         {editor.operatorIds.length === 0 && (
           <p className="ui mt-1.5 text-xs font-medium text-amber-600 dark:text-amber-400">
-            No operators assigned — this route won&rsquo;t be usable by anyone until you pick at
+            No operators assigned. This route won&rsquo;t be usable by anyone until you pick at
             least one.
           </p>
         )}
@@ -841,7 +855,7 @@ function RouteEditor({
       {options && options.length > 1 && (
         <div>
           <p className="ui mb-1.5 text-xs font-medium text-slate-600 dark:text-zinc-400">
-            Google offered {options.length} routes — pick the one that matches the real road:
+            Google offered {options.length} routes. Pick the one that matches the real road:
           </p>
           <div className="flex flex-col gap-1.5">
             {options.map((o, i) => (
@@ -867,8 +881,8 @@ function RouteEditor({
       {editor.path && (
         <p className="ui mt-2 text-xs text-slate-400 dark:text-zinc-500">
           {usedTripId
-            ? "Using a real recorded trip's driven path — it saves with the route."
-            : "Road path set — it saves with the route."}
+            ? "Using a real recorded trip's driven path. It saves with the route."
+            : "Road path set. It saves with the route."}
         </p>
       )}
 
@@ -889,7 +903,7 @@ function RouteEditor({
             <div className="mt-2">
               <p className="ui mb-2 text-xs text-slate-400 dark:text-zinc-500">
                 If a bus has actually run this route with live tracking on, its recorded GPS trace
-                can become the route&rsquo;s official path (snapped to roads) — more accurate than
+                can become the route&rsquo;s official path (snapped to roads), more accurate than
                 a Directions guess since it&rsquo;s the exact road the bus took.
               </p>
               {loadingTrips ? (
@@ -1287,7 +1301,7 @@ function StopPicker({
           )}
           {matches.length === 0 && !q && (
             <p className="ui px-3 py-2 text-xs text-slate-400 dark:text-zinc-500">
-              No stops yet — type a name to add one.
+              No stops yet. Type a name to add one.
             </p>
           )}
         </div>

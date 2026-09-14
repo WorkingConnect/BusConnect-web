@@ -83,7 +83,7 @@ export function CancelTripButton({
         </p>
         <p className="mt-1 text-xs text-amber-700 dark:text-amber-400">
           Requested {new Date(cancellationRequestedAt).toLocaleString("en-LK")}
-          {cancellationReason ? ` — "${cancellationReason}"` : ""}
+          {cancellationReason ? `: "${cancellationReason}"` : ""}
         </p>
         {error && <p className="mt-1.5 text-xs text-red-600 dark:text-red-400">{error}</p>}
         <div className="mt-3 flex flex-wrap gap-2">

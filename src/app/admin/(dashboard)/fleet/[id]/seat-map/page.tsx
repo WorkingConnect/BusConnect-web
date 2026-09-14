@@ -52,7 +52,7 @@ export default async function AdminBusSeatMapPage({ params }: { params: Promise<
       </Link>
 
       <div className="mt-4">
-        <h1 className="font-heading text-2xl font-bold tracking-tight">Seat map — {bus.reg_no}</h1>
+        <h1 className="font-heading text-2xl font-bold tracking-tight">Seat map: {bus.reg_no}</h1>
         <p className="ui mt-1 text-sm text-slate-600 dark:text-zinc-400">
           {bus.operator?.name ?? "—"} · {bus.bus_type?.class.replace("_", " ") ?? "—"} · submitted as{" "}
           {bus.bus_type?.seat_count ?? "—"} seats

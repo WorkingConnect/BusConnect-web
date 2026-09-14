@@ -39,7 +39,7 @@ const STATUS_LABEL: Record<string, string> = {
 
 const STATUS_CAPTION: Record<string, string> = {
   active: "This operator can schedule trips, invite pilots, and board passengers.",
-  pending: "Awaiting your review — approve to let them start scheduling trips.",
+  pending: "Awaiting your review. Approve to let them start scheduling trips.",
   suspended: "Everything is frozen: no new trips, no new pilots, no ticket boarding.",
 };
 
@@ -258,7 +258,7 @@ export default async function AdminOperatorDetailPage({
         </h2>
         <p className="ui mt-1 text-xs text-slate-500 dark:text-zinc-500">
           Added on top of the fare at checkout, card and wallet payments alike. Takes effect on the
-          very next booking — both the app and website read this rate live. Set to 0 to charge no fee.
+          very next booking. Both the app and website read this rate live. Set to 0 to charge no fee.
         </p>
         <ConvenienceFeeEditor operatorId={operator.id} initialPct={operator.convenience_fee_pct} />
       </div>
@@ -280,14 +280,14 @@ export default async function AdminOperatorDetailPage({
       </div>
 
       {/* ── Danger zone ─────────────────────────────────────────────────────── */}
-      <div className="card-lg mt-4 border-red-200/60 p-6 dark:border-red-900/40">
+      <div className="card-lg mt-4 border border-red-200/60 p-6 dark:border-red-900/40">
         <h2 className="ui text-xs font-semibold uppercase tracking-wide text-red-500/80 dark:text-red-400/70">
           Danger zone
         </h2>
         <div className="mt-3 flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center">
           <p className="ui text-xs text-slate-600 dark:text-zinc-400">
             Deleting removes this operator and its fleet/routes for good. Only possible if it has
-            never had a trip scheduled — operators with operating history should be put on hold
+            never had a trip scheduled. Operators with operating history should be put on hold
             instead.
           </p>
           <DeleteOperatorButton operatorId={operator.id} operatorName={operator.name} />

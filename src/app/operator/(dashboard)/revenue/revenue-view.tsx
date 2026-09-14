@@ -78,7 +78,7 @@ export function RevenueView({ rows: initialRows }: { rows: OperatorRevenueRow[] 
     },
     locked: {
       title: "Locked payouts",
-      subtitle: "Upcoming or in-progress trips — revenue is still provisional until the trip completes.",
+      subtitle: "Upcoming or in-progress trips. Revenue is still provisional until the trip completes.",
       rows: locked,
       emptyMessage: "No upcoming or in-progress trips.",
     },

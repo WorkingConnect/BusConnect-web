@@ -119,13 +119,13 @@ export default function AdminRevenuePage() {
   const sections: Record<Bucket, { title: string; subtitle: string; rows: AdminPayoutRow[]; emptyMessage: string }> = {
     ready: {
       title: "Ready payouts",
-      subtitle: "Completed trips — revenue is final.",
+      subtitle: "Completed trips. Revenue is final.",
       rows: ready,
       emptyMessage: "No completed trips yet.",
     },
     locked: {
       title: "Locked payouts",
-      subtitle: "Upcoming or in-progress trips — revenue is still provisional until the trip completes.",
+      subtitle: "Upcoming or in-progress trips. Revenue is still provisional until the trip completes.",
       rows: locked,
       emptyMessage: "No upcoming or in-progress trips with bookings.",
     },
@@ -154,7 +154,7 @@ export default function AdminRevenuePage() {
         <Stat label="Walk-in revenue (cash)" value={money(sum(filtered, "walkup_gross"))} />
       </div>
       <p className="ui mt-2 text-xs text-slate-400 dark:text-zinc-500">
-        Walk-in revenue is cash collected directly by the operator&apos;s conductor — it never passes through
+        Walk-in revenue is cash collected directly by the operator&apos;s conductor. It never passes through
         BusConnect, so it&apos;s excluded from every other figure above.
       </p>
 

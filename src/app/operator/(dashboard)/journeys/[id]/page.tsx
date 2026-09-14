@@ -191,7 +191,7 @@ export default async function JourneyDetailPage({
 
         {upcomingDepartures.length === 0 ? (
           <div className="mt-4 rounded-xl border border-dashed border-slate-200 p-6 text-center text-sm text-slate-500 dark:border-zinc-800 dark:text-zinc-400">
-            No upcoming departures — schedule some dates for this journey from the Timetable.
+            No upcoming departures. Schedule some dates for this journey from the Timetable.
           </div>
         ) : (
           <div className="mt-3 flex flex-col">

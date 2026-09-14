@@ -7,6 +7,9 @@ import { ArrowLeft, Loader2, Trash2, User, Building2, IdCard, ShieldCheck, Ticke
 import { createClient } from "@/lib/supabase/client";
 import { getAdminUser, hideAdminBooking, ApiError, type AdminUserDetail, type AdminUserBooking } from "@/lib/api";
 import { DeleteUserButton } from "./delete-user-button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 
 function money(n: number) {
   return `LKR ${Number(n).toLocaleString("en-LK", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
@@ -86,18 +89,12 @@ export default function AdminUserDetailPage() {
       </Link>
 
       <div className="mt-4 flex items-center gap-3">
-        {p?.avatar_url ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={p.avatar_url}
-            alt={`${displayName} avatar`}
-            className="h-14 w-14 shrink-0 rounded-2xl border border-slate-200 object-cover dark:border-zinc-800"
-          />
-        ) : (
-          <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-brand-soft text-brand dark:bg-brand-soft-dark dark:text-blue-300">
+        <Avatar className="h-14 w-14 overflow-hidden rounded-2xl border border-slate-200 after:rounded-2xl dark:border-zinc-800">
+          {p?.avatar_url && <AvatarImage src={p.avatar_url} alt={`${displayName} avatar`} className="rounded-2xl" />}
+          <AvatarFallback className="rounded-2xl bg-brand-soft text-brand dark:bg-brand-soft-dark dark:text-blue-300">
             <User size={22} />
-          </span>
-        )}
+          </AvatarFallback>
+        </Avatar>
         <div className="min-w-0">
           <h1 className="truncate font-heading text-2xl font-bold tracking-tight">{displayName}</h1>
           <p className="ui mt-0.5 truncate text-sm text-slate-500 dark:text-zinc-400">
@@ -145,12 +142,9 @@ export default function AdminUserDetailPage() {
                   </p>
                 </div>
                 {m.operator && (
-                  <Link
-                    href={`/admin/operators/${m.operator.id}`}
-                    className="ui inline-flex items-center gap-1 text-xs font-semibold text-brand hover:underline dark:text-blue-400"
-                  >
+                  <Button render={<Link href={`/admin/operators/${m.operator.id}`} />} nativeButton={false} variant="link" size="sm" className="gap-1">
                     View operator <ArrowUpRight size={12} />
-                  </Link>
+                  </Button>
                 )}
               </div>
             ))}
@@ -172,12 +166,9 @@ export default function AdminUserDetailPage() {
                     {r.status} {r.bus ? `· Bus ${r.bus.reg_no}` : "· Not assigned to a bus"}
                   </p>
                 </div>
-                <Link
-                  href={`/admin/pilots/${r.id}`}
-                  className="ui inline-flex items-center gap-1 text-xs font-semibold text-brand hover:underline dark:text-blue-400"
-                >
+                <Button render={<Link href={`/admin/pilots/${r.id}`} />} nativeButton={false} variant="link" size="sm" className="gap-1">
                   View pilot <ArrowUpRight size={12} />
-                </Link>
+                </Button>
               </div>
             ))}
           </div>
@@ -187,8 +178,11 @@ export default function AdminUserDetailPage() {
       {/* ── Admin role ────────────────────────────────────────────────── */}
       {detail.admin_role && (
         <Section icon={<ShieldCheck size={16} />} title="Platform admin">
-          <p className="ui text-sm">
-            This account has platform admin access (<span className="font-semibold capitalize">{detail.admin_role}</span>).
+          <p className="ui flex items-center gap-2 text-sm">
+            This account has platform admin access:
+            <Badge className="rounded-full border-transparent bg-emerald-100 capitalize text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300">
+              {detail.admin_role}
+            </Badge>
           </p>
         </Section>
       )}
@@ -207,14 +201,14 @@ export default function AdminUserDetailPage() {
       </Section>
 
       {/* ── Danger zone ─────────────────────────────────────────────────────── */}
-      <div className="card-lg mt-8 border-red-200/60 p-6 dark:border-red-900/40">
+      <div className="card-lg mt-8 border border-red-200/60 p-6 dark:border-red-900/40">
         <h2 className="ui text-xs font-semibold uppercase tracking-wide text-red-500/80 dark:text-red-400/70">
           Danger zone
         </h2>
         <div className="mt-3 flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center">
           <p className="ui text-xs text-slate-600 dark:text-zinc-400">
             Deleting removes this account for good. Only possible if it has no booking history and
-            isn&apos;t linked to an operator or pilot login — accounts with real history should stay
+            isn&apos;t linked to an operator or pilot login. Accounts with real history should stay
             as-is instead.
           </p>
           <DeleteUserButton userId={detail.id} userName={displayName} />
@@ -252,41 +246,32 @@ function BookingRow({ b, onHidden }: { b: AdminUserBooking; onHidden: () => void
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="flex items-center gap-2">
           <p className="font-medium">{b.trip?.route?.name ?? "—"}</p>
-          <span className={`ui rounded-full px-2 py-0.5 text-[11px] font-semibold capitalize ${BOOKING_STATUS_STYLE[b.status] ?? BOOKING_STATUS_STYLE.pending}`}>
+          <Badge className={`rounded-full border-transparent capitalize ${BOOKING_STATUS_STYLE[b.status] ?? BOOKING_STATUS_STYLE.pending}`}>
             {b.status}
-          </span>
+          </Badge>
         </div>
         <div className="flex items-center gap-3">
           <span className="font-heading font-bold text-brand dark:text-blue-400">{money(b.amount)}</span>
           {confirming ? (
             <div className="flex items-center gap-1.5">
-              <button
-                type="button"
-                onClick={() => setConfirming(false)}
-                disabled={busy}
-                className="ui rounded-lg border border-slate-200 px-2 py-1 text-[11px] font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-60 dark:border-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-800"
-              >
+              <Button variant="outline" size="xs" onClick={() => setConfirming(false)} disabled={busy} className="rounded-lg">
                 Cancel
-              </button>
-              <button
-                type="button"
-                onClick={confirmHide}
-                disabled={busy}
-                className="ui inline-flex items-center gap-1 rounded-lg bg-red-600 px-2 py-1 text-[11px] font-semibold text-white hover:bg-red-700 disabled:opacity-60"
-              >
+              </Button>
+              <Button variant="destructive" size="xs" onClick={confirmHide} disabled={busy} className="gap-1 rounded-lg">
                 {busy ? <Loader2 size={12} className="animate-spin" /> : <Trash2 size={12} />}
                 Remove
-              </button>
+              </Button>
             </div>
           ) : (
-            <button
-              type="button"
+            <Button
+              variant="ghost"
+              size="icon-xs"
               onClick={() => setConfirming(true)}
               aria-label="Remove this booking"
-              className="ui rounded-lg border border-slate-200 p-1.5 text-red-600 hover:bg-red-50 dark:border-zinc-800 dark:hover:bg-red-950/30"
+              className="rounded-lg text-red-600 hover:text-red-700 dark:text-red-400"
             >
               <Trash2 size={13} />
-            </button>
+            </Button>
           )}
         </div>
       </div>
@@ -307,7 +292,7 @@ function BookingRow({ b, onHidden }: { b: AdminUserBooking; onHidden: () => void
       )}
       {b.refunds.length > 0 && (
         <p className="ui mt-1 text-xs text-amber-600 dark:text-amber-400">
-          Refund: {b.refunds[0].status} · {money(b.refunds[0].amount)} — {b.refunds[0].reason}
+          Refund: {b.refunds[0].status} · {money(b.refunds[0].amount)} ({b.refunds[0].reason})
         </p>
       )}
       {error && <p className="ui mt-1.5 text-xs text-red-600 dark:text-red-400">{error}</p>}

@@ -1,4 +1,6 @@
 @import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
 
 /* Dark mode via class strategy (toggled on <html class="dark">) */
 @custom-variant dark (&:where(.dark, .dark *));
@@ -10,14 +12,26 @@
 
    Surface tokens follow the Facebook app palette in BOTH modes:
    · Light: gray page (#F0F2F5) with white cards/dropdowns (#FFFFFF) that
-     float above it via color + soft shadow; dividers #DADDE1; text #050505,
-     secondary #65676B; input/hover fill #F0F2F5.
+     float above it purely via a soft shadow — no border stroke, matching
+     the "elevation via shadow, not outline" card language (see .card
+     below); dividers #DADDE1; text #050505, secondary #65676B; input/hover
+     fill #F0F2F5.
    · Dark: neutral near-black charcoal (NOT brand-tinted) — page #18191A,
      cards/dropdowns a flat step lighter #242526, dividers/hover #3A3B3C;
-     text #E4E6EB, secondary #B0B3B8. Elevation is a lighter fill, not a shadow.
+     text #E4E6EB, secondary #B0B3B8. Shadows don't read on a dark surface,
+     so elevation there is a lighter fill plus a hairline border instead.
    The brand blue is left untouched/vivid on buttons, links and focus rings
    so it pops against the neutral canvas, exactly as Facebook keeps its own
    blue accent saturated against grey surfaces.
+
+   shadcn/ui (added via `shadcn init --preset buHOvz6`) is reskinned onto this
+   same system below rather than left on its generated defaults: --primary/
+   --ring reuse the brand blue, --destructive reuses the red already used by
+   every hand-rolled delete button, and --card/--popover/--muted/--border
+   reuse the Facebook-flat values instead of shadcn's generic neutral scale.
+   The shadcn chart and sidebar tokens, and its radius utility-scale overrides, were
+   dropped since nothing installed uses them yet (`shadcn add` will reinject
+   whichever of these a future component actually needs).
    ──────────────────────────────────────────────────────────────────────── */
 @theme {
   --color-brand: #004aad;
@@ -40,6 +54,20 @@
   --foreground: oklch(0.115 0 0); /* ≈ #050505 */
   --muted: oklch(0.96 0.005 258); /* input/hover fill ≈ #F0F2F5 */
   --muted-foreground: oklch(0.513 0.007 264); /* ≈ #65676B */
+
+  /* shadcn/ui — reskinned onto the tokens above */
+  --card-foreground: var(--foreground);
+  --popover-foreground: var(--foreground);
+  --primary: var(--color-brand);
+  --primary-foreground: var(--color-brand-fg);
+  --secondary: oklch(0.967 0.001 286.375);
+  --secondary-foreground: oklch(0.21 0.006 285.885);
+  --accent: oklch(0.97 0 0);
+  --accent-foreground: oklch(0.205 0 0);
+  --destructive: #dc2626; /* Tailwind red-600 — matches every existing delete button */
+  --input: oklch(0.922 0 0);
+  --ring: var(--color-brand);
+  --radius: 0.625rem;
 }
 .dark {
   --background: oklch(0.213 0.003 248); /* ≈ #18191A */
@@ -50,16 +78,38 @@
   --foreground: oklch(0.925 0.007 268); /* ≈ #E4E6EB */
   --muted: oklch(0.352 0.002 248); /* hover/input fill ≈ #3A3B3C */
   --muted-foreground: oklch(0.766 0.008 261); /* ≈ #B0B3B8 */
+
+  /* shadcn/ui — reskinned onto the tokens above (--primary/--destructive/
+     --ring stay the same vivid brand color as light mode, same rule the
+     rest of the app already follows for its brand accent) */
+  --card-foreground: var(--foreground);
+  --popover-foreground: var(--foreground);
+  --secondary: oklch(0.274 0.006 286.033);
+  --secondary-foreground: oklch(0.985 0 0);
+  --accent: oklch(0.269 0 0);
+  --accent-foreground: oklch(0.985 0 0);
+  --input: oklch(1 0 0 / 15%);
 }
 @theme inline {
   --color-background: var(--background);
   --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
   --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
   --color-sidebar: var(--sidebar);
   --color-border: var(--border);
   --color-foreground: var(--foreground);
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
 }
 
 @layer base {
@@ -82,9 +132,14 @@
   /* Primary CTA — cobalt with soft colored shadow */
   .btn-primary {
     font-family: var(--font-inter), var(--font-sinhala), var(--font-tamil), sans-serif;
+    /* A flat neutral gray when disabled, not a translucent brand blue — at
+       partial opacity a dark saturated blue blends toward a muddy lavender
+       instead of reading as "brand blue, just dimmed". */
     @apply inline-flex items-center justify-center gap-2 rounded-xl bg-brand px-5 py-2.5
       text-sm font-semibold text-brand-fg transition-colors duration-300
-      hover:bg-brand-hover disabled:cursor-not-allowed disabled:opacity-60;
+      hover:bg-brand-hover disabled:cursor-not-allowed disabled:bg-slate-300
+      disabled:text-slate-500 disabled:hover:bg-slate-300 dark:disabled:bg-zinc-800
+      dark:disabled:text-zinc-500 dark:disabled:hover:bg-zinc-800;
   }
   /* Secondary — Facebook neutral: subtle fill, no brand color */
   .btn-secondary {
@@ -100,18 +155,20 @@
       outline-none transition duration-300 placeholder:text-muted-foreground
       focus:border-transparent focus:ring-2 focus:ring-brand;
   }
-  /* Card surfaces — Facebook style: opaque, rounded, soft shadow in light,
-     flat lighter fill + hairline border in dark (no shadow). */
+  /* Card surfaces — elevation via a soft shadow in light mode (no border
+     stroke at all, redbus-style), flat lighter fill + hairline border in
+     dark (shadows don't read against a dark surface, so a border carries
+     the separation there instead). */
   .card {
-    @apply rounded-lg border border-border bg-card shadow-sm shadow-black/[0.04]
-      transition-colors duration-300 dark:shadow-none;
+    @apply rounded-2xl bg-card shadow-md shadow-black/[0.04]
+      transition-shadow duration-300 dark:border dark:border-border dark:shadow-none;
   }
   .card-lg {
-    @apply rounded-lg border border-border bg-card shadow-sm shadow-black/[0.04]
-      transition-colors duration-300 dark:shadow-none;
+    @apply rounded-2xl bg-card shadow-md shadow-black/[0.04]
+      transition-shadow duration-300 dark:border dark:border-border dark:shadow-none;
   }
   .card-hover {
-    @apply hover:shadow-md hover:shadow-black/10 dark:hover:bg-muted;
+    @apply hover:shadow-lg hover:shadow-black/[0.08] dark:hover:bg-muted;
     transition: box-shadow 0.2s, background-color 0.2s, border-color 0.2s;
   }
   /* Horizontally swipeable rows (e.g. Popular routes) — native scroll/snap,

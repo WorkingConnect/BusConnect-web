@@ -8,7 +8,7 @@ export function AdminModeBanner({ operatorName }: { operatorName: string | null 
     <div className="flex flex-wrap items-center justify-between gap-2 bg-amber-500 px-4 py-2 text-sm font-medium text-amber-950 sm:px-6 lg:px-8">
       <span className="flex items-center gap-2">
         <ShieldAlert size={15} />
-        Admin mode — viewing {operatorName ?? "this operator"}&apos;s dashboard with full owner access.
+        Admin mode: viewing {operatorName ?? "this operator"}&apos;s dashboard with full owner access.
       </span>
       {/* Plain <a>, not next/link — this hits a Route Handler (clears the
           admin_operator_id cookie via Set-Cookie, then redirects), which

@@ -42,7 +42,7 @@ export function CancellationRequestList({ requests }: { requests: AdminCancellat
               </p>
               <p className="ui mt-1 text-xs text-slate-500 dark:text-zinc-500">
                 Requested {dateTime(r.cancellation_requested_at)}
-                {r.cancellation_reason ? ` — "${r.cancellation_reason}"` : ""}
+                {r.cancellation_reason ? `: "${r.cancellation_reason}"` : ""}
               </p>
             </div>
             <ChevronRight size={15} className="shrink-0 text-slate-400" />

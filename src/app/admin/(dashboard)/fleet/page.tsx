@@ -42,7 +42,7 @@ export default async function AdminFleetPage() {
     <div>
       <h1 className="font-heading text-2xl font-bold tracking-tight">Fleet</h1>
       <p className="ui mt-1 text-sm text-slate-600 dark:text-zinc-400">
-        Buses operators have registered — approve before they can be scheduled for trips.
+        Buses operators have registered. Approve before they can be scheduled for trips.
       </p>
 
       <BusList buses={buses} />

@@ -196,7 +196,7 @@ export default async function OperatorPage({
                     <span className="font-heading font-semibold">{r.name}</span>
                     <span className="ui text-sm text-slate-600 dark:text-zinc-400">
                       {r.departureTime && r.arrivalTime
-                        ? `${r.departureTime} — ${r.arrivalTime}`
+                        ? `${r.departureTime} – ${r.arrivalTime}`
                         : r.departureTime || "—"}
                     </span>
                     <div className="flex items-center justify-between sm:contents">

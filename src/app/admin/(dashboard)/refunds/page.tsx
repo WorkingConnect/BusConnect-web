@@ -69,7 +69,7 @@ export default async function AdminRefundsPage() {
       </h2>
       {pending.length === 0 ? (
         <div className="card mt-3 p-8 text-center text-sm text-slate-500 dark:text-zinc-400">
-          Nothing pending — all caught up.
+          Nothing pending. All caught up.
         </div>
       ) : (
         <div className="mt-3 flex flex-col gap-2">

@@ -102,7 +102,7 @@ export default async function OperatorOverviewPage() {
         ) : (
           <Clock size={32} className="mx-auto text-amber-500" />
         )}
-        <p className="mt-4 font-heading font-semibold">{operator.name} — application under review</p>
+        <p className="mt-4 font-heading font-semibold">{operator.name}: application under review</p>
         <p className="ui mt-1 text-sm text-slate-600 dark:text-zinc-400">
           BusConnect is reviewing your application. You&apos;ll be able to run journeys once approved.
         </p>
@@ -112,9 +112,9 @@ export default async function OperatorOverviewPage() {
 
   if (operator.status === "suspended") {
     return (
-      <div className="card border-red-200 p-10 text-center dark:border-red-900/50">
+      <div className="card border border-red-200 p-10 text-center dark:border-red-900/50">
         <Ban size={32} className="mx-auto text-red-500" />
-        <p className="mt-4 font-heading font-semibold">{operator.name} — account suspended</p>
+        <p className="mt-4 font-heading font-semibold">{operator.name}: account suspended</p>
         <p className="ui mt-1 text-sm text-slate-600 dark:text-zinc-400">
           Contact BusConnect support to resolve this.
         </p>
@@ -257,7 +257,7 @@ export default async function OperatorOverviewPage() {
             </div>
           ) : (
             <div className="card p-6 text-center text-sm text-slate-500 dark:text-zinc-400">
-              You&apos;re not assigned to a bus yet — your operator will assign you to one, and your trips
+              You&apos;re not assigned to a bus yet. Your operator will assign you to one, and your trips
               will show up here.
             </div>
           )}
@@ -298,8 +298,8 @@ export default async function OperatorOverviewPage() {
           journeyGroups.length === 0 && adHocTrips.length === 0 ? (
             <div className="card mt-4 p-10 text-center text-slate-500 dark:text-zinc-400">
               {journeys.length === 0
-                ? "No upcoming departures — create a journey, then schedule its dates from the Timetable."
-                : "No upcoming departures — schedule some dates for your journeys from the Timetable."}
+                ? "No upcoming departures. Create a journey, then schedule its dates from the Timetable."
+                : "No upcoming departures. Schedule some dates for your journeys from the Timetable."}
               <div>
                 {journeys.length === 0 ? (
                   <Link href="/operator/journeys/new" className="btn-primary mt-4">
@@ -387,7 +387,7 @@ export default async function OperatorOverviewPage() {
           )
         ) : shownTrips.length === 0 ? (
           <div className="card mt-4 p-10 text-center text-slate-500 dark:text-zinc-400">
-            No trips yet — you&apos;ll see them here once your operator assigns you to a bus.
+            No trips yet. You&apos;ll see them here once your operator assigns you to a bus.
           </div>
         ) : (
           <div className="mt-4 flex flex-col gap-3">

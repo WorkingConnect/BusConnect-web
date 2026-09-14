@@ -50,7 +50,7 @@ export default async function OperatorJourneysPage() {
         <div>
           <h1 className="font-heading text-2xl font-bold tracking-tight">Journeys</h1>
           <p className="ui mt-1 text-sm text-slate-600 dark:text-zinc-400">
-            Your recurring services — a bus + crew running a route on a schedule. Each journey puts
+            Your recurring services: a bus + crew running a route on a schedule. Each journey puts
             seats on sale for every date it runs.
           </p>
         </div>
@@ -63,7 +63,7 @@ export default async function OperatorJourneysPage() {
         {journeys.length === 0 ? (
           <div className="card p-10 text-center text-sm text-slate-500 dark:text-zinc-400">
             <CalendarClock size={28} className="mx-auto mb-3 text-slate-300 dark:text-zinc-700" />
-            No journeys yet — create one to put a bus on sale.
+            No journeys yet. Create one to put a bus on sale.
           </div>
         ) : (
           journeys.map((j) => (

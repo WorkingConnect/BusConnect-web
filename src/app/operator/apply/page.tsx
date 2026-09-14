@@ -189,7 +189,7 @@ export default function ApplyOperatorPage() {
             />
           </div>
           <span className="ui text-xs text-slate-500 dark:text-zinc-500">
-            Kept private — only visible to BusConnect admins for verification.
+            Kept private. Only visible to BusConnect admins for verification.
           </span>
         </label>
 

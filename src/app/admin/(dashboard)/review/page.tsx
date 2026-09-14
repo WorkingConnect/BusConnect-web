@@ -57,7 +57,7 @@ export default async function AdminReviewPage() {
     <div>
       <h1 className="font-heading text-2xl font-bold tracking-tight">Review</h1>
       <p className="ui mt-1 text-sm text-slate-600 dark:text-zinc-400">
-        Journeys operators have created — approve before they can be scheduled for trips.
+        Journeys operators have created. Approve before they can be scheduled for trips.
       </p>
 
       <JourneyList journeys={pendingJourneys} />
@@ -65,7 +65,7 @@ export default async function AdminReviewPage() {
       <div className="mt-10">
         <h2 className="font-heading text-lg font-semibold">Trip cancellation requests</h2>
         <p className="ui mt-1 text-sm text-slate-600 dark:text-zinc-400">
-          An operator can&apos;t cancel a trip with bookings on their own — approve or reject their request here.
+          An operator can&apos;t cancel a trip with bookings on their own. Approve or reject their request here.
         </p>
         <CancellationRequestList requests={cancellationRequests} />
       </div>

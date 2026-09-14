@@ -95,7 +95,7 @@ export function ConductorSeatMap({ tripId, layout, seatCount, initialSeats, book
       data: { session },
     } = await supabase.auth.getSession();
     if (!session) {
-      setError("Your session expired — please sign in again.");
+      setError("Your session expired. Please sign in again.");
       return undefined;
     }
     return fn(session.access_token);

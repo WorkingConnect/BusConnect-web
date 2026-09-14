@@ -78,7 +78,7 @@ export default function AdminRouteCardsPage() {
           <p className="ui mt-1 text-sm text-slate-600 dark:text-zinc-400">
             Shared corridor name + photo templates. Link several physically different routes
             (different operators, different stops) to the same card so they all display a
-            consistent name — editing a card updates every route linked to it immediately.
+            consistent name. Editing a card updates every route linked to it immediately.
           </p>
         </div>
         {!editor && (

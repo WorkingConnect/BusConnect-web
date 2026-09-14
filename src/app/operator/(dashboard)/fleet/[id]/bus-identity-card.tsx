@@ -174,7 +174,7 @@ export function BusIdentityCard({ bus }: { bus: OperatorBusDetail }) {
             </label>
           </div>
           <p className="ui mt-3 text-xs text-slate-500 dark:text-zinc-500">
-            Seat capacity and layout can&apos;t be changed here — they&apos;re fixed once trips are running on
+            Seat capacity and layout can&apos;t be changed here. They&apos;re fixed once trips are running on
             this bus. Contact BusConnect support if that needs to change.
           </p>
         </section>

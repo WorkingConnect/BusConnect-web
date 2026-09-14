@@ -239,8 +239,8 @@ export function JourneyForm({ initial }: { initial?: OperatorJourneyDetail }) {
     return (
       <div className="card p-8 text-center text-sm text-slate-500 dark:text-zinc-400">
         {buses.length === 0
-          ? "You need at least one approved bus before creating a journey — register one in Fleet."
-          : "No routes in the catalog yet — ask BusConnect to add the route you run."}
+          ? "You need at least one approved bus before creating a journey. Register one in Fleet."
+          : "No routes in the catalog yet. Ask BusConnect to add the route you run."}
       </div>
     );
   }
@@ -291,7 +291,7 @@ export function JourneyForm({ initial }: { initial?: OperatorJourneyDetail }) {
                 <strong>{crew.conductor ?? "no conductor"}</strong> (conductor)
               </>
             ) : (
-              "No driver/conductor assigned to this bus yet — assign them in Pilots."
+              "No driver/conductor assigned to this bus yet. Assign them in Pilots."
             )}
           </p>
         )}
@@ -304,7 +304,7 @@ export function JourneyForm({ initial }: { initial?: OperatorJourneyDetail }) {
         </h2>
         <p className="ui mt-1 text-xs text-slate-500 dark:text-zinc-500">
           {bookingLocked
-            ? "This journey has bookings — times are locked until those trips run out."
+            ? "This journey has bookings. Times are locked until those trips run out."
             : "The service's departure/arrival times. You choose which dates it runs later, from the Timetable."}
         </p>
         <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -358,7 +358,7 @@ export function JourneyForm({ initial }: { initial?: OperatorJourneyDetail }) {
         </h2>
         {bookingLocked && (
           <p className="ui mt-1 text-xs text-slate-500 dark:text-zinc-500">
-            This journey has bookings — fare is locked until those trips run out.
+            This journey has bookings. Fare is locked until those trips run out.
           </p>
         )}
         <label className={`${labelCls} mt-4 max-w-xs`}>
@@ -378,7 +378,7 @@ export function JourneyForm({ initial }: { initial?: OperatorJourneyDetail }) {
           <>
             <p className="ui mt-1 text-xs text-slate-500 dark:text-zinc-500">
               {bookingLocked
-                ? "This journey has bookings — boarding/drop-off points are locked until those trips run out."
+                ? "This journey has bookings. Boarding/drop-off points are locked until those trips run out."
                 : "Set the time the bus is at each stop, and whether passengers can board and/or be dropped there."}
             </p>
             <div className="mt-4 flex flex-col gap-2">

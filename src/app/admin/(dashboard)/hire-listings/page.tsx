@@ -73,7 +73,7 @@ export default async function AdminHireListingsPage({
       <div>
         <h1 className="font-heading text-2xl font-bold tracking-tight">Hire Listings</h1>
         <p className="ui mt-1 text-sm text-slate-500 dark:text-zinc-400">
-          Bus-for-hire classifieds posted by passengers from the app — every listing needs review before it
+          Bus-for-hire classifieds posted by passengers from the app. Every listing needs review before it
           goes public. Posting/editing is passenger-owned in BusConnect-mobile; open a listing to review,
           optionally edit, and approve or reject it.
         </p>

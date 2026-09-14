@@ -46,7 +46,7 @@ export default async function AdminLocationsPage() {
     <div>
       <h1 className="font-heading text-2xl font-bold tracking-tight">Locations</h1>
       <p className="ui mt-1 text-sm text-slate-600 dark:text-zinc-400">
-        Every stop created via the route editor, grouped by the route it&apos;s on — hide a location to pull
+        Every stop created via the route editor, grouped by the route it&apos;s on. Hide a location to pull
         it from the public From/To search without touching the routes it&apos;s already on.
       </p>
 

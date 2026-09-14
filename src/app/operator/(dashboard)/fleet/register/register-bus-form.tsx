@@ -205,7 +205,7 @@ export function RegisterBusForm() {
           Bus images
         </h2>
         <p className="ui mt-1 text-xs text-slate-500 dark:text-zinc-500">
-          All optional individually — at least one photo is required.
+          All optional individually. At least one photo is required.
         </p>
         <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
           <ImageSlot

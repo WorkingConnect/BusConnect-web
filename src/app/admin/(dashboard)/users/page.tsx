@@ -2,9 +2,12 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { Users, Search, Loader2, ArrowUpRight } from "lucide-react";
+import { Users, Search, Loader2, ArrowUpRight, UserCheck, Building2, IdCard, ShieldCheck } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { listAdminUsers, ApiError, type AdminUserSummary } from "@/lib/api";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 
 function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString("en-LK", { day: "numeric", month: "short", year: "numeric" });
@@ -50,6 +53,16 @@ export default function AdminUsersPage() {
     );
   }, [users, query]);
 
+  const counts = useMemo(
+    () => ({
+      passengers: (users ?? []).filter((u) => u.roles.passenger).length,
+      operators: (users ?? []).filter((u) => u.roles.operator.length > 0).length,
+      pilots: (users ?? []).filter((u) => u.roles.pilot).length,
+      admins: (users ?? []).filter((u) => u.roles.admin).length,
+    }),
+    [users],
+  );
+
   if (error) {
     return (
       <p className="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-950/40 dark:text-red-300">
@@ -75,9 +88,16 @@ export default function AdminUsersPage() {
         <div>
           <h1 className="font-heading text-2xl font-bold tracking-tight">Users</h1>
           <p className="ui text-sm text-slate-500 dark:text-zinc-400">
-            Every account on the platform — passengers, operators, pilots, and admins.
+            Every account on the platform: passengers, operators, pilots, and admins.
           </p>
         </div>
+      </div>
+
+      <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <StatTile icon={<UserCheck size={16} />} tone="slate" label="Passengers" value={counts.passengers} />
+        <StatTile icon={<Building2 size={16} />} tone="blue" label="Operators" value={counts.operators} />
+        <StatTile icon={<IdCard size={16} />} tone="amber" label="Pilots" value={counts.pilots} />
+        <StatTile icon={<ShieldCheck size={16} />} tone="emerald" label="Admins" value={counts.admins} />
       </div>
 
       <div className="relative mt-6 max-w-md">
@@ -98,32 +118,39 @@ export default function AdminUsersPage() {
         {filtered.length === 0 ? (
           <div className="card p-10 text-center text-sm text-slate-500 dark:text-zinc-400">No users match that search.</div>
         ) : (
-          filtered.map((u) => (
-            <div key={u.id} className="card flex items-center justify-between gap-4 p-4">
-              <div className="min-w-0">
-                <div className="flex flex-wrap items-center gap-2">
-                  <p className="truncate font-heading font-semibold">{u.name ?? u.email ?? u.phone ?? "—"}</p>
-                  {u.roles.passenger && <RoleBadge label="Passenger" tone="slate" />}
-                  {u.roles.operator.map((o, i) => (
-                    <RoleBadge key={i} label={`${o.role === "owner" ? "Operator" : "Operator staff"} · ${o.name}`} tone="blue" />
-                  ))}
-                  {u.roles.pilot && <RoleBadge label={`Pilot (${u.roles.pilot.status})`} tone="amber" />}
-                  {u.roles.admin && <RoleBadge label="Admin" tone="emerald" />}
-                  {u.deleted && <RoleBadge label="Deleted" tone="red" />}
+          filtered.map((u) => {
+            const displayName = u.name ?? u.email ?? u.phone ?? "—";
+            return (
+              <div key={u.id} className="card flex items-center justify-between gap-4 p-4">
+                <div className="flex min-w-0 items-center gap-3">
+                  <Avatar size="lg" className="shrink-0 overflow-hidden">
+                    <AvatarFallback className="bg-brand-soft text-base leading-none font-bold text-brand dark:bg-brand-soft-dark dark:text-blue-300">
+                      {displayName.charAt(0).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="min-w-0">
+                    <div className="flex flex-wrap items-center gap-1.5">
+                      <p className="truncate font-heading font-semibold">{displayName}</p>
+                      {u.roles.passenger && <RoleBadge label="Passenger" tone="slate" />}
+                      {u.roles.operator.map((o, i) => (
+                        <RoleBadge key={i} label={`${o.role === "owner" ? "Operator" : "Operator staff"} · ${o.name}`} tone="blue" />
+                      ))}
+                      {u.roles.pilot && <RoleBadge label={`Pilot (${u.roles.pilot.status})`} tone="amber" />}
+                      {u.roles.admin && <RoleBadge label="Admin" tone="emerald" />}
+                      {u.deleted && <RoleBadge label="Deleted" tone="red" />}
+                    </div>
+                    <p className="ui mt-0.5 truncate text-sm text-slate-500 dark:text-zinc-400">
+                      {[u.email, u.phone].filter(Boolean).join(" · ") || "No contact on file"}
+                    </p>
+                    <p className="ui mt-0.5 text-xs text-slate-400 dark:text-zinc-500">Joined {formatDate(u.created_at)}</p>
+                  </div>
                 </div>
-                <p className="ui mt-0.5 truncate text-sm text-slate-500 dark:text-zinc-400">
-                  {[u.email, u.phone].filter(Boolean).join(" · ") || "No contact on file"}
-                </p>
-                <p className="ui mt-0.5 text-xs text-slate-400 dark:text-zinc-500">Joined {formatDate(u.created_at)}</p>
+                <Button render={<Link href={`/admin/users/${u.id}`} />} nativeButton={false} variant="outline" size="sm" className="shrink-0 gap-1 rounded-lg">
+                  Details <ArrowUpRight size={12} />
+                </Button>
               </div>
-              <Link
-                href={`/admin/users/${u.id}`}
-                className="ui inline-flex shrink-0 items-center gap-1 rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 dark:border-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-800"
-              >
-                Details <ArrowUpRight size={12} />
-              </Link>
-            </div>
-          ))
+            );
+          })
         )}
       </div>
     </div>
@@ -139,7 +166,25 @@ const TONE_STYLE: Record<string, string> = {
 };
 
 function RoleBadge({ label, tone }: { label: string; tone: keyof typeof TONE_STYLE }) {
+  return <Badge className={`ui shrink-0 rounded-full border-transparent font-semibold ${TONE_STYLE[tone]}`}>{label}</Badge>;
+}
+
+function StatTile({
+  icon,
+  tone,
+  label,
+  value,
+}: {
+  icon: React.ReactNode;
+  tone: keyof typeof TONE_STYLE;
+  label: string;
+  value: number;
+}) {
   return (
-    <span className={`ui shrink-0 rounded-full px-2 py-0.5 text-[11px] font-semibold ${TONE_STYLE[tone]}`}>{label}</span>
+    <div className="card p-4">
+      <span className={`flex h-9 w-9 items-center justify-center rounded-xl ${TONE_STYLE[tone]}`}>{icon}</span>
+      <div className="mt-3 font-heading text-xl font-bold tracking-tight">{value}</div>
+      <div className="ui mt-0.5 text-xs text-slate-500 dark:text-zinc-400">{label}</div>
+    </div>
   );
 }

@@ -1,12 +1,19 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Ticket, Building2, ShieldCheck, LogOut, ChevronDown, UserCircle } from "lucide-react";
 import { useIdentity } from "@/lib/use-identity";
 import { useT, useLocale } from "@/lib/i18n/provider";
 import { localizePath } from "@/lib/i18n/navigation";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export function UserMenu({
   workspace = "passenger",
@@ -20,17 +27,8 @@ export function UserMenu({
   const router = useRouter();
   const { identity, roles, signOut: doSignOut } = useIdentity();
   const [open, setOpen] = useState(false);
-  const menuRef = useRef<HTMLDivElement>(null);
   const t = useT("nav");
   const locale = useLocale();
-
-  useEffect(() => {
-    function onClickOutside(e: MouseEvent) {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) setOpen(false);
-    }
-    document.addEventListener("mousedown", onClickOutside);
-    return () => document.removeEventListener("mousedown", onClickOutside);
-  }, []);
 
   // localizePath assumes it's operating within the passenger app (the only
   // place "/" and "/login" are actually under app/[lang]/) — on the
@@ -69,67 +67,73 @@ export function UserMenu({
   const initial = (identity.fullName ?? identity.email).charAt(0).toUpperCase();
 
   return (
-    <div ref={menuRef} className="relative">
-      <button
-        type="button"
-        onClick={() => setOpen((v) => !v)}
-        className="flex items-center gap-1.5 rounded-full border border-border py-1 pl-1 pr-2.5 transition-colors hover:bg-muted"
-      >
+    <DropdownMenu open={open} onOpenChange={setOpen}>
+      <DropdownMenuTrigger className="flex items-center gap-1.5 rounded-full border border-border py-1 pl-1 pr-2.5 transition-colors hover:bg-muted">
         <Avatar avatarUrl={identity.avatarUrl} initial={initial} size={28} />
         <ChevronDown size={14} className={`text-muted-foreground transition-transform ${open ? "rotate-180" : ""}`} />
-      </button>
-
-      {open && (
-        <div className="ui absolute right-0 top-full z-50 mt-2 w-64 overflow-hidden rounded-xl border border-border bg-popover shadow-lg shadow-black/10 dark:shadow-black/40">
-          <div className="flex items-center gap-3 border-b border-border p-4">
-            <Avatar avatarUrl={identity.avatarUrl} initial={initial} size={40} />
-            <div className="min-w-0">
-              {identity.fullName && <p className="truncate text-sm font-medium text-foreground">{identity.fullName}</p>}
-              <p className="truncate text-xs text-muted-foreground">{identity.email}</p>
-            </div>
-          </div>
-
-          <div className="p-1.5">
-            {/* Passenger-only routes — not under /operator or /admin at all,
-                so this workspace's own dashboard link (below) is the only
-                sensible entry here. An operator whose application hasn't
-                been approved yet also has no passenger identity to speak of
-                here — profile/tickets only make sense once approved. */}
-            {workspace === "passenger" && !(roles?.isOperator && roles.operatorStatus === "pending") && (
-              <>
-                <MenuLink href={localizePath(locale, "/profile")} icon={UserCircle} onClick={() => setOpen(false)}>
-                  {t("profile")}
-                </MenuLink>
-                <MenuLink href={localizePath(locale, "/tickets")} icon={Ticket} onClick={() => setOpen(false)}>
-                  {t("myTickets")}
-                </MenuLink>
-              </>
-            )}
-            {workspace === "operator" && roles?.isOperator && (
-              <MenuLink href="/operator" icon={Building2} onClick={() => setOpen(false)}>
-                {roles.operatorRole === "pilot" ? t("conductorDashboard") : t("operatorDashboard")}
-              </MenuLink>
-            )}
-            {workspace === "admin" && roles?.isAdmin && (
-              <MenuLink href="/admin" icon={ShieldCheck} onClick={() => setOpen(false)}>
-                {t("adminDashboard")}
-              </MenuLink>
-            )}
-          </div>
-
-          <div className="border-t border-border p-1.5">
-            <button
-              type="button"
-              onClick={signOut}
-              className="ui flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-red-600 transition-colors hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/40"
-            >
-              <LogOut size={16} />
-              {t("signOut")}
-            </button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="ui w-64 overflow-hidden rounded-xl p-0">
+        <div className="flex items-center gap-3 border-b border-border p-4">
+          <Avatar avatarUrl={identity.avatarUrl} initial={initial} size={40} />
+          <div className="min-w-0">
+            {identity.fullName && <p className="truncate text-sm font-medium text-foreground">{identity.fullName}</p>}
+            <p className="truncate text-xs text-muted-foreground">{identity.email}</p>
           </div>
         </div>
-      )}
-    </div>
+
+        <div className="p-1.5">
+          {/* Passenger-only routes — not under /operator or /admin at all,
+              so this workspace's own dashboard link (below) is the only
+              sensible entry here. An operator whose application hasn't
+              been approved yet also has no passenger identity to speak of
+              here — profile/tickets only make sense once approved. */}
+          {workspace === "passenger" && !(roles?.isOperator && roles.operatorStatus === "pending") && (
+            <>
+              <DropdownMenuItem
+                render={<Link href={localizePath(locale, "/profile")} />}
+                className="gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-foreground"
+              >
+                <UserCircle size={16} className="text-muted-foreground" />
+                {t("profile")}
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                render={<Link href={localizePath(locale, "/tickets")} />}
+                className="gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-foreground"
+              >
+                <Ticket size={16} className="text-muted-foreground" />
+                {t("myTickets")}
+              </DropdownMenuItem>
+            </>
+          )}
+          {workspace === "operator" && roles?.isOperator && (
+            <DropdownMenuItem
+              render={<Link href="/operator" />}
+              className="gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-foreground"
+            >
+              <Building2 size={16} className="text-muted-foreground" />
+              {roles.operatorRole === "pilot" ? t("conductorDashboard") : t("operatorDashboard")}
+            </DropdownMenuItem>
+          )}
+          {workspace === "admin" && roles?.isAdmin && (
+            <DropdownMenuItem
+              render={<Link href="/admin" />}
+              className="gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-foreground"
+            >
+              <ShieldCheck size={16} className="text-muted-foreground" />
+              {t("adminDashboard")}
+            </DropdownMenuItem>
+          )}
+        </div>
+
+        <DropdownMenuSeparator />
+        <div className="p-1.5">
+          <DropdownMenuItem variant="destructive" onClick={signOut} className="gap-3 rounded-lg px-3 py-2.5 text-sm font-medium">
+            <LogOut size={16} />
+            {t("signOut")}
+          </DropdownMenuItem>
+        </div>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }
 
@@ -168,28 +172,5 @@ export function Avatar({
     >
       {initial}
     </span>
-  );
-}
-
-function MenuLink({
-  href,
-  icon: Icon,
-  onClick,
-  children,
-}: {
-  href: string;
-  icon: React.ComponentType<{ size?: number; className?: string }>;
-  onClick: () => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <Link
-      href={href}
-      onClick={onClick}
-      className="ui flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-muted"
-    >
-      <Icon size={16} className="text-muted-foreground" />
-      {children}
-    </Link>
   );
 }

@@ -14,7 +14,7 @@ export default function RegisterBusPage() {
 
       <h1 className="mt-4 font-heading text-2xl font-bold tracking-tight">Register a bus</h1>
       <p className="ui mt-1 text-sm text-slate-600 dark:text-zinc-400">
-        Submit your bus for approval. It stays pending — not schedulable for trips — until
+        Submit your bus for approval. It stays pending (not schedulable for trips) until
         BusConnect reviews and approves it.
       </p>
 

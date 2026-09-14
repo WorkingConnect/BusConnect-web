@@ -87,7 +87,7 @@ export default async function BookingPage({
 
       {paid && !isConfirmed && (
         <p className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800 dark:border-amber-900/50 dark:bg-amber-950/40 dark:text-amber-300">
-          Payment received — confirming your seats. Refresh in a moment.
+          Payment received. Confirming your seats. Refresh in a moment.
         </p>
       )}
       {cancelled && (
@@ -235,9 +235,9 @@ export default async function BookingPage({
             <p className="font-heading font-semibold">Booking cancelled</p>
             <p className="ui mt-1 text-slate-600 dark:text-zinc-400">
               {Number(latestRefund.amount) > 0
-                ? `LKR ${Number(latestRefund.amount).toLocaleString("en-LK")} refund — ${
-                    latestRefund.status === "processed" ? "processed" : "being processed by our team"
-                  }.`
+                ? `LKR ${Number(latestRefund.amount).toLocaleString("en-LK")} refund ${
+                    latestRefund.status === "processed" ? "has been processed." : "is being processed by our team."
+                  }`
                 : "No refund was due for this cancellation."}
             </p>
           </div>

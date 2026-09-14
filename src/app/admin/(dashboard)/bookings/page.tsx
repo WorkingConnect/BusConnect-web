@@ -107,7 +107,7 @@ export default function AdminBookingsPage() {
     <div>
       <h1 className="font-heading text-2xl font-bold tracking-tight">Bookings</h1>
       <p className="ui mt-1 text-sm text-slate-600 dark:text-zinc-400">
-        Every booking platform-wide, grouped by operator — search below to jump straight to one.
+        Every booking platform-wide, grouped by operator. Search below to jump straight to one.
       </p>
 
       <form onSubmit={search} className="card mt-6 flex flex-col gap-3 p-5 sm:flex-row sm:items-end">

@@ -237,19 +237,19 @@ export function TicketScanner() {
             <dl className="mt-4 flex flex-col">
               <DetailRow
                 icon={Bus}
-                value={preview.busRegNo ? `${preview.busRegNo}${preview.busType ? ` · ${preview.busType}` : ""}` : "Bus — unknown"}
+                value={preview.busRegNo ? `${preview.busRegNo}${preview.busType ? ` · ${preview.busType}` : ""}` : "Bus: unknown"}
               />
-              <DetailRow icon={LogIn} value={preview.boardingStopName ? `Board at ${preview.boardingStopName}` : "Boarding stop — unknown"} />
-              <DetailRow icon={LogOut} value={preview.dropStopName ? `Drop at ${preview.dropStopName}` : "Drop stop — unknown"} />
+              <DetailRow icon={LogIn} value={preview.boardingStopName ? `Board at ${preview.boardingStopName}` : "Boarding stop: unknown"} />
+              <DetailRow icon={LogOut} value={preview.dropStopName ? `Drop at ${preview.dropStopName}` : "Drop stop: unknown"} />
             </dl>
 
             {allBoarded ? (
               <div className="ui mt-4 flex items-center gap-2 rounded-xl bg-emerald-50 px-3 py-2.5 text-sm font-semibold text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300">
-                <Check size={16} /> Scanned — every seat on this ticket has boarded.
+                <Check size={16} /> Scanned. Every seat on this ticket has boarded.
               </div>
             ) : preview.boardedSeats.length > 0 ? (
               <div className="ui mt-4 rounded-xl bg-amber-50 px-3 py-2.5 text-sm font-semibold text-amber-700 dark:bg-amber-950/40 dark:text-amber-300">
-                Partially scanned — {preview.boardedSeats.length} of {preview.seats.length} seats already boarded.
+                Partially scanned: {preview.boardedSeats.length} of {preview.seats.length} seats already boarded.
               </div>
             ) : (
               <div className="ui mt-4 rounded-xl bg-indigo-50 px-3 py-2.5 text-sm font-semibold text-indigo-700 dark:bg-indigo-950/40 dark:text-indigo-300">

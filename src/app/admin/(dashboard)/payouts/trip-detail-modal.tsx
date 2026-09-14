@@ -85,7 +85,7 @@ export function TripDetailModal({ token, tripId, onClose }: { token: string; tri
                   muted
                 />
                 <p className="ui mt-1 text-xs text-slate-400 dark:text-zinc-500">
-                  Collected directly by the operator — not part of the payout above.
+                  Collected directly by the operator. Not part of the payout above.
                 </p>
               </div>
             )}

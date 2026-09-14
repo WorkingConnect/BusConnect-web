@@ -102,7 +102,7 @@ export function SettleModal({
                   </p>
                 ) : (
                   <p className="mt-0.5 text-amber-600 dark:text-amber-400">
-                    No bank details on file — ask the operator to add them in their profile.
+                    No bank details on file. Ask the operator to add them in their profile.
                   </p>
                 )}
               </div>

@@ -1142,6 +1142,20 @@ export interface AdminRefund {
   refund_method: 'mpgs' | 'wallet' | string | null;
 }
 
+export interface AdminAnalyticsSnapshot {
+  bookings: number;
+  revenue: number;
+  newUsers: number;
+}
+
+export interface AdminAnalyticsActivity {
+  id: string;
+  type: "booking" | "operator" | "review";
+  at: string;
+  title: string;
+  subtitle: string;
+}
+
 export interface AdminAnalytics {
   totalOperators: number;
   pendingOperators: number;
@@ -1152,6 +1166,10 @@ export interface AdminAnalytics {
   pendingRefundsCount: number;
   pendingRefundsAmount: number;
   perOperator: { operatorId: string; name: string; status: string; bookings: number; revenue: number }[];
+  today: AdminAnalyticsSnapshot;
+  yesterday: AdminAnalyticsSnapshot;
+  monthlyRevenue: { label: string; revenue: number; bookings: number }[];
+  recentActivity: AdminAnalyticsActivity[];
 }
 
 export interface AdminBooking {
@@ -1746,8 +1764,10 @@ export function listAdminRoutes(accessToken: string) {
 export interface RouteStopInput {
   /** Named place for a real stop; omit/null for a hidden waypoint. */
   locationId?: string | null;
-  lat: number;
-  lng: number;
+  /** Null for an intermediate real stop not pinned yet — required for the
+   *  origin, the destination, and any waypoint. */
+  lat: number | null;
+  lng: number | null;
   isWaypoint?: boolean;
 }
 
