@@ -55,65 +55,77 @@ export function SearchForm({ locations }: { locations: Location[] }) {
       {/* Mobile — stacked cards, Busbud-style: From/To share one card split by
           a divider (with a diamond swap button straddling it), Date/Class
           share a second card side by side, then a full-width pill button. */}
-      <div className="relative rounded-4xl border border-border bg-card p-3 pb-6 shadow-xl shadow-black/10 sm:hidden">
+      <div className="relative rounded-4xl border border-border bg-card p-3 pb-9 shadow-xl shadow-black/10 sm:hidden">
         <div className="relative rounded-2xl border border-slate-300 dark:border-zinc-700">
-          <div className="py-2.5 pl-4 pr-16">
-            <p className="ui text-xs font-medium text-slate-500 dark:text-zinc-500">From</p>
-            <LocationCombobox
-              variant="bare"
-              locations={locations}
-              value={fromId}
-              onChange={setFromId}
-              disabled={!hasLocations}
-              placeholder={hasLocations ? "Where from?" : "No locations yet"}
-            />
+          <div className="flex items-center gap-3 py-2.5 pl-4 pr-16">
+            <ThemeIcon light="/get-on-bus-light.png" dark="/get-on-bus-dark.png" />
+            <div className="min-w-0 flex-1">
+              <p className="ui text-xs font-medium text-slate-500 dark:text-zinc-500">From</p>
+              <LocationCombobox
+                variant="bare"
+                locations={locations}
+                value={fromId}
+                onChange={setFromId}
+                disabled={!hasLocations}
+                placeholder={hasLocations ? "Where from?" : "No locations yet"}
+              />
+            </div>
           </div>
-          <div className="border-t border-slate-300 py-2.5 pl-4 pr-16 dark:border-zinc-700">
-            <p className="ui text-xs font-medium text-slate-500 dark:text-zinc-500">To</p>
-            <LocationCombobox
-              variant="bare"
-              locations={locations}
-              value={toId}
-              onChange={setToId}
-              disabled={!hasLocations}
-              placeholder={hasLocations ? "Where to?" : "No locations yet"}
-            />
+          <div className="flex items-center gap-3 border-t border-slate-300 py-2.5 pl-4 pr-16 dark:border-zinc-700">
+            <ThemeIcon light="/get-off-bus-light.png" dark="/get-off-bus-dark.png" />
+            <div className="min-w-0 flex-1">
+              <p className="ui text-xs font-medium text-slate-500 dark:text-zinc-500">To</p>
+              <LocationCombobox
+                variant="bare"
+                locations={locations}
+                value={toId}
+                onChange={setToId}
+                disabled={!hasLocations}
+                placeholder={hasLocations ? "Where to?" : "No locations yet"}
+              />
+            </div>
           </div>
           <button
             type="button"
             onClick={swap}
             aria-label="Swap origin and destination"
-            className="absolute right-4 top-1/2 flex h-9 w-9 -translate-y-1/2 rotate-45 items-center justify-center rounded-lg border border-border bg-card text-slate-500 shadow-sm dark:text-zinc-400"
+            className="absolute right-4 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-foreground text-background shadow-md transition-transform duration-300 hover:rotate-180"
           >
-            <ArrowLeftRight size={15} className="-rotate-45" />
+            <ArrowLeftRight size={15} />
           </button>
         </div>
 
         <div className="mt-3 grid grid-cols-2 divide-x divide-slate-300 rounded-2xl border border-slate-300 dark:divide-zinc-700 dark:border-zinc-700">
-          <div className="px-4 py-2.5">
-            <p className="ui text-xs font-medium text-slate-500 dark:text-zinc-500">Date</p>
-            <input
-              type="date"
-              value={date}
-              min={todayIso()}
-              onChange={(e) => setDate(e.target.value)}
-              required
-              className="mt-1 w-full min-w-0 appearance-none bg-transparent text-base text-foreground outline-none"
-            />
+          <div className="flex items-center gap-3 px-4 py-2.5">
+            <ThemeIcon light="/date-light.png" dark="/date-dark.png" />
+            <div className="min-w-0 flex-1">
+              <p className="ui text-xs font-medium text-slate-500 dark:text-zinc-500">Date</p>
+              <input
+                type="date"
+                value={date}
+                min={todayIso()}
+                onChange={(e) => setDate(e.target.value)}
+                required
+                className="mt-1 w-full min-w-0 appearance-none bg-transparent text-base text-foreground outline-none"
+              />
+            </div>
           </div>
-          <div className="px-4 py-2.5">
-            <p className="ui text-xs font-medium text-slate-500 dark:text-zinc-500">Class</p>
-            <select
-              value={busClass}
-              onChange={(e) => setBusClass(e.target.value)}
-              className="mt-1 w-full min-w-0 appearance-none bg-transparent text-base text-foreground outline-none"
-            >
-              {BUS_CLASSES.map((c) => (
-                <option key={c.value} value={c.value}>
-                  {c.label}
-                </option>
-              ))}
-            </select>
+          <div className="flex items-center gap-3 px-4 py-2.5">
+            <ThemeIcon light="/bus-light.png" dark="/bus-dark.png" />
+            <div className="min-w-0 flex-1">
+              <p className="ui text-xs font-medium text-slate-500 dark:text-zinc-500">Class</p>
+              <select
+                value={busClass}
+                onChange={(e) => setBusClass(e.target.value)}
+                className="mt-1 w-full min-w-0 appearance-none bg-transparent text-base text-foreground outline-none"
+              >
+                {BUS_CLASSES.map((c) => (
+                  <option key={c.value} value={c.value}>
+                    {c.label}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
         </div>
 
@@ -137,7 +149,7 @@ export function SearchForm({ locations }: { locations: Location[] }) {
           edge alone doesn't read as clearly as it does over a flat page. */}
       <div className="hidden sm:block">
         <div className="relative rounded-4xl border border-border bg-card p-3 pb-12 shadow-xl shadow-black/10">
-          <div className="flex items-stretch overflow-hidden rounded-2xl border border-slate-300 dark:border-zinc-700">
+          <div className="flex items-stretch rounded-2xl border border-slate-300 dark:border-zinc-700">
             <SearchSection
               label="From"
               icon={<ThemeIcon light="/get-on-bus-light.png" dark="/get-on-bus-dark.png" />}
