@@ -55,7 +55,7 @@ export function SearchForm({ locations }: { locations: Location[] }) {
       {/* Mobile — stacked cards, Busbud-style: From/To share one card split by
           a divider (with a diamond swap button straddling it), Date/Class
           share a second card side by side, then a full-width pill button. */}
-      <div className="relative rounded-4xl border border-border bg-card p-3 pb-8 shadow-xl shadow-black/10 sm:hidden">
+      <div className="relative rounded-4xl border border-border bg-card p-3 pb-6 shadow-xl shadow-black/10 sm:hidden">
         <div className="relative rounded-2xl border border-slate-300 dark:border-zinc-700">
           <div className="py-2.5 pl-4 pr-16">
             <p className="ui text-xs font-medium text-slate-500 dark:text-zinc-500">From</p>
@@ -117,14 +117,16 @@ export function SearchForm({ locations }: { locations: Location[] }) {
           </div>
         </div>
 
-        <button
-          type="submit"
-          disabled={!fromId || !toId}
-          className="btn-primary absolute inset-x-3 bottom-0 translate-y-1/2 rounded-full py-3.5 text-base shadow-xl"
-        >
-          <Search size={18} />
-          Search
-        </button>
+        <div className="absolute inset-x-0 bottom-0 flex translate-y-1/2 justify-center">
+          <button
+            type="submit"
+            disabled={!fromId || !toId}
+            className="btn-primary min-w-44 rounded-full py-2.5 text-sm shadow-xl"
+          >
+            <Search size={16} />
+            Search
+          </button>
+        </div>
       </div>
 
       {/* Tablet/desktop — one floating card, icon+label+value sections

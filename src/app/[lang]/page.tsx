@@ -59,7 +59,7 @@ function Hero({
         <Image src="/hero.jpg" alt="" fill sizes="100vw" className="object-cover" priority />
         <div className="absolute inset-0 bg-gradient-to-r from-black/45 via-black/15 to-transparent" />
 
-        <div className="relative mx-auto flex h-full w-full max-w-7xl items-center px-4 sm:px-6 lg:px-8">
+        <div className="relative mx-auto flex h-full w-full max-w-7xl items-start px-4 pt-6 sm:items-center sm:pt-0 sm:px-6 lg:px-8">
           <div className="max-w-xl [text-shadow:0_1px_12px_rgb(0_0_0_/_0.45)]">
             <h1 className="font-heading text-4xl font-bold leading-[1.05] tracking-tight text-white sm:text-5xl lg:text-6xl">
               {dict.home.heroTitlePrefix} {dict.home.heroTitleAccent}
