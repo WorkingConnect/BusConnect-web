@@ -55,7 +55,7 @@ function Hero({
           the busier left side of hero.jpg without the heaviness of a panel;
           drop-shadow on the text carries the rest. The search bar overlaps
           the bottom edge, so the band is kept short. */}
-      <div className="relative h-40 w-full overflow-hidden sm:h-56 lg:h-64">
+      <div className="relative h-48 w-full overflow-hidden sm:h-56 lg:h-64">
         <Image src="/hero.jpg" alt="" fill sizes="100vw" className="object-cover" priority />
         <div className="absolute inset-0 bg-gradient-to-r from-black/45 via-black/15 to-transparent" />
 
@@ -69,7 +69,7 @@ function Hero({
       </div>
 
       <div className="relative z-10 mx-auto w-full max-w-7xl px-4 pb-14 sm:px-6 sm:pb-16 lg:px-8 lg:pb-20">
-        <div className="-mt-12 sm:-mt-14">
+        <div className="-mt-8 sm:-mt-14">
           <SearchForm locations={locations} />
           {locations.length === 0 && (
             <p className="ui mt-3 text-center text-sm text-slate-500 dark:text-zinc-500">{dict.home.searchEmpty}</p>
@@ -87,8 +87,8 @@ const ANDROID_PLAY_STORE_URL = "https://play.google.com/store/apps/details?id=lk
 function AppPromo({ dict }: { dict: Dictionary }) {
   return (
     <section className="mx-auto w-full max-w-7xl px-4 pt-2 sm:px-6 lg:px-8">
-      <div className="relative rounded-3xl bg-brand-soft/70 p-6 dark:bg-brand-soft-dark/30 sm:p-8">
-        <div className="flex flex-col items-center gap-6 text-center sm:flex-row sm:gap-8 sm:text-left lg:pr-36">
+      <div className="rounded-3xl bg-brand-soft/70 p-6 dark:bg-brand-soft-dark/30 sm:p-8">
+        <div className="flex flex-col items-center gap-6 text-center sm:flex-row sm:justify-between sm:gap-8 sm:text-left">
           <div className="flex flex-col items-center gap-4 text-center sm:flex-row sm:text-left">
             <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-2xl shadow-lg shadow-black/10 sm:h-20 sm:w-20">
               <Image src="/app-icon.png" alt="" fill sizes="80px" className="object-cover" />
@@ -103,7 +103,7 @@ function AppPromo({ dict }: { dict: Dictionary }) {
             </div>
           </div>
 
-          <div className="relative z-10 flex shrink-0 items-center gap-3">
+          <div className="flex shrink-0 items-center gap-3">
             <a
               href={IOS_APP_STORE_URL}
               target="_blank"
@@ -122,17 +122,6 @@ function AppPromo({ dict }: { dict: Dictionary }) {
             </a>
           </div>
         </div>
-
-        {/* Anchored to the card's bottom but taller than it — deliberately
-            not clipped, so he stands "over" the card's top edge rather than
-            stretching the card to fit him. */}
-        <Image
-          src="/man.png"
-          alt=""
-          width={356}
-          height={540}
-          className="pointer-events-none absolute bottom-0 right-4 hidden h-40 w-auto object-contain object-bottom lg:block lg:right-8 lg:h-56"
-        />
       </div>
     </section>
   );
