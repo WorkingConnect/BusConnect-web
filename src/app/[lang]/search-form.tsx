@@ -2,7 +2,8 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ArrowLeftRight, Bus, Calendar, MapPin, Search } from "lucide-react";
+import Image from "next/image";
+import { ArrowLeftRight, Search } from "lucide-react";
 import type { Location } from "@/lib/locations";
 
 const BUS_CLASSES = [
@@ -15,6 +16,17 @@ const BUS_CLASSES = [
 
 function todayIso() {
   return new Date().toISOString().slice(0, 10);
+}
+
+/** Renders the light-mode PNG by default, swapping to the dark-mode one via
+ *  the same `dark:` pattern as the header logo (src/components/logo.tsx). */
+function ThemeIcon({ light, dark, size = 18 }: { light: string; dark: string; size?: number }) {
+  return (
+    <>
+      <Image src={light} alt="" width={size} height={size} className="block dark:hidden" />
+      <Image src={dark} alt="" width={size} height={size} className="hidden dark:block" />
+    </>
+  );
 }
 
 export function SearchForm({ locations }: { locations: Location[] }) {
@@ -124,7 +136,11 @@ export function SearchForm({ locations }: { locations: Location[] }) {
       <div className="hidden sm:block">
         <div className="relative rounded-4xl border border-border bg-card p-3 pb-12 shadow-xl shadow-black/10">
           <div className="flex items-stretch overflow-hidden rounded-2xl border border-slate-300 dark:border-zinc-700">
-            <SearchSection label="From" icon={<MapPin size={16} />} className="flex-[1.1]">
+            <SearchSection
+              label="From"
+              icon={<ThemeIcon light="/get-on-bus-light.png" dark="/get-on-bus-dark.png" />}
+              className="flex-[1.1]"
+            >
               <LocationCombobox
                 variant="bare"
                 locations={locations}
@@ -146,7 +162,12 @@ export function SearchForm({ locations }: { locations: Location[] }) {
               </button>
             </div>
 
-            <SearchSection label="To" icon={<MapPin size={16} />} bordered className="flex-[1.1]">
+            <SearchSection
+              label="To"
+              icon={<ThemeIcon light="/get-off-bus-light.png" dark="/get-off-bus-dark.png" />}
+              bordered
+              className="flex-[1.1]"
+            >
               <LocationCombobox
                 variant="bare"
                 locations={locations}
@@ -157,7 +178,12 @@ export function SearchForm({ locations }: { locations: Location[] }) {
               />
             </SearchSection>
 
-            <SearchSection label="Date of journey" icon={<Calendar size={16} />} bordered className="flex-[1.2]">
+            <SearchSection
+              label="Date of journey"
+              icon={<ThemeIcon light="/date-light.png" dark="/date-dark.png" />}
+              bordered
+              className="flex-[1.2]"
+            >
               <input
                 type="date"
                 value={date}
@@ -168,7 +194,12 @@ export function SearchForm({ locations }: { locations: Location[] }) {
               />
             </SearchSection>
 
-            <SearchSection label="Class" icon={<Bus size={16} />} bordered className="flex-[0.9]">
+            <SearchSection
+              label="Class"
+              icon={<ThemeIcon light="/bus-light.png" dark="/bus-dark.png" />}
+              bordered
+              className="flex-[0.9]"
+            >
               <select
                 value={busClass}
                 onChange={(e) => setBusClass(e.target.value)}

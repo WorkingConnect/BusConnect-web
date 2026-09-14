@@ -55,7 +55,7 @@ function Hero({
           the busier left side of hero.jpg without the heaviness of a panel;
           drop-shadow on the text carries the rest. The search bar overlaps
           the bottom edge, so the band is kept short. */}
-      <div className="relative h-56 w-full overflow-hidden sm:h-64 lg:h-72">
+      <div className="relative h-48 w-full overflow-hidden sm:h-56 lg:h-64">
         <Image src="/hero.jpg" alt="" fill sizes="100vw" className="object-cover" priority />
         <div className="absolute inset-0 bg-gradient-to-r from-black/45 via-black/15 to-transparent" />
 
