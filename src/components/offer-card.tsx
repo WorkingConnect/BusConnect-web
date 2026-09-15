@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Image from "next/image";
 import { Tag, X } from "lucide-react";
 import type { Offer, OfferTheme } from "@/lib/offers";
 import { CopyCodeButton } from "./copy-code-button";
@@ -19,11 +18,13 @@ export function formatValidTill(iso: string) {
 }
 
 /** The card's visual content only — no interaction. Used standalone inside
- *  OfferCard's bottom sheet below. A fixed aspect ratio keeps every card the
- *  same size no matter whether it has artwork. The artwork is meant to carry
- *  the title/offer messaging itself, so the only text drawn over it is the
- *  code — title and valid-till are shown separately by the callers that need
- *  them (the bottom sheet heading, the offer detail page). */
+ *  OfferCard's bottom sheet below. Sized the same way as RouteCard's poster
+ *  image (aspect-4/3, w-full, object-cover) so it scales with the card's
+ *  width instead of a fixed pixel height, and always fills the box with no
+ *  letterboxing. The artwork is meant to carry the title/offer messaging
+ *  itself, so the only text drawn over it is the code — title and
+ *  valid-till are shown separately by the callers that need them (the
+ *  bottom sheet heading, the offer detail page). */
 export function OfferCardVisual({
   offer,
   className = "",
@@ -34,17 +35,18 @@ export function OfferCardVisual({
   const hasImage = Boolean(offer.imageUrl);
 
   return (
-    <div
-      className={`relative flex h-36 flex-col justify-end overflow-hidden rounded-3xl p-5 shadow-sm shadow-black/[0.04] ${hasImage ? "" : THEME_BG[offer.theme]} ${className}`}
-    >
-      {hasImage && (
+    <div className={`relative overflow-hidden rounded-3xl shadow-sm shadow-black/[0.04] ${className}`}>
+      {hasImage ? (
         <>
-          <Image src={offer.imageUrl!} alt={offer.title} fill sizes="320px" className="object-cover" />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={offer.imageUrl!} alt={offer.title} className="aspect-4/3 w-full object-cover" />
           <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-transparent" />
         </>
+      ) : (
+        <div className={`aspect-4/3 w-full ${THEME_BG[offer.theme]}`} />
       )}
 
-      <span className="ui relative inline-flex w-fit items-center gap-1.5 rounded-full bg-white/90 px-3 py-1.5 text-xs font-bold text-slate-900 shadow-sm dark:bg-black/40 dark:text-zinc-50">
+      <span className="ui absolute bottom-5 left-5 inline-flex w-fit items-center gap-1.5 rounded-full bg-white/90 px-3 py-1.5 text-xs font-bold text-slate-900 shadow-sm dark:bg-black/40 dark:text-zinc-50">
         <Tag size={13} />
         {offer.code}
       </span>
@@ -95,19 +97,20 @@ export function OfferCard({
       </button>
 
       {open && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" role="dialog" aria-modal="true">
+        <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center sm:p-4" role="dialog" aria-modal="true">
           <button
             type="button"
             aria-label="Close"
             onClick={() => setOpen(false)}
             className="absolute inset-0 bg-black/50"
           />
-          <div className="relative z-10 max-h-[85vh] w-full max-w-md overflow-y-auto rounded-3xl bg-card p-5 shadow-2xl sm:p-6">
+          <div className="relative z-10 max-h-[85vh] w-full overflow-y-auto rounded-t-3xl bg-card p-5 shadow-2xl sm:max-w-md sm:rounded-3xl sm:p-6">
+            <div className="mx-auto mb-3 h-1.5 w-10 rounded-full bg-slate-300 dark:bg-zinc-700 sm:hidden" />
             <button
               type="button"
               onClick={() => setOpen(false)}
               aria-label="Close"
-              className="absolute right-4 top-4 rounded-lg p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:text-zinc-500 dark:hover:bg-zinc-800 dark:hover:text-zinc-300"
+              className="absolute right-4 top-4 hidden rounded-lg p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:text-zinc-500 dark:hover:bg-zinc-800 dark:hover:text-zinc-300 sm:block"
             >
               <X size={16} />
             </button>
