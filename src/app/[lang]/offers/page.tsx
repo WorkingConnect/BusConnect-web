@@ -23,7 +23,14 @@ export default async function OffersPage({ params }: { params: Promise<{ lang: s
       ) : (
         <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {offers.map((o) => (
-            <OfferCard key={o.id} offer={o} locale={locale} validTillLabel={dict.home.offersValidTill} />
+            <OfferCard
+              key={o.id}
+              offer={o}
+              validTillLabel={dict.home.offersValidTill}
+              termsLabel={dict.home.offersTerms}
+              copyCodeLabel={dict.home.offersCopyCode}
+              copiedLabel={dict.home.offersCopied}
+            />
           ))}
         </div>
       )}

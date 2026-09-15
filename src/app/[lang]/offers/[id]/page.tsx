@@ -5,7 +5,7 @@ import { OfferCardVisual } from "@/components/offer-card";
 import { getDictionary } from "@/lib/i18n/dictionaries";
 import { isLocale, defaultLocale, type Locale } from "@/lib/i18n/config";
 import { localizePath } from "@/lib/i18n/navigation";
-import { CopyCodeButton } from "./copy-code-button";
+import { CopyCodeButton } from "@/components/copy-code-button";
 
 export default async function OfferPage({ params }: { params: Promise<{ lang: string; id: string }> }) {
   const { lang, id } = await params;

@@ -116,8 +116,10 @@ function OffersSection({
           <OfferCard
             key={o.id}
             offer={o}
-            locale={locale}
             validTillLabel={dict.home.offersValidTill}
+            termsLabel={dict.home.offersTerms}
+            copyCodeLabel={dict.home.offersCopyCode}
+            copiedLabel={dict.home.offersCopied}
             className="w-64 shrink-0 snap-start sm:w-72"
           />
         ))}
