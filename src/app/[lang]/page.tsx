@@ -11,25 +11,30 @@ import {
 import { listLocations } from "@/lib/locations";
 import { listPopularRoutes } from "@/lib/popular-routes";
 import { listActiveOperators } from "@/lib/operators";
+import { listOffers } from "@/lib/offers";
 import { RouteCard } from "@/components/route-card";
+import { OfferCard } from "@/components/offer-card";
 import { SearchForm } from "./search-form";
 import { OperatorsShowcase } from "./operators-showcase";
 import { SectionHeading } from "@/components/ui";
 import { getDictionary, type Dictionary } from "@/lib/i18n/dictionaries";
 import { isLocale, defaultLocale, type Locale } from "@/lib/i18n/config";
+import { localizePath } from "@/lib/i18n/navigation";
 
 export default async function Home({ params }: { params: Promise<{ lang: string }> }) {
   const { lang } = await params;
   const locale: Locale = isLocale(lang) ? lang : defaultLocale;
   const dict = await getDictionary(locale);
-  const [locations, popularRoutes, operators] = await Promise.all([
+  const [locations, popularRoutes, operators, offers] = await Promise.all([
     listLocations(),
     listPopularRoutes(),
     listActiveOperators(),
+    listOffers(),
   ]);
   return (
     <>
       <Hero locations={locations} dict={dict} />
+      <OffersSection offers={offers} dict={dict} locale={locale} />
       <AppPromo dict={dict} />
       <PopularRoutes routes={popularRoutes} dict={dict} locale={locale} />
       <OperatorsShowcase operators={operators} dict={dict} locale={locale} />
@@ -75,6 +80,47 @@ function Hero({
             <p className="ui mt-3 text-center text-sm text-slate-500 dark:text-zinc-500">{dict.home.searchEmpty}</p>
           )}
         </div>
+      </div>
+    </section>
+  );
+}
+
+/* ── Offers ─────────────────────────────────────────────────────────────── */
+function OffersSection({
+  offers,
+  dict,
+  locale,
+}: {
+  offers: Awaited<ReturnType<typeof listOffers>>;
+  dict: Dictionary;
+  locale: Locale;
+}) {
+  if (offers.length === 0) return null;
+
+  return (
+    <section className="mx-auto w-full max-w-7xl px-4 pt-8 sm:px-6 lg:px-8">
+      <div className="flex items-center justify-between gap-4">
+        <h2 className="font-heading text-2xl font-bold tracking-tight sm:text-3xl">
+          {dict.home.offersTitle}
+        </h2>
+        <Link
+          href={localizePath(locale, "/offers")}
+          className="ui shrink-0 text-sm font-semibold text-brand hover:underline dark:text-blue-400"
+        >
+          {dict.home.offersViewMore}
+        </Link>
+      </div>
+
+      <div className="scrollbar-none -mx-4 mt-6 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-2 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8">
+        {offers.slice(0, 8).map((o) => (
+          <OfferCard
+            key={o.id}
+            offer={o}
+            locale={locale}
+            validTillLabel={dict.home.offersValidTill}
+            className="w-64 shrink-0 snap-start sm:w-72"
+          />
+        ))}
       </div>
     </section>
   );

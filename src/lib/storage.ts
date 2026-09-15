@@ -107,3 +107,15 @@ export async function uploadHireListingPhoto(userId: string, file: File): Promis
   if (error) throw error;
   return supabase.storage.from('bus-hire-photos').getPublicUrl(path).data.publicUrl;
 }
+
+/** Public bucket — admin-uploaded offer artwork (e.g. a bank/operator logo), shown on the promo card. */
+export async function uploadOfferImage(userId: string, file: File): Promise<string> {
+  const supabase = createClient();
+  const ext = file.name.split('.').pop() ?? 'png';
+  const path = `${userId}/offer-${Date.now()}-${Math.random().toString(36).slice(2, 6)}.${ext}`;
+  const { error } = await supabase.storage
+    .from('offer-images')
+    .upload(path, file, { upsert: true, contentType: file.type });
+  if (error) throw error;
+  return supabase.storage.from('offer-images').getPublicUrl(path).data.publicUrl;
+}

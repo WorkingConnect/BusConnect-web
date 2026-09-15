@@ -1841,6 +1841,54 @@ export function deleteAdminRouteCard(accessToken: string, cardId: string) {
   return request(`/admin/route-cards/${cardId}`, { method: 'DELETE', accessToken });
 }
 
+// ── Offers (public homepage promo cards) ────────────────────────────────────
+
+export type OfferTheme = 'amber' | 'yellow' | 'pink' | 'blue' | 'green';
+
+export interface AdminOffer {
+  id: string;
+  title: string;
+  code: string;
+  valid_till: string;
+  terms: string[];
+  theme: OfferTheme;
+  image_url: string | null;
+  is_active: boolean;
+  sort_order: number;
+  created_at: string;
+}
+
+export interface UpsertOfferInput {
+  title: string;
+  code: string;
+  validTill: string;
+  terms?: string[];
+  theme?: OfferTheme;
+  imageUrl?: string;
+  isActive?: boolean;
+  sortOrder?: number;
+}
+
+export function listAdminOffers(accessToken: string) {
+  return request<AdminOffer[]>('/admin/offers', { accessToken });
+}
+
+export function createAdminOffer(accessToken: string, body: UpsertOfferInput) {
+  return request<AdminOffer>('/admin/offers', { method: 'POST', body: JSON.stringify(body), accessToken });
+}
+
+export function updateAdminOffer(accessToken: string, offerId: string, body: UpsertOfferInput) {
+  return request<AdminOffer>(`/admin/offers/${offerId}`, {
+    method: 'PATCH',
+    body: JSON.stringify(body),
+    accessToken,
+  });
+}
+
+export function deleteAdminOffer(accessToken: string, offerId: string) {
+  return request(`/admin/offers/${offerId}`, { method: 'DELETE', accessToken });
+}
+
 /** Pure geometry, no location identity needed — lets the map preview a path
  *  for points that haven't been matched to a saved Location yet (e.g. right
  *  after parsing a pasted route link). */
