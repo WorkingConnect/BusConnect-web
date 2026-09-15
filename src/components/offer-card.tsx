@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import { Tag, X } from "lucide-react";
 import type { Offer, OfferTheme } from "@/lib/offers";
@@ -19,40 +19,35 @@ export function formatValidTill(iso: string) {
 }
 
 /** The card's visual content only — no interaction. Used standalone inside
- *  OfferCard's bottom sheet below. */
+ *  OfferCard's bottom sheet below. A fixed aspect ratio keeps every card the
+ *  same size no matter whether it has artwork. The artwork is meant to carry
+ *  the title/offer messaging itself, so the only text drawn over it is the
+ *  code — title and valid-till are shown separately by the callers that need
+ *  them (the bottom sheet heading, the offer detail page). */
 export function OfferCardVisual({
   offer,
-  validTillLabel,
   className = "",
 }: {
   offer: Offer;
-  validTillLabel: string;
   className?: string;
 }) {
+  const hasImage = Boolean(offer.imageUrl);
+
   return (
     <div
-      className={`relative flex flex-col justify-between overflow-hidden rounded-3xl p-5 shadow-sm shadow-black/[0.04] ${THEME_BG[offer.theme]} ${className}`}
+      className={`relative flex h-36 flex-col justify-end overflow-hidden rounded-3xl p-5 shadow-sm shadow-black/[0.04] ${hasImage ? "" : THEME_BG[offer.theme]} ${className}`}
     >
-      <div>
-        <h3 className="line-clamp-2 text-lg font-bold leading-snug text-slate-900 dark:text-zinc-50">
-          {offer.title}
-        </h3>
-        <p className="ui mt-1.5 text-xs text-slate-600 dark:text-zinc-400">
-          {validTillLabel} {formatValidTill(offer.validTill)}
-        </p>
-      </div>
+      {hasImage && (
+        <>
+          <Image src={offer.imageUrl!} alt={offer.title} fill sizes="320px" className="object-contain" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-transparent" />
+        </>
+      )}
 
-      <div className="mt-6 flex items-end justify-between gap-3">
-        <span className="ui inline-flex items-center gap-1.5 rounded-full bg-white/80 px-3 py-1.5 text-xs font-bold text-slate-900 shadow-sm dark:bg-black/30 dark:text-zinc-50">
-          <Tag size={13} />
-          {offer.code}
-        </span>
-        {offer.imageUrl && (
-          <div className="relative h-10 w-16 shrink-0">
-            <Image src={offer.imageUrl} alt="" fill sizes="64px" className="object-contain object-right" />
-          </div>
-        )}
-      </div>
+      <span className="ui relative inline-flex w-fit items-center gap-1.5 rounded-full bg-white/90 px-3 py-1.5 text-xs font-bold text-slate-900 shadow-sm dark:bg-black/40 dark:text-zinc-50">
+        <Tag size={13} />
+        {offer.code}
+      </span>
     </div>
   );
 }
@@ -77,6 +72,15 @@ export function OfferCard({
 }) {
   const [open, setOpen] = useState(false);
 
+  useEffect(() => {
+    if (!open) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [open]);
+
   return (
     <>
       <button
@@ -86,33 +90,34 @@ export function OfferCard({
       >
         <OfferCardVisual
           offer={offer}
-          validTillLabel={validTillLabel}
           className="shadow-sm shadow-black/[0.04] transition-shadow duration-200 hover:shadow-lg hover:shadow-black/[0.08]"
         />
       </button>
 
       {open && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center" role="dialog" aria-modal="true">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" role="dialog" aria-modal="true">
           <button
             type="button"
             aria-label="Close"
             onClick={() => setOpen(false)}
             className="absolute inset-0 bg-black/50"
           />
-          <div className="relative z-10 max-h-[85vh] w-full overflow-y-auto rounded-t-3xl bg-card p-5 shadow-2xl sm:max-w-md sm:rounded-3xl sm:p-6">
-            <div className="mx-auto mb-3 h-1.5 w-10 rounded-full bg-slate-300 dark:bg-zinc-700 sm:hidden" />
+          <div className="relative z-10 max-h-[85vh] w-full max-w-md overflow-y-auto rounded-3xl bg-card p-5 shadow-2xl sm:p-6">
             <button
               type="button"
               onClick={() => setOpen(false)}
               aria-label="Close"
-              className="absolute right-4 top-4 hidden rounded-lg p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:text-zinc-500 dark:hover:bg-zinc-800 dark:hover:text-zinc-300 sm:block"
+              className="absolute right-4 top-4 rounded-lg p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:text-zinc-500 dark:hover:bg-zinc-800 dark:hover:text-zinc-300"
             >
               <X size={16} />
             </button>
 
             <h3 className="pr-8 font-heading text-xl font-bold tracking-tight">{offer.title}</h3>
+            <p className="ui mt-1 text-sm text-slate-500 dark:text-zinc-400">
+              {validTillLabel} {formatValidTill(offer.validTill)}
+            </p>
 
-            <OfferCardVisual offer={offer} validTillLabel={validTillLabel} className="mt-4" />
+            <OfferCardVisual offer={offer} className="mt-4" />
 
             {offer.terms.length > 0 && (
               <div className="mt-5">

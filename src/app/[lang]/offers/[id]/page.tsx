@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { getOffer } from "@/lib/offers";
-import { OfferCardVisual } from "@/components/offer-card";
+import { OfferCardVisual, formatValidTill } from "@/components/offer-card";
 import { getDictionary } from "@/lib/i18n/dictionaries";
 import { isLocale, defaultLocale, type Locale } from "@/lib/i18n/config";
 import { localizePath } from "@/lib/i18n/navigation";
@@ -39,8 +39,11 @@ export default async function OfferPage({ params }: { params: Promise<{ lang: st
       </Link>
 
       <h1 className="mt-4 font-heading text-2xl font-bold tracking-tight sm:text-3xl">{offer.title}</h1>
+      <p className="ui mt-1 text-sm text-slate-500 dark:text-zinc-400">
+        {dict.home.offersValidTill} {formatValidTill(offer.validTill)}
+      </p>
 
-      <OfferCardVisual offer={offer} validTillLabel={dict.home.offersValidTill} className="mt-6" />
+      <OfferCardVisual offer={offer} className="mt-6" />
 
       {offer.terms.length > 0 && (
         <section className="mt-8">
