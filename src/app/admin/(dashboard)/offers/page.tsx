@@ -13,6 +13,7 @@ import {
   ApiError,
   type AdminOffer,
   type OfferTheme,
+  type OfferDiscountType,
 } from "@/lib/api";
 
 const THEMES: OfferTheme[] = ["amber", "yellow", "pink", "blue", "green"];
@@ -25,6 +26,16 @@ const THEME_SWATCH: Record<OfferTheme, string> = {
   green: "bg-green-200",
 };
 
+function formatDiscount(o: AdminOffer): string {
+  const value =
+    o.discount_type === "percent"
+      ? `${o.discount_value}% off${o.max_discount != null ? ` (up to Rs ${o.max_discount})` : ""}`
+      : `Rs ${o.discount_value} off`;
+  const minAmount = o.min_amount > 0 ? ` · min Rs ${o.min_amount}` : "";
+  const uses = o.max_uses != null ? ` · ${o.used_count}/${o.max_uses} used` : o.used_count > 0 ? ` · ${o.used_count} used` : "";
+  return `${value}${minAmount}${uses}`;
+}
+
 interface EditorState {
   id?: string;
   title: string;
@@ -35,10 +46,30 @@ interface EditorState {
   imageUrl?: string;
   isActive: boolean;
   sortOrder: number;
+  discountType: OfferDiscountType;
+  discountValue: number;
+  /** Empty string = no cap (only meaningful for a percent discount). */
+  maxDiscount: string;
+  minAmount: number;
+  /** Empty string = unlimited redemptions. */
+  maxUses: string;
 }
 
 function emptyEditor(): EditorState {
-  return { title: "", code: "", validTill: "", terms: "", theme: "amber", isActive: true, sortOrder: 0 };
+  return {
+    title: "",
+    code: "",
+    validTill: "",
+    terms: "",
+    theme: "amber",
+    isActive: true,
+    sortOrder: 0,
+    discountType: "flat",
+    discountValue: 0,
+    maxDiscount: "",
+    minAmount: 0,
+    maxUses: "",
+  };
 }
 
 export default function AdminOffersPage() {
@@ -97,8 +128,8 @@ export default function AdminOffersPage() {
         <div>
           <h1 className="font-heading text-2xl font-bold tracking-tight">Offers</h1>
           <p className="ui mt-1 text-sm text-slate-600 dark:text-zinc-400">
-            Promo cards shown in &quot;Offers for you&quot; on the homepage. Display-only — copying a code
-            doesn&apos;t currently change a booking&apos;s price; there is no checkout validation yet.
+            Promo cards shown in &quot;Offers for you&quot; on the homepage. A passenger can enter the code
+            on their booking&apos;s payment screen — the discount is validated and applied server-side.
           </p>
         </div>
         {!editor && (
@@ -140,6 +171,7 @@ export default function AdminOffersPage() {
                   <p className="ui mt-0.5 flex items-center gap-1 text-xs text-slate-500 dark:text-zinc-500">
                     <Tag size={11} /> {o.code} · Valid till {o.valid_till}
                   </p>
+                  <p className="ui mt-0.5 text-xs font-medium text-brand dark:text-blue-400">{formatDiscount(o)}</p>
                 </div>
                 <div className="flex shrink-0 items-center gap-1.5">
                   <button
@@ -155,6 +187,11 @@ export default function AdminOffersPage() {
                         imageUrl: o.image_url ?? undefined,
                         isActive: o.is_active,
                         sortOrder: o.sort_order,
+                        discountType: o.discount_type,
+                        discountValue: o.discount_value,
+                        maxDiscount: o.max_discount != null ? String(o.max_discount) : "",
+                        minAmount: o.min_amount,
+                        maxUses: o.max_uses != null ? String(o.max_uses) : "",
                       })
                     }
                     className="ui rounded-lg border border-slate-200 px-2.5 py-1.5 text-xs font-semibold text-slate-700 transition-colors hover:bg-slate-50 dark:border-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-800"
@@ -224,6 +261,11 @@ function OfferEditor({
         imageUrl,
         isActive: editor.isActive,
         sortOrder: editor.sortOrder,
+        discountType: editor.discountType,
+        discountValue: editor.discountValue,
+        maxDiscount: editor.maxDiscount ? Number(editor.maxDiscount) : undefined,
+        minAmount: editor.minAmount,
+        maxUses: editor.maxUses ? Number(editor.maxUses) : undefined,
       };
       if (editor.id) await updateAdminOffer(token, editor.id, body);
       else await createAdminOffer(token, body);
@@ -292,6 +334,66 @@ function OfferEditor({
               </option>
             ))}
           </select>
+        </label>
+
+        <label className="ui flex flex-col gap-1.5 text-sm font-medium text-slate-700 dark:text-zinc-300">
+          Discount type
+          <select
+            value={editor.discountType}
+            onChange={(e) => setEditor({ ...editor, discountType: e.target.value as OfferDiscountType })}
+            className="field text-sm"
+          >
+            <option value="flat">Flat (LKR)</option>
+            <option value="percent">Percent (%)</option>
+          </select>
+        </label>
+
+        <label className="ui flex flex-col gap-1.5 text-sm font-medium text-slate-700 dark:text-zinc-300">
+          {editor.discountType === "percent" ? "Discount (%)" : "Discount (LKR)"}
+          <input
+            type="number"
+            min={0}
+            value={editor.discountValue}
+            onChange={(e) => setEditor({ ...editor, discountValue: Number(e.target.value) || 0 })}
+            className="field text-sm"
+          />
+        </label>
+
+        {editor.discountType === "percent" && (
+          <label className="ui flex flex-col gap-1.5 text-sm font-medium text-slate-700 dark:text-zinc-300">
+            Max discount (LKR, optional)
+            <input
+              type="number"
+              min={0}
+              value={editor.maxDiscount}
+              onChange={(e) => setEditor({ ...editor, maxDiscount: e.target.value })}
+              placeholder="No cap"
+              className="field text-sm"
+            />
+          </label>
+        )}
+
+        <label className="ui flex flex-col gap-1.5 text-sm font-medium text-slate-700 dark:text-zinc-300">
+          Minimum booking (LKR)
+          <input
+            type="number"
+            min={0}
+            value={editor.minAmount}
+            onChange={(e) => setEditor({ ...editor, minAmount: Number(e.target.value) || 0 })}
+            className="field text-sm"
+          />
+        </label>
+
+        <label className="ui flex flex-col gap-1.5 text-sm font-medium text-slate-700 dark:text-zinc-300">
+          Max redemptions (optional)
+          <input
+            type="number"
+            min={1}
+            value={editor.maxUses}
+            onChange={(e) => setEditor({ ...editor, maxUses: e.target.value })}
+            placeholder="Unlimited"
+            className="field text-sm"
+          />
         </label>
 
         <label className="ui flex flex-col gap-1.5 text-sm font-medium text-slate-700 dark:text-zinc-300 sm:col-span-2">

@@ -214,6 +214,9 @@ export interface Booking {
   status: string;
   from_stop_id: string;
   to_stop_id: string;
+  offer_id: string | null;
+  discount_amount: number;
+  offer?: { title: string; code: string } | null;
   tickets?: { id: string; status: string; qr_signature: string | null }[];
   payments?: { id: string; status: string; amount: number }[];
   refunds?: { id: string; amount: number; reason: string; status: string }[];
@@ -325,6 +328,30 @@ export function cancelBooking(accessToken: string, id: string) {
 /** Removes a cancelled/refunded booking from the passenger's own ticket list — the record itself is kept. */
 export function hideBooking(accessToken: string, id: string) {
   return request<{ ok: true }>(`/bookings/${id}/hide`, {
+    method: 'POST',
+    accessToken,
+  });
+}
+
+export interface ApplyOfferResult {
+  ok: boolean;
+  discount_amount?: number;
+  offer_title?: string;
+  offer_code?: string;
+}
+
+/** Server validates + applies the code atomically — never trust a
+ *  client-computed discount for anything payment-affecting. */
+export function applyBookingOffer(accessToken: string, id: string, code: string) {
+  return request<ApplyOfferResult>(`/bookings/${id}/apply-offer`, {
+    method: 'POST',
+    body: JSON.stringify({ code }),
+    accessToken,
+  });
+}
+
+export function removeBookingOffer(accessToken: string, id: string) {
+  return request<{ ok: true }>(`/bookings/${id}/remove-offer`, {
     method: 'POST',
     accessToken,
   });
@@ -1845,6 +1872,8 @@ export function deleteAdminRouteCard(accessToken: string, cardId: string) {
 
 export type OfferTheme = 'amber' | 'yellow' | 'pink' | 'blue' | 'green';
 
+export type OfferDiscountType = 'flat' | 'percent';
+
 export interface AdminOffer {
   id: string;
   title: string;
@@ -1856,6 +1885,12 @@ export interface AdminOffer {
   is_active: boolean;
   sort_order: number;
   created_at: string;
+  discount_type: OfferDiscountType;
+  discount_value: number;
+  max_discount: number | null;
+  min_amount: number;
+  max_uses: number | null;
+  used_count: number;
 }
 
 export interface UpsertOfferInput {
@@ -1867,6 +1902,11 @@ export interface UpsertOfferInput {
   imageUrl?: string;
   isActive?: boolean;
   sortOrder?: number;
+  discountType?: OfferDiscountType;
+  discountValue?: number;
+  maxDiscount?: number;
+  minAmount?: number;
+  maxUses?: number;
 }
 
 export function listAdminOffers(accessToken: string) {

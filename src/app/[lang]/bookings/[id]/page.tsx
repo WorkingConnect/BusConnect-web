@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getBooking, ApiError, type Booking } from "@/lib/api";
 import { PayButton } from "./pay-button";
 import { HoldTimer } from "./hold-timer";
+import { PromoCodeForm } from "./promo-code-form";
 
 export default async function BookingPage({
   params,
@@ -64,7 +65,9 @@ export default async function BookingPage({
   const convenienceFeePct = booking.trip?.bus?.operator?.convenience_fee_pct ?? 2;
   const latestPayment = booking.payments?.[booking.payments.length - 1];
   const paidAmount = isConfirmed && latestPayment ? Number(latestPayment.amount) : null;
-  const totalWithFee = Number(booking.amount) * (1 + convenienceFeePct / 100);
+  const discountAmount = Number(booking.discount_amount ?? 0);
+  const subtotalAfterDiscount = Number(booking.amount) - discountAmount;
+  const totalWithFee = subtotalAfterDiscount * (1 + convenienceFeePct / 100);
   const latestRefund = booking.refunds?.[booking.refunds.length - 1];
 
   const ticket = booking.tickets?.[0];
@@ -162,11 +165,21 @@ export default async function BookingPage({
                 <dt className="ui text-slate-500 dark:text-zinc-400">Subtotal</dt>
                 <dd>LKR {Number(booking.amount).toLocaleString("en-LK")}</dd>
               </div>
+              {discountAmount > 0 && (
+                <div className="flex justify-between">
+                  <dt className="ui text-slate-500 dark:text-zinc-400">
+                    Discount{booking.offer?.code ? ` (${booking.offer.code})` : ""}
+                  </dt>
+                  <dd className="text-emerald-600 dark:text-emerald-400">
+                    -LKR {discountAmount.toLocaleString("en-LK", { maximumFractionDigits: 2 })}
+                  </dd>
+                </div>
+              )}
               <div className="flex justify-between">
                 <dt className="ui text-slate-500 dark:text-zinc-400">Convenience fee ({convenienceFeePct}%)</dt>
                 <dd>
                   LKR{" "}
-                  {(Number(booking.amount) * (convenienceFeePct / 100)).toLocaleString("en-LK", {
+                  {(subtotalAfterDiscount * (convenienceFeePct / 100)).toLocaleString("en-LK", {
                     maximumFractionDigits: 2,
                   })}
                 </dd>
@@ -250,6 +263,12 @@ export default async function BookingPage({
 
       {isPayable && (
         <div className="mt-6">
+          <PromoCodeForm bookingId={booking.id} appliedOffer={booking.offer} />
+        </div>
+      )}
+
+      {isPayable && (
+        <div className="mt-4">
           <PayButton bookingId={booking.id} />
         </div>
       )}
