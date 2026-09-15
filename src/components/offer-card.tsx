@@ -39,7 +39,7 @@ export function OfferCardVisual({
     >
       {hasImage && (
         <>
-          <Image src={offer.imageUrl!} alt={offer.title} fill sizes="320px" className="object-contain" />
+          <Image src={offer.imageUrl!} alt={offer.title} fill sizes="320px" className="object-cover" />
           <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-transparent" />
         </>
       )}

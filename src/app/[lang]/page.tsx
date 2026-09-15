@@ -120,7 +120,7 @@ function OffersSection({
             termsLabel={dict.home.offersTerms}
             copyCodeLabel={dict.home.offersCopyCode}
             copiedLabel={dict.home.offersCopied}
-            className="w-64 shrink-0 snap-start sm:w-72"
+            className="w-[78vw] shrink-0 snap-start sm:w-80"
           />
         ))}
       </div>
