@@ -10,10 +10,16 @@ import {
   createAdminOffer,
   updateAdminOffer,
   deleteAdminOffer,
+  listAdminOperators,
+  listAdminRoutes,
+  listAdminTrips,
   ApiError,
   type AdminOffer,
   type OfferTheme,
   type OfferDiscountType,
+  type AdminOperator,
+  type AdminRoute,
+  type AdminTrip,
 } from "@/lib/api";
 
 const THEMES: OfferTheme[] = ["amber", "yellow", "pink", "blue", "green"];
@@ -53,6 +59,11 @@ interface EditorState {
   minAmount: number;
   /** Empty string = unlimited redemptions. */
   maxUses: string;
+  operatorId: string;
+  /** Empty string = any route of the operator. */
+  routeId: string;
+  /** Empty = any trip of the route. */
+  tripIds: string[];
 }
 
 function emptyEditor(): EditorState {
@@ -69,12 +80,18 @@ function emptyEditor(): EditorState {
     maxDiscount: "",
     minAmount: 0,
     maxUses: "",
+    operatorId: "",
+    routeId: "",
+    tripIds: [],
   };
 }
 
 export default function AdminOffersPage() {
   const [token, setToken] = useState<string | null>(null);
   const [offers, setOffers] = useState<AdminOffer[]>([]);
+  const [operators, setOperators] = useState<AdminOperator[]>([]);
+  const [routes, setRoutes] = useState<AdminRoute[]>([]);
+  const [trips, setTrips] = useState<AdminTrip[]>([]);
   const [editor, setEditor] = useState<EditorState | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -89,7 +106,16 @@ export default function AdminOffersPage() {
       } = await supabase.auth.getSession();
       if (!session) throw new ApiError(401, "Please sign in.");
       setToken(session.access_token);
-      setOffers(await listAdminOffers(session.access_token));
+      const [offersData, operatorsData, routesData, tripsData] = await Promise.all([
+        listAdminOffers(session.access_token),
+        listAdminOperators(session.access_token),
+        listAdminRoutes(session.access_token),
+        listAdminTrips(session.access_token),
+      ]);
+      setOffers(offersData);
+      setOperators(operatorsData);
+      setRoutes(routesData);
+      setTrips(tripsData);
     } catch (e) {
       setError(
         e instanceof ApiError
@@ -144,6 +170,9 @@ export default function AdminOffersPage() {
           token={token}
           editor={editor}
           setEditor={setEditor}
+          operators={operators}
+          routes={routes}
+          trips={trips}
           onSaved={() => {
             setEditor(null);
             void loadAll();
@@ -172,6 +201,11 @@ export default function AdminOffersPage() {
                     <Tag size={11} /> {o.code} · Valid till {o.valid_till}
                   </p>
                   <p className="ui mt-0.5 text-xs font-medium text-brand dark:text-blue-400">{formatDiscount(o)}</p>
+                  <p className="ui mt-0.5 text-xs text-slate-500 dark:text-zinc-500">
+                    {o.operator?.name ?? "No operator"}
+                    {o.route?.name ? ` · ${o.route.name}` : " · all routes"}
+                    {o.offer_trips.length > 0 ? ` · ${o.offer_trips.length} trip(s)` : ""}
+                  </p>
                 </div>
                 <div className="flex shrink-0 items-center gap-1.5">
                   <button
@@ -192,6 +226,9 @@ export default function AdminOffersPage() {
                         maxDiscount: o.max_discount != null ? String(o.max_discount) : "",
                         minAmount: o.min_amount,
                         maxUses: o.max_uses != null ? String(o.max_uses) : "",
+                        operatorId: o.operator_id,
+                        routeId: o.route_id ?? "",
+                        tripIds: o.offer_trips.map((t) => t.trip_id),
                       })
                     }
                     className="ui rounded-lg border border-slate-200 px-2.5 py-1.5 text-xs font-semibold text-slate-700 transition-colors hover:bg-slate-50 dark:border-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-800"
@@ -213,17 +250,31 @@ function OfferEditor({
   token,
   editor,
   setEditor,
+  operators,
+  routes,
+  trips,
   onSaved,
 }: {
   token: string;
   editor: EditorState;
   setEditor: (e: EditorState | null) => void;
+  operators: AdminOperator[];
+  routes: AdminRoute[];
+  trips: AdminTrip[];
   onSaved: () => void;
 }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(editor.imageUrl ?? null);
+
+  // Routes this operator is actually assigned to (route_operators) — routes
+  // are a shared catalog, not operator-owned, so "operator's route" only
+  // makes sense as this filtered subset.
+  const operatorRoutes = routes.filter((r) => r.operator_ids.includes(editor.operatorId));
+  const routeTrips = trips.filter(
+    (t) => t.route?.id === editor.routeId && t.bus?.operator?.id === editor.operatorId,
+  );
 
   function onImageChange(file: File | null) {
     setImageFile(file);
@@ -234,6 +285,10 @@ function OfferEditor({
     setError(null);
     if (!editor.title.trim() || !editor.code.trim() || !editor.validTill) {
       setError("Title, code, and a valid-till date are required.");
+      return;
+    }
+    if (!editor.operatorId) {
+      setError("Select which operator this offer is for.");
       return;
     }
 
@@ -266,6 +321,9 @@ function OfferEditor({
         maxDiscount: editor.maxDiscount ? Number(editor.maxDiscount) : undefined,
         minAmount: editor.minAmount,
         maxUses: editor.maxUses ? Number(editor.maxUses) : undefined,
+        operatorId: editor.operatorId,
+        routeId: editor.routeId || undefined,
+        tripIds: editor.tripIds.length > 0 ? editor.tripIds : undefined,
       };
       if (editor.id) await updateAdminOffer(token, editor.id, body);
       else await createAdminOffer(token, body);
@@ -335,6 +393,80 @@ function OfferEditor({
             ))}
           </select>
         </label>
+
+        <label className="ui flex flex-col gap-1.5 text-sm font-medium text-slate-700 dark:text-zinc-300">
+          Operator
+          <select
+            value={editor.operatorId}
+            onChange={(e) => setEditor({ ...editor, operatorId: e.target.value, routeId: "", tripIds: [] })}
+            className="field text-sm"
+          >
+            <option value="">Select an operator…</option>
+            {operators.map((op) => (
+              <option key={op.id} value={op.id}>
+                {op.name}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <label className="ui flex flex-col gap-1.5 text-sm font-medium text-slate-700 dark:text-zinc-300">
+          Route (optional)
+          <select
+            value={editor.routeId}
+            onChange={(e) => setEditor({ ...editor, routeId: e.target.value, tripIds: [] })}
+            disabled={!editor.operatorId}
+            className="field text-sm disabled:opacity-60"
+          >
+            <option value="">Any route of this operator</option>
+            {operatorRoutes.map((r) => (
+              <option key={r.id} value={r.id}>
+                {r.name}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        {editor.routeId && (
+          <div className="ui flex flex-col gap-1.5 text-sm font-medium text-slate-700 dark:text-zinc-300 sm:col-span-2">
+            Specific trips (optional — leave none checked for any trip on this route)
+            <div className="max-h-40 overflow-y-auto rounded-lg border border-slate-200 p-2 dark:border-zinc-800">
+              {routeTrips.length === 0 ? (
+                <p className="ui px-1 py-1 text-xs font-normal text-slate-500 dark:text-zinc-500">
+                  No scheduled trips for this operator on this route yet.
+                </p>
+              ) : (
+                routeTrips.map((t) => (
+                  <label
+                    key={t.id}
+                    className="ui flex items-center gap-2 rounded-md px-1 py-1 text-xs font-normal hover:bg-slate-50 dark:hover:bg-zinc-900"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={editor.tripIds.includes(t.id)}
+                      onChange={(e) =>
+                        setEditor({
+                          ...editor,
+                          tripIds: e.target.checked
+                            ? [...editor.tripIds, t.id]
+                            : editor.tripIds.filter((id) => id !== t.id),
+                        })
+                      }
+                      className="h-3.5 w-3.5 rounded border-slate-300 text-brand focus:ring-brand dark:border-zinc-700"
+                    />
+                    {new Date(t.depart_at).toLocaleString("en-LK", {
+                      day: "numeric",
+                      month: "short",
+                      year: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                  </label>
+                ))
+              )}
+            </div>
+          </div>
+        )}
 
         <label className="ui flex flex-col gap-1.5 text-sm font-medium text-slate-700 dark:text-zinc-300">
           Discount type

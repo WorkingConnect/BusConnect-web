@@ -1891,6 +1891,11 @@ export interface AdminOffer {
   min_amount: number;
   max_uses: number | null;
   used_count: number;
+  operator_id: string;
+  route_id: string | null;
+  operator: { name: string } | null;
+  route: { name: string } | null;
+  offer_trips: { trip_id: string }[];
 }
 
 export interface UpsertOfferInput {
@@ -1907,6 +1912,9 @@ export interface UpsertOfferInput {
   maxDiscount?: number;
   minAmount?: number;
   maxUses?: number;
+  operatorId: string;
+  routeId?: string;
+  tripIds?: string[];
 }
 
 export function listAdminOffers(accessToken: string) {
