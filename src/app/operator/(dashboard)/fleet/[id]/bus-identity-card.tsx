@@ -99,14 +99,14 @@ export function BusIdentityCard({ bus }: { bus: OperatorBusDetail }) {
         return;
       }
 
-      const frontImageUrl = front.file ? await uploadBusImage(session.user.id, front.file, "front") : undefined;
-      const side1Url = side1.file ? await uploadBusImage(session.user.id, side1.file, "side-1") : undefined;
-      const side2Url = side2.file ? await uploadBusImage(session.user.id, side2.file, "side-2") : undefined;
+      const frontImageUrl = front.file ? await uploadBusImage(session.user.id, front.file, "front", bus.id) : undefined;
+      const side1Url = side1.file ? await uploadBusImage(session.user.id, side1.file, "side-1", bus.id) : undefined;
+      const side2Url = side2.file ? await uploadBusImage(session.user.id, side2.file, "side-2", bus.id) : undefined;
       const interiorImageUrl = interior.file
-        ? await uploadBusImage(session.user.id, interior.file, "interior")
+        ? await uploadBusImage(session.user.id, interior.file, "interior", bus.id)
         : undefined;
       const seatLayoutImageUrl = seatLayoutImg.file
-        ? await uploadBusImage(session.user.id, seatLayoutImg.file, "seat-layout")
+        ? await uploadBusImage(session.user.id, seatLayoutImg.file, "seat-layout", bus.id)
         : undefined;
 
       const existingSides = bus.side_image_urls ?? [null, null];

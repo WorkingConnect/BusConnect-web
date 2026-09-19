@@ -120,7 +120,7 @@ export function PilotIdentityCard({
         return;
       }
 
-      const profileImagePath = photo ? await uploadPilotPhoto(session.user.id, photo) : undefined;
+      const profileImagePath = photo ? await uploadPilotPhoto(session.user.id, photo, pilot.id) : undefined;
 
       await updatePilot(session.access_token, pilot.id, {
         name: name.trim(),

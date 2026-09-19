@@ -301,7 +301,7 @@ function OfferEditor({
           data: { session },
         } = await supabase.auth.getSession();
         if (!session) throw new ApiError(401, "Please sign in.");
-        imageUrl = await uploadOfferImage(session.user.id, imageFile);
+        imageUrl = await uploadOfferImage(session.user.id, imageFile, editor.id);
       }
 
       const body = {

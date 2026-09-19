@@ -182,7 +182,7 @@ function RouteCardEditor({
           data: { session },
         } = await supabase.auth.getSession();
         if (!session) throw new ApiError(401, "Please sign in.");
-        imageUrl = await uploadRouteImage(session.user.id, imageFile);
+        imageUrl = await uploadRouteImage(session.user.id, imageFile, editor.id);
       }
 
       const body = { name: editor.name.trim(), imageUrl };

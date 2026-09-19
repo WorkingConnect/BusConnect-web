@@ -17,7 +17,7 @@ import {
   ImagePlus,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
-import { uploadHireListingPhoto } from "@/lib/storage";
+import { uploadHireListingPhoto, deleteHireListingPhoto } from "@/lib/storage";
 import {
   updateAdminHireListing,
   setAdminHireListingReviewStatus,
@@ -270,6 +270,7 @@ export function HireListingDetailCard({ listing }: { listing: AdminHireListing }
       }
     }
 
+    const nextImages = images.map((i) => i.trim()).filter(Boolean);
     const input: AdminHireListingInput = {
       title: titleTrimmed,
       description: description.trim() || undefined,
@@ -293,7 +294,7 @@ export function HireListingDetailCard({ listing }: { listing: AdminHireListing }
       contactWhatsapp: contactWhatsapp.trim() || undefined,
       preferredContactMethod: preferredContactMethod || undefined,
       driverIncluded: driverIncluded || undefined,
-      images: images.map((i) => i.trim()).filter(Boolean),
+      images: nextImages,
     };
 
     setBusy(true);
@@ -307,6 +308,12 @@ export function HireListingDetailCard({ listing }: { listing: AdminHireListing }
         return;
       }
       await updateAdminHireListing(session.access_token, listing.id, input);
+      // Only clean up storage after the shorter `images` list is actually
+      // persisted — deleting eagerly in removeImageAt() would destroy a
+      // photo that's still on the saved listing if this edit is cancelled
+      // instead of saved.
+      const removed = listing.images.filter((url) => !nextImages.includes(url));
+      await Promise.all(removed.map((url) => deleteHireListingPhoto(url)));
       setEditing(false);
       router.refresh();
     } catch (e) {
