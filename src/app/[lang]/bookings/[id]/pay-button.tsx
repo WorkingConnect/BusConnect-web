@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Loader2, CreditCard, FlaskConical } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { checkoutBooking, devConfirmPayment, ApiError } from "@/lib/api";
+import { useSecondsUntil } from "./hold-timer";
 
 declare global {
   interface Window {
@@ -46,10 +47,15 @@ function loadMpgsScript(src: string): Promise<void> {
   return mpgsScriptPromise;
 }
 
-export function PayButton({ bookingId }: { bookingId: string }) {
+export function PayButton({ bookingId, holdExpiresAt }: { bookingId: string; holdExpiresAt?: string }) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // The API also refuses an expired hold (mpgs.service.ts checkout(),
+  // 0102's confirm_booking_paid guard) — this just avoids sending a payer
+  // into MPGS's hosted checkout only to have it rejected on return.
+  const secondsLeft = useSecondsUntil(holdExpiresAt);
+  const holdExpired = secondsLeft === 0;
 
   async function devPay() {
     setError(null);
@@ -122,14 +128,14 @@ export function PayButton({ bookingId }: { bookingId: string }) {
 
   return (
     <div>
-      <button type="button" onClick={pay} disabled={busy} className="btn-primary w-full">
+      <button type="button" onClick={pay} disabled={busy || holdExpired} className="btn-primary w-full">
         {busy ? (
           <>
             <Loader2 size={18} className="animate-spin" /> Redirecting to secure checkout…
           </>
         ) : (
           <>
-            <CreditCard size={18} /> Pay securely with card
+            <CreditCard size={18} /> {holdExpired ? "Seat hold expired" : "Pay securely with card"}
           </>
         )}
       </button>
@@ -137,11 +143,16 @@ export function PayButton({ bookingId }: { bookingId: string }) {
         <button
           type="button"
           onClick={devPay}
-          disabled={busy}
+          disabled={busy || holdExpired}
           className="ui mt-2 flex w-full items-center justify-center gap-2 rounded-lg border border-dashed border-amber-400 bg-amber-50 px-4 py-2 text-sm font-semibold text-amber-700 transition-colors hover:bg-amber-100 dark:border-amber-700 dark:bg-amber-950/40 dark:text-amber-300"
         >
           <FlaskConical size={15} /> Dev: mark as paid (skip MPGS)
         </button>
+      )}
+      {holdExpired && (
+        <p className="ui mt-2 text-sm text-red-600 dark:text-red-400">
+          Your seat hold has expired. Go back and select seats again before paying.
+        </p>
       )}
       {error && <p className="ui mt-3 text-sm text-red-600 dark:text-red-400">{error}</p>}
     </div>

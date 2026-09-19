@@ -269,7 +269,7 @@ export default async function BookingPage({
 
       {isPayable && (
         <div className="mt-4">
-          <PayButton bookingId={booking.id} />
+          <PayButton bookingId={booking.id} holdExpiresAt={booking.holds?.[0]?.expires_at} />
         </div>
       )}
 

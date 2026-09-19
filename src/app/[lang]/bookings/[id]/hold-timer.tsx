@@ -10,22 +10,33 @@ function formatCountdown(totalSeconds: number) {
   return `${m}:${s.toString().padStart(2, "0")}`;
 }
 
+/** Ticks down to `iso`, clamped at 0 — shared by HoldTimer (display) and
+ *  PayButton (which needs to know when to stop letting the payer pay for a
+ *  hold that may have already been given to someone else). `undefined`
+ *  means "no hold to track" and never reports expired. */
+export function useSecondsUntil(iso: string | undefined): number | null {
+  const [secondsLeft, setSecondsLeft] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (!iso) return;
+    function tick() {
+      setSecondsLeft(Math.max(0, Math.round((new Date(iso as string).getTime() - Date.now()) / 1000)));
+    }
+    tick();
+    const interval = setInterval(tick, 1000);
+    return () => clearInterval(interval);
+  }, [iso]);
+
+  return iso ? secondsLeft : null;
+}
+
 /** The seat hold behind this booking runs out ~8 minutes after the seats
  *  were first selected (create_booking() links the same seat_holds rows, it
  *  doesn't reset their TTL) — count it down so the payer knows the seats can
  *  be given back to someone else. Mirrors the mobile app's checkout screen. */
 export function HoldTimer({ expiresAt }: { expiresAt: string }) {
   const router = useRouter();
-  const [secondsLeft, setSecondsLeft] = useState<number | null>(null);
-
-  useEffect(() => {
-    function tick() {
-      setSecondsLeft(Math.max(0, Math.round((new Date(expiresAt).getTime() - Date.now()) / 1000)));
-    }
-    tick();
-    const interval = setInterval(tick, 1000);
-    return () => clearInterval(interval);
-  }, [expiresAt]);
+  const secondsLeft = useSecondsUntil(expiresAt);
 
   if (secondsLeft === null) return null;
   const expired = secondsLeft === 0;
