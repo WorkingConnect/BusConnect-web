@@ -84,9 +84,16 @@ export function SeatSelector(props: Props) {
   }, [supabase, tripId]);
 
   // Live seat updates: anyone holding/booking/blocking/releasing a seat on this trip.
+  // The topic includes a random suffix, unique per effect run, rather than
+  // just `seat_holds:${tripId}` — the cleanup below fires removeChannel()
+  // without awaiting it (effect cleanups can't be async), so a fast
+  // remount reusing the same topic name can have supabase-js hand back the
+  // still-subscribing old channel instead of a fresh one, and calling
+  // `.on()` on an already-subscribed channel throws. A unique topic per
+  // instance makes that collision impossible regardless of timing.
   useEffect(() => {
     const channel = supabase
-      .channel(`seat_holds:${tripId}`)
+      .channel(`seat_holds:${tripId}:${Math.random().toString(36).slice(2)}`)
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "seat_holds", filter: `trip_id=eq.${tripId}` },
