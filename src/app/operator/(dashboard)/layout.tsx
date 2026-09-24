@@ -38,7 +38,7 @@ export default async function OperatorDashboardLayout({
   // review"); the workspace nav only makes sense once there's an active
   // operator to actually work in.
   if (!role || operatorStatus !== "active") {
-    return <div className="w-full flex-1 px-4 py-10 sm:px-6 lg:px-8">{children}</div>;
+    return <div className="w-full flex-1 px-4 py-12 sm:px-6 lg:px-8">{children}</div>;
   }
 
   // Nav badges — how many of the operator's own buses/pilots are still
@@ -60,15 +60,17 @@ export default async function OperatorDashboardLayout({
   return (
     <div className="flex w-full flex-1 flex-col">
       {adminOperatorId && <AdminModeBanner operatorName={operatorName} />}
-      <div className="flex flex-1 flex-col gap-6 px-4 py-8 sm:px-6 lg:flex-row lg:gap-8 lg:px-8">
-        <aside className="w-full shrink-0 lg:w-52">
-          <p className="ui text-xs font-semibold uppercase tracking-wide text-slate-400 dark:text-zinc-600">
-            Operator
-          </p>
-          <p className="font-heading mb-4 text-base font-bold tracking-tight">Workspace</p>
-          <OperatorNav role={role} counts={{ fleet: fleetPending, pilots: pilotsPending }} />
+      <div className="flex flex-1 flex-col lg:flex-row">
+        <aside className="w-full shrink-0 border-b border-border bg-card lg:sticky lg:top-14 lg:h-[calc(100vh-3.5rem)] lg:w-64 lg:overflow-y-auto lg:border-b-0 lg:border-r">
+          <div className="px-4 py-5 lg:px-5 lg:py-6">
+            <p className="ui text-xs font-semibold uppercase tracking-wide text-slate-400 dark:text-zinc-600">
+              Operator
+            </p>
+            <p className="font-heading mb-4 text-base font-bold tracking-tight">Workspace</p>
+            <OperatorNav role={role} counts={{ fleet: fleetPending, pilots: pilotsPending }} />
+          </div>
         </aside>
-        <div className="min-w-0 flex-1">{children}</div>
+        <div className="min-w-0 flex-1 px-4 py-10 sm:px-6 lg:px-8">{children}</div>
       </div>
     </div>
   );

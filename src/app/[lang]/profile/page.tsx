@@ -1,12 +1,9 @@
 import Link from "next/link";
-import { ChevronRight, MessageCircle, ShieldCheck, Trash2 } from "lucide-react";
+import { Trash2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { getMyProfile, ApiError, type MyProfile } from "@/lib/api";
 import { formatPhoneDisplay } from "@/lib/phone";
 import { ProfileForm } from "./profile-form";
-
-// Same number used for phone support on the Help Centre page.
-const SUPPORT_WHATSAPP_NUMBER = "94764670645";
 
 export default async function ProfilePage() {
   const supabase = await createClient();
@@ -65,31 +62,6 @@ export default async function ProfilePage() {
         <div className="mt-6 border-t border-border pt-6">
           <ProfileForm profile={profile} />
         </div>
-      </div>
-
-      <p className="ui mt-6 text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-zinc-500">
-        Support
-      </p>
-      <div className="card mt-2 divide-y divide-border overflow-hidden">
-        <a
-          href={`https://wa.me/${SUPPORT_WHATSAPP_NUMBER}?text=${encodeURIComponent("Hi, I need help with my BusConnect booking.")}`}
-          target="_blank"
-          rel="noreferrer"
-          className="ui flex items-center gap-3 p-5 text-sm font-medium transition-colors hover:bg-muted sm:p-6"
-        >
-          <MessageCircle size={18} className="text-brand dark:text-blue-400" />
-          Help center
-          <ChevronRight size={16} className="ml-auto shrink-0 text-slate-400 dark:text-zinc-600" />
-        </a>
-
-        <Link
-          href="/privacy"
-          className="ui flex items-center gap-3 p-5 text-sm font-medium transition-colors hover:bg-muted sm:p-6"
-        >
-          <ShieldCheck size={18} className="text-brand dark:text-blue-400" />
-          Privacy policy
-          <ChevronRight size={16} className="ml-auto shrink-0 text-slate-400 dark:text-zinc-600" />
-        </Link>
       </div>
 
       <Link

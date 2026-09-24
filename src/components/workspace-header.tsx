@@ -17,11 +17,9 @@ import { UserMenu } from "./user-menu";
  * equivalent yet).
  */
 export function WorkspaceHeader({
-  label,
   homeHref,
   workspace,
 }: {
-  label: string;
   homeHref: string;
   workspace: "operator" | "admin";
 }) {
@@ -30,9 +28,6 @@ export function WorkspaceHeader({
       <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
         <div className="inline-flex items-center gap-2.5">
           <Logo href={homeHref} height={26} />
-          <span className="ui rounded-md bg-brand-soft px-2 py-0.5 text-xs font-bold uppercase tracking-wide text-brand dark:bg-brand-soft-dark dark:text-blue-300">
-            {label}
-          </span>
         </div>
         <div className="ui flex items-center gap-3 text-sm">
           <ThemeToggle />

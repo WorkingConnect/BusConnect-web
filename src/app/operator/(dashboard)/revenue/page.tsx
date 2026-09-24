@@ -46,8 +46,8 @@ export default async function OperatorRevenuePage() {
           <Wallet size={18} />
         </span>
         <div>
-          <h1 className="font-heading text-2xl font-bold tracking-tight">Revenue</h1>
-          <p className="ui text-sm text-slate-500 dark:text-zinc-400">
+          <h1 className="font-heading text-3xl font-bold tracking-tight">Revenue</h1>
+          <p className="ui mt-1 text-sm font-medium text-slate-600 dark:text-zinc-300">
             Every trip&apos;s earnings: awaiting settlement, still upcoming, or already paid out.
           </p>
         </div>

@@ -71,7 +71,7 @@ export default async function OperatorPilotDetailPage({
   }
 
   return (
-    <div className="mx-auto w-full max-w-xl">
+    <div className="w-full">
       <Link
         href="/operator/pilots"
         className="ui inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 transition-colors hover:text-slate-900 dark:text-zinc-400 dark:hover:text-white"
@@ -79,53 +79,57 @@ export default async function OperatorPilotDetailPage({
         <ArrowLeft size={15} /> Back to pilots
       </Link>
 
-      <div className="mt-4">
-        <PilotIdentityCard pilot={pilot} photoUrl={photoUrl} />
-      </div>
-
-      <div className="card-lg mt-4 p-6">
-        <h2 className="ui text-xs font-semibold uppercase tracking-wide text-slate-400 dark:text-zinc-600">
-          Assign to fleet
-        </h2>
-        <p className="ui mt-1 text-xs text-slate-500 dark:text-zinc-500">
-          {pilot.status !== "active"
-            ? "Only approved pilots can be assigned to a fleet."
-            : !pilot.user_id
-              ? "Link this pilot to a BusConnect account below before assigning them to a fleet."
-              : "Choose one of your approved buses and whether they'll work as driver or conductor."}
-        </p>
-        <div className="mt-3">
-          <AssignFleetButton
-            pilotId={pilot.id}
-            busOptions={busOptions}
-            disabled={pilot.status !== "active" || !pilot.user_id}
-          />
+      <div className="mt-4 grid grid-cols-1 gap-6 lg:grid-cols-12">
+        <div className="lg:col-span-4">
+          <PilotIdentityCard pilot={pilot} photoUrl={photoUrl} />
         </div>
-      </div>
 
-      <div className="card-lg mt-4 p-6">
-        <h2 className="ui text-xs font-semibold uppercase tracking-wide text-slate-400 dark:text-zinc-600">
-          BusConnect account
-        </h2>
-        {pilot.user_id ? (
-          <div className="ui mt-3 flex items-center justify-between gap-3 rounded-xl bg-emerald-50 px-4 py-3 dark:bg-emerald-950/30">
-            <div>
-              <p className="text-sm font-medium text-emerald-700 dark:text-emerald-300">
-                {pilot.linked_phone ? formatPhoneDisplay(pilot.linked_phone) : "Linked account"}
-              </p>
-              <p className="mt-0.5 text-xs text-emerald-600/80 dark:text-emerald-400/70">
-                Can sign in and scan boarding tickets for their assigned trips.
-              </p>
+        <div className="flex flex-col gap-4 lg:col-span-8">
+          <div className="card-lg p-6">
+            <h2 className="ui text-xs font-semibold uppercase tracking-wide text-slate-400 dark:text-zinc-600">
+              Assign to fleet
+            </h2>
+            <p className="ui mt-1 text-xs text-slate-500 dark:text-zinc-500">
+              {pilot.status !== "active"
+                ? "Only approved pilots can be assigned to a fleet."
+                : !pilot.user_id
+                  ? "Link this pilot to a BusConnect account below before assigning them to a fleet."
+                  : "Choose one of your approved buses and whether they'll work as driver or conductor."}
+            </p>
+            <div className="mt-3">
+              <AssignFleetButton
+                pilotId={pilot.id}
+                busOptions={busOptions}
+                disabled={pilot.status !== "active" || !pilot.user_id}
+              />
             </div>
-            <span className="ui shrink-0 rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-semibold text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300">
-              Linked
-            </span>
           </div>
-        ) : (
-          <div className="mt-3">
-            <LinkAccountForm pilotId={pilot.id} defaultPhone={pilot.phone_no} />
+
+          <div className="card-lg p-6">
+            <h2 className="ui text-xs font-semibold uppercase tracking-wide text-slate-400 dark:text-zinc-600">
+              BusConnect account
+            </h2>
+            {pilot.user_id ? (
+              <div className="ui mt-3 flex items-center justify-between gap-3 rounded-xl bg-emerald-50 px-4 py-3 dark:bg-emerald-950/30">
+                <div>
+                  <p className="text-sm font-medium text-emerald-700 dark:text-emerald-300">
+                    {pilot.linked_phone ? formatPhoneDisplay(pilot.linked_phone) : "Linked account"}
+                  </p>
+                  <p className="mt-0.5 text-xs text-emerald-600/80 dark:text-emerald-400/70">
+                    Can sign in and scan boarding tickets for their assigned trips.
+                  </p>
+                </div>
+                <span className="ui shrink-0 rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-semibold text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300">
+                  Linked
+                </span>
+              </div>
+            ) : (
+              <div className="mt-3">
+                <LinkAccountForm pilotId={pilot.id} defaultPhone={pilot.phone_no} />
+              </div>
+            )}
           </div>
-        )}
+        </div>
       </div>
     </div>
   );

@@ -43,14 +43,14 @@ export default async function OperatorProfilePage() {
 
   return (
     <div>
-      <h1 className="font-heading text-2xl font-bold tracking-tight">Profile</h1>
-      <p className="ui mt-1 text-sm text-slate-600 dark:text-zinc-400">
+      <h1 className="font-heading text-3xl font-bold tracking-tight">Profile</h1>
+      <p className="ui mt-2 text-sm font-medium text-slate-600 dark:text-zinc-300">
         {editable
           ? "Your company's contact details on file with BusConnect."
           : "Contact details for the operator you work under."}
       </p>
 
-      <div className="mt-6 grid grid-cols-1 items-start gap-6 xl:grid-cols-2">
+      <div className="mt-8 grid grid-cols-1 items-start gap-6 xl:grid-cols-2">
         <div className="card-lg p-6">
           <ProfileForm profile={profile} editable={editable} />
         </div>

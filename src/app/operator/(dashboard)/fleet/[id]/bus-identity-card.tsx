@@ -267,7 +267,7 @@ export function BusIdentityCard({ bus }: { bus: OperatorBusDetail }) {
             </div>
           )}
           <div>
-            <h1 className="font-heading text-xl font-bold tracking-tight">{bus.reg_no}</h1>
+            <h1 className="font-heading text-2xl font-bold tracking-tight">{bus.reg_no}</h1>
             <span className={`ui mt-1 inline-block rounded-full px-2 py-0.5 text-xs font-semibold ${STATUS_STYLE[bus.status]}`}>
               {STATUS_LABEL[bus.status] ?? bus.status}
             </span>

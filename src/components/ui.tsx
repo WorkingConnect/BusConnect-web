@@ -39,11 +39,11 @@ export function SectionHeading({
             {icon}
           </span>
         )}
-        <h2 className="font-heading text-2xl font-bold tracking-tight sm:text-3xl">
+        <h2 className="font-heading text-3xl font-bold tracking-tight sm:text-4xl">
           {title}
         </h2>
       </div>
-      {subtitle && <p className="mt-2 text-slate-600 dark:text-zinc-400">{subtitle}</p>}
+      {subtitle && <p className="mt-3 text-slate-600 dark:text-zinc-400">{subtitle}</p>}
     </div>
   );
 }

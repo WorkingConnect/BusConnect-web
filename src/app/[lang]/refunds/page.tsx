@@ -25,8 +25,8 @@ export default async function RefundsPage({ params }: { params: Promise<{ lang: 
   const lp = (path: string) => localizePath(locale, path);
 
   return (
-    <div className="mx-auto w-full max-w-3xl px-4 py-10 sm:px-6 lg:px-8">
-      <h1 className="font-heading text-2xl font-bold tracking-tight sm:text-3xl">Refund Policy</h1>
+    <div className="mx-auto w-full max-w-3xl px-4 py-12 sm:px-6 lg:px-8 lg:py-16">
+      <h1 className="font-heading text-3xl font-bold tracking-tight sm:text-4xl">Refund Policy</h1>
       <p className="ui mt-3 text-sm leading-relaxed text-slate-600 dark:text-zinc-400">
         How much of a paid booking you get back depends on how far ahead of departure you cancel. See our{" "}
         <Link href={lp("/cancellations")} className="text-brand underline dark:text-blue-400">
@@ -35,7 +35,7 @@ export default async function RefundsPage({ params }: { params: Promise<{ lang: 
         for how to cancel.
       </p>
 
-      <div className="card mt-6 divide-y divide-border overflow-hidden">
+      <div className="card mt-8 divide-y divide-border overflow-hidden">
         {TIERS.map((tier) => (
           <div key={tier.window} className="flex items-center justify-between gap-4 p-5 sm:p-6">
             <span className="ui text-sm text-slate-600 dark:text-zinc-400">{tier.window}</span>

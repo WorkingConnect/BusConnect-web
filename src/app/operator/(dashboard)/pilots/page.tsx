@@ -87,8 +87,8 @@ export default async function OperatorPilotsPage() {
     <div>
       <div className="flex items-center justify-between gap-4">
         <div>
-          <h1 className="font-heading text-2xl font-bold tracking-tight">Pilots</h1>
-          <p className="ui mt-1 text-sm text-slate-600 dark:text-zinc-400">
+          <h1 className="font-heading text-3xl font-bold tracking-tight">Pilots</h1>
+          <p className="ui mt-2 text-sm font-medium text-slate-600 dark:text-zinc-300">
             Drivers and conductors registered to your fleet. They&apos;re active immediately, no approval needed.
           </p>
         </div>
@@ -97,7 +97,7 @@ export default async function OperatorPilotsPage() {
         </Link>
       </div>
 
-      <div className="mt-6 flex flex-col gap-2">
+      <div className="mt-8 flex flex-col gap-3">
         {pilots.length === 0 ? (
           <div className="card p-10 text-center text-sm text-slate-500 dark:text-zinc-400">
             No pilots registered yet.
@@ -106,7 +106,7 @@ export default async function OperatorPilotsPage() {
           pilots.map((p) => {
             const photoUrl = photoUrls.get(p.id) ?? null;
             return (
-              <div key={p.id} className="card flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
+              <div key={p.id} className="card flex flex-col gap-3 p-5 sm:flex-row sm:items-center sm:justify-between">
                 <Link href={`/operator/pilots/${p.id}`} className="flex min-w-0 items-center gap-3">
                   {photoUrl ? (
                     // eslint-disable-next-line @next/next/no-img-element

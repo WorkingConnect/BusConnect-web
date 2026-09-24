@@ -64,7 +64,7 @@ export function RouteCard({
         </div>
       </div>
 
-      <div className="p-4">
+      <div className="p-5">
         <h3 className="truncate font-heading text-lg font-bold tracking-tight">{r.name}</h3>
         <p className="ui mt-1 text-sm text-slate-500 dark:text-zinc-400">
           {r.todayCount > 0

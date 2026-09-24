@@ -1,16 +1,5 @@
 import Link from "next/link";
-import {
-  Building2,
-  TrendingUp,
-  Users,
-  PlusCircle,
-  ChevronRight,
-  ArrowRight,
-  Clock,
-  Ban,
-  Bus as BusIcon,
-  ScanLine,
-} from "lucide-react";
+import { Building2, Users, PlusCircle, ChevronRight, Clock, Ban, Bus as BusIcon, ScanLine, CalendarRange } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import {
   getMyOperator,
@@ -26,6 +15,8 @@ import {
   type MyAssignment,
 } from "@/lib/api";
 import { formatTime } from "@/lib/journey-format";
+import { SectionHeading } from "@/components/section-heading";
+import { StatusChip } from "@/components/status-chip";
 
 function formatDateTime(iso: string) {
   return new Date(iso).toLocaleString("en-LK", {
@@ -201,14 +192,14 @@ export default async function OperatorOverviewPage() {
             />
           )}
           <div>
-            <p className="ui text-sm text-slate-500 dark:text-zinc-400">
+            <p className="ui text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-zinc-400">
               {role === "owner"
                 ? "Operator dashboard"
                 : assignment?.pilot?.assigned_role
                   ? `${assignment.pilot.assigned_role[0].toUpperCase()}${assignment.pilot.assigned_role.slice(1)} dashboard`
                   : "Crew dashboard"}
             </p>
-            <h1 className="font-heading text-2xl font-bold tracking-tight">{operator.name}</h1>
+            <h1 className="font-heading text-3xl font-bold tracking-tight">{operator.name}</h1>
           </div>
         </div>
         {role !== "owner" && (
@@ -220,12 +211,9 @@ export default async function OperatorOverviewPage() {
 
       {/* ── Conductor/driver: your assigned bus ─────────────────────────── */}
       {role === "pilot" && (
-        <section className="mt-6">
-          <div className="mb-3 flex items-center gap-2.5">
-            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand-soft text-brand dark:bg-brand-soft-dark dark:text-blue-300">
-              <BusIcon size={18} />
-            </span>
-            <h2 className="font-heading text-xl font-semibold">Your assignment</h2>
+        <section className="mt-8">
+          <div className="mb-3">
+            <SectionHeading title="Your assignment" />
           </div>
           {assignment?.bus ? (
             <div className="card p-5">
@@ -265,7 +253,7 @@ export default async function OperatorOverviewPage() {
       )}
 
       {role === "owner" && (
-        <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-5">
+        <div className="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-5">
           <Stat label="Active journeys" value={String(activeJourneyCount)} />
           <Stat label="Upcoming trips" value={String(analytics?.upcomingTrips ?? 0)} />
           <Stat label="Bookings" value={String(analytics?.totalBookings ?? 0)} />
@@ -274,34 +262,24 @@ export default async function OperatorOverviewPage() {
         </div>
       )}
 
-      <section className="mt-8">
-        <div className="flex items-center justify-between gap-3">
-          <div className="flex items-center gap-2.5">
-            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand-soft text-brand dark:bg-brand-soft-dark dark:text-blue-300">
-              <TrendingUp size={18} />
-            </span>
-            <h2 className="font-heading text-xl font-semibold">
-              {role === "owner" ? "Upcoming departures" : "Trips you can board"}
-            </h2>
-          </div>
-          {role === "owner" && journeys.length > 0 && (
-            <Link
-              href="/operator/journeys"
-              className="ui flex items-center gap-1 text-sm font-medium text-brand hover:underline dark:text-blue-400"
-            >
-              All journeys <ArrowRight size={13} />
-            </Link>
-          )}
-        </div>
+      <section className="mt-10">
+        <SectionHeading
+          title={role === "owner" ? "Upcoming departures" : "Trips you can board"}
+          action={role === "owner" && journeys.length > 0 ? { href: "/operator/journeys", label: "All journeys" } : undefined}
+        />
 
         {role === "owner" ? (
           journeyGroups.length === 0 && adHocTrips.length === 0 ? (
-            <div className="card mt-4 p-10 text-center text-slate-500 dark:text-zinc-400">
-              {journeys.length === 0
-                ? "No upcoming departures. Create a journey, then schedule its dates from the Timetable."
-                : "No upcoming departures. Schedule some dates for your journeys from the Timetable."}
-              <div>
-                {journeys.length === 0 ? (
+            <EmptyState
+              icon={<CalendarRange size={32} className="mx-auto text-slate-400 dark:text-zinc-600" />}
+              title="No upcoming departures"
+              subtitle={
+                journeys.length === 0
+                  ? "Create a journey, then schedule its dates from the Timetable."
+                  : "Schedule some dates for your journeys from the Timetable."
+              }
+              action={
+                journeys.length === 0 ? (
                   <Link href="/operator/journeys/new" className="btn-primary mt-4">
                     <PlusCircle size={16} /> Create your first journey
                   </Link>
@@ -309,18 +287,18 @@ export default async function OperatorOverviewPage() {
                   <Link href="/operator/timetable" className="btn-primary mt-4">
                     <PlusCircle size={16} /> Schedule trips
                   </Link>
-                )}
-              </div>
-            </div>
+                )
+              }
+            />
           ) : (
             <>
               {/* One card per journey — click through for its full upcoming-departures list. */}
-              <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
                 {shownGroups.map(({ journey, trips: journeyTrips }) => (
                   <Link
                     key={journey.id}
                     href={`/operator/journeys/${journey.id}`}
-                    className="card card-hover flex items-center justify-between gap-3 p-4"
+                    className="card card-hover flex items-center justify-between gap-3 p-5"
                   >
                     <div className="min-w-0">
                       <div className="flex items-center gap-2">
@@ -357,7 +335,7 @@ export default async function OperatorOverviewPage() {
                       <Link
                         key={t.id}
                         href={`/operator/trips/${t.id}`}
-                        className="card card-hover flex items-center justify-between p-4"
+                        className="card card-hover flex items-center justify-between p-5"
                       >
                         <div className="min-w-0">
                           <p className="truncate font-heading font-semibold">{t.route?.name ?? "—"}</p>
@@ -369,7 +347,9 @@ export default async function OperatorOverviewPage() {
                         <div className="flex items-center gap-3 text-right">
                           <div>
                             <p className="font-medium">{formatDateTime(t.depart_at)}</p>
-                            <p className="ui text-xs capitalize text-slate-500 dark:text-zinc-400">{t.status}</p>
+                            <div className="mt-1">
+                              <StatusChip status={t.status} />
+                            </div>
                           </div>
                           <ChevronRight size={16} className="text-slate-400" />
                         </div>
@@ -386,16 +366,18 @@ export default async function OperatorOverviewPage() {
             </>
           )
         ) : shownTrips.length === 0 ? (
-          <div className="card mt-4 p-10 text-center text-slate-500 dark:text-zinc-400">
-            No trips yet. You&apos;ll see them here once your operator assigns you to a bus.
-          </div>
+          <EmptyState
+            icon={<BusIcon size={32} className="mx-auto text-slate-400 dark:text-zinc-600" />}
+            title="No trips yet"
+            subtitle="You'll see them here once your operator assigns you to a bus."
+          />
         ) : (
           <div className="mt-4 flex flex-col gap-3">
             {shownTrips.map((t) => (
               <Link
                 key={t.id}
                 href={`/operator/trips/${t.id}`}
-                className="card card-hover flex items-center justify-between p-4"
+                className="card card-hover flex items-center justify-between p-5"
               >
                 <div className="min-w-0">
                   <p className="truncate font-heading font-semibold">{t.route?.name ?? "—"}</p>
@@ -407,7 +389,9 @@ export default async function OperatorOverviewPage() {
                 <div className="flex items-center gap-3 text-right">
                   <div>
                     <p className="font-medium">{formatDateTime(t.depart_at)}</p>
-                    <p className="ui text-xs capitalize text-slate-500 dark:text-zinc-400">{t.status}</p>
+                    <div className="mt-1">
+                      <StatusChip status={t.status} />
+                    </div>
                   </div>
                   <ChevronRight size={16} className="text-slate-400" />
                 </div>
@@ -428,12 +412,33 @@ export default async function OperatorOverviewPage() {
 function Stat({ label, value }: { label: string; value: string }) {
   return (
     <div className="card px-4 py-5 text-center">
-      <div className="font-heading text-xl font-bold text-brand dark:text-blue-400 sm:text-2xl">
-        {value}
-      </div>
+      <div className="font-heading text-xl font-bold text-brand dark:text-blue-400 sm:text-2xl">{value}</div>
       <div className="ui mt-1 flex items-center justify-center gap-1 text-xs uppercase tracking-wide text-slate-500 dark:text-zinc-500">
         {label}
       </div>
+    </div>
+  );
+}
+
+/** Bare centered icon + heading + subtext — same treatment as the
+ * notLinked/pending/suspended states above, just for in-page empty lists. */
+function EmptyState({
+  icon,
+  title,
+  subtitle,
+  action,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  subtitle: string;
+  action?: React.ReactNode;
+}) {
+  return (
+    <div className="card mt-4 p-10 text-center">
+      {icon}
+      <p className="mt-4 font-heading font-semibold">{title}</p>
+      <p className="ui mt-1 text-sm text-slate-600 dark:text-zinc-400">{subtitle}</p>
+      {action}
     </div>
   );
 }

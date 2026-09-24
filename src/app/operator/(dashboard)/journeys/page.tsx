@@ -48,8 +48,8 @@ export default async function OperatorJourneysPage() {
     <div>
       <div className="flex items-center justify-between gap-4">
         <div>
-          <h1 className="font-heading text-2xl font-bold tracking-tight">Journeys</h1>
-          <p className="ui mt-1 text-sm text-slate-600 dark:text-zinc-400">
+          <h1 className="font-heading text-3xl font-bold tracking-tight">Journeys</h1>
+          <p className="ui mt-2 text-sm font-medium text-slate-600 dark:text-zinc-300">
             Your recurring services: a bus + crew running a route on a schedule. Each journey puts
             seats on sale for every date it runs.
           </p>
@@ -59,7 +59,7 @@ export default async function OperatorJourneysPage() {
         </Link>
       </div>
 
-      <div className="mt-6 flex flex-col gap-2">
+      <div className="mt-8 flex flex-col gap-3">
         {journeys.length === 0 ? (
           <div className="card p-10 text-center text-sm text-slate-500 dark:text-zinc-400">
             <CalendarClock size={28} className="mx-auto mb-3 text-slate-300 dark:text-zinc-700" />
@@ -70,7 +70,7 @@ export default async function OperatorJourneysPage() {
             <Link
               key={j.id}
               href={`/operator/journeys/${j.id}`}
-              className="card card-hover flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between"
+              className="card card-hover flex flex-col gap-3 p-5 sm:flex-row sm:items-center sm:justify-between"
             >
               <div className="min-w-0">
                 <div className="flex flex-wrap items-center gap-2">

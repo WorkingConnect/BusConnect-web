@@ -109,7 +109,7 @@ export function TicketsList({ bookings: initialBookings }: { bookings: TicketBoo
   const tabs: Tab[] = ["confirmed", "cancelled"];
 
   return (
-    <div className="mt-6">
+    <div className="mt-8">
       <div className="flex flex-wrap gap-2">
         {tabs.map((t) => (
           <button

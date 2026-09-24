@@ -213,7 +213,7 @@ function MobileDrawer({ open, onClose }: { open: boolean; onClose: () => void })
                 onClick={onClose}
                 className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-muted"
               >
-                <UserCircle size={17} className="text-brand dark:text-blue-400" />
+                <UserCircle size={17} className="text-foreground" />
                 {t("profile")}
               </Link>
             )}

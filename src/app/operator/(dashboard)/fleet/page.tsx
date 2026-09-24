@@ -54,8 +54,8 @@ export default async function OperatorFleetPage() {
     <div>
       <div className="flex items-center justify-between gap-4">
         <div>
-          <h1 className="font-heading text-2xl font-bold tracking-tight">My fleet</h1>
-          <p className="ui mt-1 text-sm text-slate-600 dark:text-zinc-400">
+          <h1 className="font-heading text-3xl font-bold tracking-tight">My fleet</h1>
+          <p className="ui mt-2 text-sm font-medium text-slate-600 dark:text-zinc-300">
             Buses registered to your account. New buses stay pending until BusConnect approves them.
           </p>
         </div>
@@ -64,7 +64,7 @@ export default async function OperatorFleetPage() {
         </Link>
       </div>
 
-      <div className="mt-6">
+      <div className="mt-8">
         <div className="mb-3 flex items-center gap-2">
           <BusIcon size={18} className="text-brand dark:text-blue-400" />
           <h2 className="font-heading text-lg font-semibold">Buses ({fleet.buses.length})</h2>
@@ -74,9 +74,9 @@ export default async function OperatorFleetPage() {
             No buses registered yet.
           </div>
         ) : (
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-3">
             {fleet.buses.map((b) => (
-              <Link key={b.id} href={`/operator/fleet/${b.id}`} className="card card-hover flex items-start gap-3 p-4">
+              <Link key={b.id} href={`/operator/fleet/${b.id}`} className="card card-hover flex items-start gap-3 p-5">
                 {b.front_image_url ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img

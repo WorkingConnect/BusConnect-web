@@ -44,7 +44,7 @@ export default async function OperatorBusDetailPage({
   if (!bus) notFound();
 
   return (
-    <div className="mx-auto w-full max-w-2xl">
+    <div className="w-full">
       <Link
         href="/operator/fleet"
         className="ui inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 transition-colors hover:text-slate-900 dark:text-zinc-400 dark:hover:text-white"
@@ -52,20 +52,22 @@ export default async function OperatorBusDetailPage({
         <ArrowLeft size={15} /> Back to fleet
       </Link>
 
-      <div className="mt-4">
-        <BusIdentityCard bus={bus} />
-      </div>
+      <div className="mt-4 grid grid-cols-1 gap-6 lg:grid-cols-12">
+        <div className="lg:col-span-4">
+          <BusIdentityCard bus={bus} />
+        </div>
 
-      <div className="card-lg mt-6 p-6">
-        <h2 className="ui text-xs font-semibold uppercase tracking-wide text-slate-400 dark:text-zinc-600">
-          Seat map
-        </h2>
-        <p className="ui mt-1 text-xs text-slate-500 dark:text-zinc-500">
-          Set by BusConnect when this bus&apos;s photos and seat count were reviewed. Contact BusConnect
-          support if it needs to change.
-        </p>
-        <div className="mt-4">
-          <SeatGridPreview layout={bus.bus_type?.layout_json ?? null} seatCount={bus.bus_type?.seat_count ?? 40} />
+        <div className="card-lg p-6 lg:col-span-8">
+          <h2 className="ui text-xs font-semibold uppercase tracking-wide text-slate-400 dark:text-zinc-600">
+            Seat map
+          </h2>
+          <p className="ui mt-1 text-xs text-slate-500 dark:text-zinc-500">
+            Set by BusConnect when this bus&apos;s photos and seat count were reviewed. Contact BusConnect
+            support if it needs to change.
+          </p>
+          <div className="mt-4">
+            <SeatGridPreview layout={bus.bus_type?.layout_json ?? null} seatCount={bus.bus_type?.seat_count ?? 40} />
+          </div>
         </div>
       </div>
     </div>

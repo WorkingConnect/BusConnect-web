@@ -98,14 +98,14 @@ export default async function TicketsPage() {
   );
 
   return (
-    <div className="mx-auto w-full max-w-3xl px-4 py-10 sm:px-6 lg:px-8">
+    <div className="mx-auto w-full max-w-3xl px-4 py-12 sm:px-6 lg:px-8 lg:py-16">
       <div>
-        <h1 className="font-heading text-2xl font-bold tracking-tight">My tickets</h1>
-        <p className="ui mt-1 text-sm text-slate-500 dark:text-zinc-400">Your bookings &amp; QR codes for boarding</p>
+        <h1 className="font-heading text-3xl font-bold tracking-tight sm:text-4xl">My tickets</h1>
+        <p className="ui mt-2 text-sm text-slate-500 dark:text-zinc-400">Your bookings &amp; QR codes for boarding</p>
       </div>
 
       {bookings.length === 0 ? (
-        <div className="card mt-8 p-12 text-center">
+        <div className="card mt-10 p-12 text-center">
           <p className="text-slate-600 dark:text-zinc-400">You haven&apos;t booked any trips yet.</p>
           <Link href="/" className="btn-primary mt-4">
             Search buses

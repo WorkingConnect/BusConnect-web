@@ -17,22 +17,21 @@ export function OperatorsShowcase({
   locale: Locale;
 }) {
   return (
-    <section className="mx-auto w-full max-w-7xl px-4 pb-8 pt-14 sm:px-6 sm:pt-16 lg:px-8">
+    <section className="mx-auto w-full max-w-7xl px-4 pb-10 pt-16 sm:px-6 sm:pt-20 lg:px-8">
       <SectionHeading
         id="operators-showcase"
         title={dict.home.operatorsShowcaseTitle}
-        subtitle={dict.home.operatorsShowcaseSubtitle}
         centered
       />
       {operators.length === 0 ? (
         <p className="ui mt-9 text-sm text-slate-500 dark:text-zinc-500">{dict.home.noOperators}</p>
       ) : (
-        <div className="mt-9 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {operators.map((op) => (
             <Link
               key={op.id}
               href={localizePath(locale, `/operators/${op.id}`)}
-              className="card card-hover flex items-center gap-4 p-4"
+              className="card card-hover flex items-center gap-4 p-5"
             >
               <span className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-border bg-white dark:bg-zinc-900">
                 {op.logoUrl ? (

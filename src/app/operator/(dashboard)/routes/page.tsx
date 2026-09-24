@@ -40,13 +40,13 @@ export default async function OperatorRoutesPage() {
 
   return (
     <div>
-      <h1 className="font-heading text-2xl font-bold tracking-tight">Routes</h1>
-      <p className="ui mt-1 text-sm text-slate-600 dark:text-zinc-400">
+      <h1 className="font-heading text-3xl font-bold tracking-tight">Routes</h1>
+      <p className="ui mt-2 text-sm font-medium text-slate-600 dark:text-zinc-300">
         The shared route catalog. BusConnect defines routes and their stops; you can run a journey
         on any of them. To request a new route, contact BusConnect support.
       </p>
 
-      <div className="mt-6">
+      <div className="mt-8">
         <div className="mb-3 flex items-center gap-2">
           <RouteIcon size={18} className="text-brand dark:text-blue-400" />
           <h2 className="font-heading text-lg font-semibold">Routes ({routes.length})</h2>
@@ -56,9 +56,9 @@ export default async function OperatorRoutesPage() {
             No routes in the catalog yet.
           </div>
         ) : (
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-3">
             {routes.map((r) => (
-              <div key={r.id} className="card p-4">
+              <div key={r.id} className="card p-5">
                 <p className="font-medium">{r.name}</p>
                 <p className="ui mt-1 text-sm text-slate-500 dark:text-zinc-400">
                   {r.stops.map((s) => s.location?.name_en ?? "—").join("  →  ")}

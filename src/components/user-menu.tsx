@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Ticket, Building2, ShieldCheck, LogOut, ChevronDown, UserCircle } from "lucide-react";
+import { Building2, ShieldCheck, LogOut, ChevronDown, UserCircle } from "lucide-react";
 import { useIdentity } from "@/lib/use-identity";
 import { useT, useLocale } from "@/lib/i18n/provider";
 import { localizePath } from "@/lib/i18n/navigation";
@@ -88,22 +88,13 @@ export function UserMenu({
               been approved yet also has no passenger identity to speak of
               here — profile/tickets only make sense once approved. */}
           {workspace === "passenger" && !(roles?.isOperator && roles.operatorStatus === "pending") && (
-            <>
-              <DropdownMenuItem
-                render={<Link href={localizePath(locale, "/profile")} />}
-                className="gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-foreground"
-              >
-                <UserCircle size={16} className="text-muted-foreground" />
-                {t("profile")}
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                render={<Link href={localizePath(locale, "/tickets")} />}
-                className="gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-foreground"
-              >
-                <Ticket size={16} className="text-muted-foreground" />
-                {t("myTickets")}
-              </DropdownMenuItem>
-            </>
+            <DropdownMenuItem
+              render={<Link href={localizePath(locale, "/profile")} />}
+              className="gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-foreground"
+            >
+              <UserCircle size={16} className="text-muted-foreground" />
+              {t("profile")}
+            </DropdownMenuItem>
           )}
           {workspace === "operator" && roles?.isOperator && (
             <DropdownMenuItem
@@ -167,7 +158,7 @@ export function Avatar({
 
   return (
     <span
-      className="flex shrink-0 items-center justify-center rounded-full bg-brand font-bold text-brand-fg"
+      className="flex shrink-0 items-center justify-center rounded-full bg-black font-bold text-white"
       style={{ width: size, height: size, fontSize: size * 0.4 }}
     >
       {initial}

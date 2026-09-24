@@ -36,9 +36,9 @@ export function SiteFooter() {
 
   return (
     <footer className="mt-24 border-t border-border bg-card text-foreground">
-      <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
         {/* Columns */}
-        <div className="grid gap-10 pb-10 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-10 pb-12 sm:grid-cols-2 lg:grid-cols-4">
           <div className="max-w-xs">
             <Logo href={lp("/")} />
             <p className="ui mt-4 text-sm leading-relaxed text-muted-foreground">{t("brandBlurb")}</p>

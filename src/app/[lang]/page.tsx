@@ -39,7 +39,6 @@ export default async function Home({ params }: { params: Promise<{ lang: string 
       <PopularRoutes routes={popularRoutes} dict={dict} locale={locale} />
       <OperatorsShowcase operators={operators} dict={dict} locale={locale} />
       <HowItWorks />
-      <OperatorCta dict={dict} />
       <Features />
     </>
   );
@@ -73,7 +72,7 @@ function Hero({
         </div>
       </div>
 
-      <div className="relative z-10 mx-auto w-full max-w-7xl px-4 pb-14 sm:px-6 sm:pb-16 lg:px-8 lg:pb-20">
+      <div className="relative z-10 mx-auto w-full max-w-7xl px-4 pb-16 sm:px-6 sm:pb-20 lg:px-8 lg:pb-24">
         <div className="-mt-8 sm:-mt-14">
           <SearchForm locations={locations} />
           {locations.length === 0 && (
@@ -98,9 +97,9 @@ function OffersSection({
   if (offers.length === 0) return null;
 
   return (
-    <section className="mx-auto w-full max-w-7xl px-4 pt-8 sm:px-6 lg:px-8">
+    <section className="mx-auto w-full max-w-7xl px-4 pt-12 sm:px-6 lg:px-8">
       <div className="flex items-center justify-between gap-4">
-        <h2 className="font-heading text-2xl font-bold tracking-tight sm:text-3xl">
+        <h2 className="font-heading text-3xl font-bold tracking-tight sm:text-4xl">
           {dict.home.offersTitle}
         </h2>
         <Link
@@ -111,7 +110,7 @@ function OffersSection({
         </Link>
       </div>
 
-      <div className="scrollbar-none -mx-4 mt-6 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-2 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8">
+      <div className="scrollbar-none -mx-4 mt-8 flex snap-x snap-mandatory gap-5 overflow-x-auto px-4 pb-2 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8">
         {offers.slice(0, 8).map((o) => (
           <OfferCard
             key={o.id}
@@ -134,8 +133,8 @@ const ANDROID_PLAY_STORE_URL = "https://play.google.com/store/apps/details?id=lk
 
 function AppPromo({ dict }: { dict: Dictionary }) {
   return (
-    <section className="mx-auto w-full max-w-7xl px-4 pt-2 sm:px-6 lg:px-8">
-      <div className="rounded-3xl bg-brand-soft/70 p-6 dark:bg-brand-soft-dark/30 sm:p-8">
+    <section className="mx-auto w-full max-w-7xl px-4 pt-8 sm:px-6 lg:px-8">
+      <div className="rounded-3xl bg-brand-soft/70 p-7 dark:bg-brand-soft-dark/30 sm:p-10">
         <div className="flex flex-col items-center gap-6 text-center sm:flex-row sm:justify-between sm:gap-8 sm:text-left">
           <div className="flex flex-col items-center gap-4 text-center sm:flex-row sm:text-left">
             <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-2xl shadow-lg shadow-black/10 sm:h-20 sm:w-20">
@@ -187,11 +186,11 @@ function Features() {
   ] as const;
 
   return (
-    <section className="mx-auto w-full max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
+    <section className="mx-auto w-full max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:py-20">
       <SectionHeading title="Why BusConnect" centered />
-      <div className="mt-9 grid grid-cols-2 gap-3 lg:grid-cols-3">
+      <div className="mt-10 grid grid-cols-2 gap-4 lg:grid-cols-3 lg:gap-5">
         {features.map(([Icon, title, body]) => (
-          <div key={title} className="card card-hover p-4">
+          <div key={title} className="card card-hover p-5">
             <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-brand-soft text-brand dark:bg-brand-soft-dark dark:text-blue-300 sm:h-9 sm:w-9">
               <Icon size={16} className="sm:hidden" />
               <Icon size={18} className="hidden sm:block" />
@@ -218,12 +217,12 @@ function PopularRoutes({
   const today = new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Colombo" });
 
   return (
-    <section className="mx-auto w-full max-w-7xl px-4 pb-8 pt-14 sm:px-6 sm:pt-16 lg:px-8">
+    <section className="mx-auto w-full max-w-7xl px-4 pb-10 pt-16 sm:px-6 sm:pt-20 lg:px-8 lg:pt-24">
       <SectionHeading id="routes" title={dict.home.popularRoutesTitle} centered />
       {routes.length === 0 ? (
         <p className="ui mt-9 text-sm text-slate-500 dark:text-zinc-500">{dict.home.noRoutes}</p>
       ) : (
-        <div className="scrollbar-none -mx-4 mt-9 flex snap-x snap-mandatory gap-5 overflow-x-auto px-4 pb-2 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8">
+        <div className="scrollbar-none -mx-4 mt-10 flex snap-x snap-mandatory gap-6 overflow-x-auto px-4 pb-2 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8">
           {routes.map((r) => (
             <RouteCard
               key={r.routeCardId ?? r.routeId}
@@ -249,11 +248,11 @@ function HowItWorks() {
     ["Board with QR", "Get your e-ticket instantly and scan it to board."],
   ];
   return (
-    <section className="mx-auto w-full max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
+    <section className="mx-auto w-full max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:py-20">
       <SectionHeading id="how" title="How to book a ticket" centered />
-      <div className="card mt-9 flex flex-col divide-y divide-slate-100 sm:flex-row sm:divide-x sm:divide-y-0 dark:divide-zinc-800">
+      <div className="card mt-10 flex flex-col divide-y divide-slate-100 sm:flex-row sm:divide-x sm:divide-y-0 dark:divide-zinc-800">
         {steps.map(([title, body], i) => (
-          <div key={title} className="flex-1 p-6">
+          <div key={title} className="flex-1 p-7">
             <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand font-heading font-bold text-brand-fg">
               {i + 1}
             </span>
@@ -266,27 +265,3 @@ function HowItWorks() {
   );
 }
 
-/* ── Operator CTA ──────────────────────────────────────────────────────── */
-function OperatorCta({ dict }: { dict: Dictionary }) {
-  return (
-    <section id="operators" className="mx-auto w-full max-w-7xl px-4 pb-6 sm:px-6 lg:px-8">
-      <div
-        className="overflow-hidden rounded-3xl p-8 sm:p-12"
-        style={{ background: "linear-gradient(135deg, #004aad 0%, #05235a 100%)" }}
-      >
-        <div className="max-w-2xl">
-          <h2 className="font-heading text-2xl font-bold tracking-tight text-white sm:text-3xl">
-            {dict.home.operatorCtaTitle}
-          </h2>
-          <p className="mt-3 text-white/80">{dict.home.operatorCtaBody}</p>
-          <Link
-            href="/operator"
-            className="ui mt-6 inline-flex items-center justify-center rounded-xl bg-white px-5 py-2.5 text-sm font-semibold text-brand transition-colors duration-300 hover:bg-white/90"
-          >
-            {dict.home.operatorCtaButton}
-          </Link>
-        </div>
-      </div>
-    </section>
-  );
-}

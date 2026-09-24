@@ -10,9 +10,9 @@ export const metadata = {
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <section className="mt-8">
+    <section className="mt-10">
       <h2 className="font-heading text-lg font-bold tracking-tight">{title}</h2>
-      <div className="ui mt-2 space-y-3 text-sm leading-relaxed text-slate-600 dark:text-zinc-400">{children}</div>
+      <div className="ui mt-2.5 space-y-3 text-sm leading-relaxed text-slate-600 dark:text-zinc-400">{children}</div>
     </section>
   );
 }
@@ -23,8 +23,8 @@ export default async function AboutPage({ params }: { params: Promise<{ lang: st
   const lp = (path: string) => localizePath(locale, path);
 
   return (
-    <div className="mx-auto w-full max-w-3xl px-4 py-10 sm:px-6 lg:px-8">
-      <h1 className="font-heading text-2xl font-bold tracking-tight sm:text-3xl">About BusConnect</h1>
+    <div className="mx-auto w-full max-w-3xl px-4 py-12 sm:px-6 lg:px-8 lg:py-16">
+      <h1 className="font-heading text-3xl font-bold tracking-tight sm:text-4xl">About BusConnect</h1>
 
       <p className="ui mt-6 text-sm leading-relaxed text-slate-600 dark:text-zinc-400">
         BusConnect is Sri Lanka&apos;s live-tracked bus booking platform. We built it to close a simple gap in

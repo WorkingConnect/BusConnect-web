@@ -51,7 +51,7 @@ export function OperatorNav({
   }
 
   return (
-    <nav className="flex flex-row gap-1 overflow-x-auto lg:flex-col lg:overflow-visible">
+    <nav className="flex flex-row gap-1 overflow-x-auto lg:flex-col lg:gap-0.5 lg:overflow-visible">
       {visible.map(({ label, href, icon: Icon }) => {
         const active = pathname === href;
         const badge = badgeFor[href];

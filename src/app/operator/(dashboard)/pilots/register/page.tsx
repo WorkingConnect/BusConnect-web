@@ -12,13 +12,13 @@ export default function RegisterPilotPage() {
         <ArrowLeft size={15} /> Back to pilots
       </Link>
 
-      <h1 className="mt-4 font-heading text-2xl font-bold tracking-tight">Register a pilot</h1>
-      <p className="ui mt-1 text-sm text-slate-600 dark:text-zinc-400">
+      <h1 className="mt-5 font-heading text-3xl font-bold tracking-tight">Register a pilot</h1>
+      <p className="ui mt-2 text-sm font-medium text-slate-600 dark:text-zinc-300">
         Add a driver or conductor. They&apos;re active immediately, so you can assign them to a bus as soon as
         they&apos;re registered.
       </p>
 
-      <div className="mt-6">
+      <div className="mt-8">
         <RegisterPilotForm />
       </div>
     </div>

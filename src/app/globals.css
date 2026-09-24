@@ -129,7 +129,7 @@
 }
 
 @layer components {
-  /* Primary CTA — cobalt with soft colored shadow */
+  /* Primary CTA — flat cobalt, no shadow */
   .btn-primary {
     font-family: var(--font-inter), var(--font-sinhala), var(--font-tamil), sans-serif;
     /* A flat neutral gray when disabled, not a translucent brand blue — at

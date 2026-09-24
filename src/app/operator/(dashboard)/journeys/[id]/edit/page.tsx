@@ -51,12 +51,12 @@ export default async function EditJourneyPage({
         <ArrowLeft size={15} /> Back to journey
       </Link>
 
-      <h1 className="mt-4 font-heading text-2xl font-bold tracking-tight">Edit journey</h1>
-      <p className="ui mt-1 text-sm text-slate-600 dark:text-zinc-400">
+      <h1 className="mt-5 font-heading text-3xl font-bold tracking-tight">Edit journey</h1>
+      <p className="ui mt-2 text-sm font-medium text-slate-600 dark:text-zinc-300">
         {journey.route?.name ?? "—"} · {journey.code}
       </p>
 
-      <div className="mt-6">
+      <div className="mt-8">
         <JourneyForm initial={journey} />
       </div>
     </div>

@@ -58,10 +58,10 @@ export default async function OperatorManifestPage({
 
       <div className="mt-4 flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="font-heading text-2xl font-bold tracking-tight">
+          <h1 className="font-heading text-3xl font-bold tracking-tight">
             {manifest.route_name ?? "Trip manifest"}
           </h1>
-          <p className="ui mt-1 text-sm text-slate-500 dark:text-zinc-400">
+          <p className="ui mt-2 text-sm font-medium text-slate-600 dark:text-zinc-300">
             {dateTime(manifest.depart_at)} · Bus {manifest.bus?.reg_no ?? "—"}
           </p>
         </div>
@@ -83,7 +83,7 @@ export default async function OperatorManifestPage({
       </div>
 
       {/* stat tiles */}
-      <div className={`mt-6 grid gap-3 ${isPilot ? "grid-cols-2" : "grid-cols-2 sm:grid-cols-3"}`}>
+      <div className={`mt-8 grid gap-4 ${isPilot ? "grid-cols-2" : "grid-cols-2 sm:grid-cols-3"}`}>
         <div className="card flex items-center gap-3 p-5">
           <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-soft text-brand dark:bg-brand-soft-dark dark:text-blue-300">
             <UserCheck size={18} />

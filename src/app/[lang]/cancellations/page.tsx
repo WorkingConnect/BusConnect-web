@@ -14,13 +14,13 @@ export default async function CancellationsPage({ params }: { params: Promise<{ 
   const lp = (path: string) => localizePath(locale, path);
 
   return (
-    <div className="mx-auto w-full max-w-3xl px-4 py-10 sm:px-6 lg:px-8">
-      <h1 className="font-heading text-2xl font-bold tracking-tight sm:text-3xl">Cancellation Policy</h1>
+    <div className="mx-auto w-full max-w-3xl px-4 py-12 sm:px-6 lg:px-8 lg:py-16">
+      <h1 className="font-heading text-3xl font-bold tracking-tight sm:text-4xl">Cancellation Policy</h1>
       <p className="ui mt-3 text-sm leading-relaxed text-slate-600 dark:text-zinc-400">
         To cancel a booking, contact the BusConnect team on our WhatsApp hotline.
       </p>
 
-      <div className="card mt-6 p-5 sm:p-6">
+      <div className="card mt-8 p-5 sm:p-6">
         <h2 className="font-heading text-base font-bold sm:text-lg">How to cancel</h2>
         <ol className="ui mt-3 space-y-2 text-sm leading-relaxed text-slate-600 dark:text-zinc-400">
           <li>

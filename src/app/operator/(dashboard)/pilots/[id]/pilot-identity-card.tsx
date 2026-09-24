@@ -216,7 +216,7 @@ export function PilotIdentityCard({
             </div>
           )}
           <div>
-            <h1 className="font-heading text-xl font-bold tracking-tight">{pilot.name}</h1>
+            <h1 className="font-heading text-2xl font-bold tracking-tight">{pilot.name}</h1>
             <span className={`ui mt-1 inline-block rounded-full px-2 py-0.5 text-xs font-semibold ${STATUS_STYLE[pilot.status]}`}>
               {STATUS_LABEL[pilot.status] ?? pilot.status}
             </span>
