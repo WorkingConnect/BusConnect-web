@@ -512,6 +512,7 @@ export interface OperatorAnalytics {
   totalTrips: number;
   upcomingTrips: number;
   totalBookings: number;
+  totalPassengers: number;
   totalRevenue: number;
   totalNetRevenue: number;
   fillRatePct: number;

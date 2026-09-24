@@ -61,7 +61,7 @@ export default async function OperatorDashboardLayout({
     <div className="flex w-full flex-1 flex-col">
       {adminOperatorId && <AdminModeBanner operatorName={operatorName} />}
       <div className="flex flex-1 flex-col lg:flex-row">
-        <aside className="w-full shrink-0 border-b border-border bg-card lg:sticky lg:top-14 lg:h-[calc(100vh-3.5rem)] lg:w-64 lg:overflow-y-auto lg:border-b-0 lg:border-r">
+        <aside className="w-full shrink-0 border-b border-border bg-card lg:sticky lg:top-16 lg:h-[calc(100vh-4rem)] lg:w-64 lg:overflow-y-auto lg:border-b-0 lg:border-r">
           <div className="px-4 py-5 lg:px-5 lg:py-6">
             <p className="ui text-xs font-semibold uppercase tracking-wide text-slate-400 dark:text-zinc-600">
               Operator

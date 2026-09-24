@@ -25,10 +25,8 @@ export function WorkspaceHeader({
 }) {
   return (
     <header className="sticky top-0 z-50 border-b border-border bg-card/80 backdrop-blur-md transition-colors duration-300">
-      <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
-        <div className="inline-flex items-center gap-2.5">
-          <Logo href={homeHref} height={26} />
-        </div>
+      <div className="flex items-center justify-between px-4 py-4 sm:px-5 lg:px-5">
+        <Logo href={homeHref} height={34} />
         <div className="ui flex items-center gap-3 text-sm">
           <ThemeToggle />
           {workspace === "admin" && <UserMenu workspace={workspace} />}
