@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import { headers } from "next/headers";
 import {
   Inter,
@@ -114,15 +115,12 @@ const jsonLd = {
 // video) can read the resolved theme and render the right static assets
 // directly, rather than picking one via client-side JS after the fact.
 //
-// Until the visitor explicitly picks a theme (nav bar toggle, saved to
-// localStorage), default to time of day rather than system color-scheme
-// preference — light during the day, dark at night — for the hero video
-// and the rest of the UI alike.
+// Light is the default for every visitor regardless of OS/browser color
+// scheme; dark only applies once the visitor explicitly opts in via the
+// nav bar toggle, saved to localStorage.
 const themeScript = `
 try {
-  var t = localStorage.getItem('theme');
-  var hour = new Date().getHours();
-  var d = t ? t === 'dark' : (hour < 6 || hour >= 18);
+  var d = localStorage.getItem('theme') === 'dark';
   if (d) document.documentElement.classList.add('dark');
   document.cookie = 'theme=' + (d ? 'dark' : 'light') + '; path=/; max-age=31536000; samesite=lax';
 } catch (e) {}
@@ -146,15 +144,18 @@ export default async function RootLayout({
       suppressHydrationWarning
       className={`${inter.variable} ${outfit.variable} ${ibmPlex.variable} ${notoSinhala.variable} ${notoTamil.variable} h-full`}
     >
-      <head>
-        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
-        <script
+      <body className="flex min-h-full flex-col antialiased">
+        {/* next/script injects these outside React's client reconciliation, so
+            no "script tag while rendering" warning. beforeInteractive puts them
+            in the initial server HTML: the theme script still runs before
+            paint (no theme flash), and the JSON-LD stays crawlable. */}
+        <Script id="theme-init" strategy="beforeInteractive" dangerouslySetInnerHTML={{ __html: themeScript }} />
+        <Script
+          id="ld-json"
           type="application/ld+json"
-          suppressHydrationWarning
+          strategy="beforeInteractive"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
-      </head>
-      <body className="flex min-h-full flex-col antialiased">
         <I18nProvider locale={locale} dict={dict}>
           <ConditionalHeader />
           <main className="flex flex-1 flex-col pb-16 lg:pb-0">{children}</main>

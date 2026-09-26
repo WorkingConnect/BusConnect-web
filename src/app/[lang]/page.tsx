@@ -134,10 +134,10 @@ const ANDROID_PLAY_STORE_URL = "https://play.google.com/store/apps/details?id=lk
 function AppPromo({ dict }: { dict: Dictionary }) {
   return (
     <section className="mx-auto w-full max-w-7xl px-4 pt-8 sm:px-6 lg:px-8">
-      <div className="rounded-3xl bg-brand-soft/70 p-7 dark:bg-brand-soft-dark/30 sm:p-10">
+      <div className="card card-hover p-7 sm:p-10">
         <div className="flex flex-col items-center gap-6 text-center sm:flex-row sm:justify-between sm:gap-8 sm:text-left">
           <div className="flex flex-col items-center gap-4 text-center sm:flex-row sm:text-left">
-            <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-2xl shadow-lg shadow-black/10 sm:h-20 sm:w-20">
+            <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-2xl shadow-md shadow-black/10 sm:h-20 sm:w-20">
               <Image src="/app-icon.png" alt="" fill sizes="80px" className="object-cover" />
             </div>
             <div>
@@ -177,12 +177,12 @@ function AppPromo({ dict }: { dict: Dictionary }) {
 /* ── Feature grid ──────────────────────────────────────────────────────── */
 function Features() {
   const features = [
-    [Armchair, "Real-time seat maps", "Pick your exact seat before you pay."],
-    [ShieldCheck, "Secure payments", "Pay by card, eZ Cash or bank securely."],
-    [Ticket, "Instant e-tickets", "QR e-ticket by SMS the moment you pay."],
-    [MapPinned, "Live bus tracking", "Track your bus with live arrival times."],
+    [Armchair, "Live seat maps", "Held seats update instantly, so nobody double-books."],
+    [ShieldCheck, "Secure payments", "Pay by card or BusConnect wallet, secured by MPGS."],
+    [Ticket, "Instant e-tickets", "QR ticket by SMS and saved in your app."],
+    [MapPinned, "Live bus tracking", "See your bus's live GPS location on the map."],
     [Languages, "Three languages", "Book in English, Sinhala or Tamil."],
-    [RefreshCw, "Easy refunds", "Cancel or reschedule in a tap."],
+    [RefreshCw, "Fair refunds", "Full refund if you cancel 24h or more before departure."],
   ] as const;
 
   return (
