@@ -27,7 +27,6 @@ export function Logo({
           width={width}
           height={height}
           style={{ height, width: "auto" }}
-          priority
         />
       </Link>
     );
@@ -41,7 +40,6 @@ export function Logo({
         width={width}
         height={height}
         style={{ height, width: "auto" }}
-        priority
         className="block dark:hidden"
       />
       <Image
@@ -50,7 +48,6 @@ export function Logo({
         width={width}
         height={height}
         style={{ height, width: "auto" }}
-        priority
         className="hidden dark:block"
       />
     </Link>
