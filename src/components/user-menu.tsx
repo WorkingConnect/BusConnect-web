@@ -1,19 +1,21 @@
 "use client";
 
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Building2, ShieldCheck, LogOut, ChevronDown, UserCircle } from "lucide-react";
 import { useIdentity } from "@/lib/use-identity";
 import { useT, useLocale } from "@/lib/i18n/provider";
 import { localizePath } from "@/lib/i18n/navigation";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+
+// @base-ui/react's dropdown primitive is only needed once we know the
+// visitor is signed in (identity !== null), which is never true during SSR —
+// lazy-loading it means signed-out visitors (the common case for a fresh
+// page load) never download this chunk at all.
+const UserMenuDropdown = dynamic(
+  () => import("./user-menu-dropdown").then((m) => m.UserMenuDropdown),
+  { ssr: false, loading: () => <span className="h-9 w-9 animate-pulse rounded-full bg-muted" /> },
+);
 
 export function UserMenu({
   workspace = "passenger",
@@ -64,67 +66,15 @@ export function UserMenu({
     );
   }
 
-  const initial = (identity.fullName ?? identity.email).charAt(0).toUpperCase();
-
   return (
-    <DropdownMenu open={open} onOpenChange={setOpen}>
-      <DropdownMenuTrigger className="flex items-center gap-1.5 rounded-full border border-border py-1 pl-1 pr-2.5 transition-colors hover:bg-muted">
-        <Avatar avatarUrl={identity.avatarUrl} initial={initial} size={28} />
-        <ChevronDown size={14} className={`text-muted-foreground transition-transform ${open ? "rotate-180" : ""}`} />
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="ui w-64 overflow-hidden rounded-xl p-0">
-        <div className="flex items-center gap-3 border-b border-border p-4">
-          <Avatar avatarUrl={identity.avatarUrl} initial={initial} size={40} />
-          <div className="min-w-0">
-            {identity.fullName && <p className="truncate text-sm font-medium text-foreground">{identity.fullName}</p>}
-            <p className="truncate text-xs text-muted-foreground">{identity.email}</p>
-          </div>
-        </div>
-
-        <div className="p-1.5">
-          {/* Passenger-only routes — not under /operator or /admin at all,
-              so this workspace's own dashboard link (below) is the only
-              sensible entry here. An operator whose application hasn't
-              been approved yet also has no passenger identity to speak of
-              here — profile/tickets only make sense once approved. */}
-          {workspace === "passenger" && !(roles?.isOperator && roles.operatorStatus === "pending") && (
-            <DropdownMenuItem
-              render={<Link href={localizePath(locale, "/profile")} />}
-              className="gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-foreground"
-            >
-              <UserCircle size={16} className="text-muted-foreground" />
-              {t("profile")}
-            </DropdownMenuItem>
-          )}
-          {workspace === "operator" && roles?.isOperator && (
-            <DropdownMenuItem
-              render={<Link href="/operator" />}
-              className="gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-foreground"
-            >
-              <Building2 size={16} className="text-muted-foreground" />
-              {roles.operatorRole === "pilot" ? t("conductorDashboard") : t("operatorDashboard")}
-            </DropdownMenuItem>
-          )}
-          {workspace === "admin" && roles?.isAdmin && (
-            <DropdownMenuItem
-              render={<Link href="/admin" />}
-              className="gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-foreground"
-            >
-              <ShieldCheck size={16} className="text-muted-foreground" />
-              {t("adminDashboard")}
-            </DropdownMenuItem>
-          )}
-        </div>
-
-        <DropdownMenuSeparator />
-        <div className="p-1.5">
-          <DropdownMenuItem variant="destructive" onClick={signOut} className="gap-3 rounded-lg px-3 py-2.5 text-sm font-medium">
-            <LogOut size={16} />
-            {t("signOut")}
-          </DropdownMenuItem>
-        </div>
-      </DropdownMenuContent>
-    </DropdownMenu>
+    <UserMenuDropdown
+      identity={identity}
+      roles={roles}
+      workspace={workspace}
+      open={open}
+      onOpenChange={setOpen}
+      onSignOut={signOut}
+    />
   );
 }
 
