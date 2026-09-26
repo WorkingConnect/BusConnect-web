@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { Star, ArrowRight, ChevronDown } from "lucide-react";
 import { ImageCarousel } from "@/components/image-carousel";
 import type { TripSearchResult } from "@/lib/api";
@@ -44,10 +45,11 @@ function TripCard({ trip }: { trip: TripSearchResult }) {
               style={{ background: "linear-gradient(135deg, #004aad 0%, #062b63 100%)" }}
             >
               {trip.operator_logo_url ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
+                <Image
                   src={trip.operator_logo_url}
                   alt={`${trip.operator_name} logo`}
+                  width={48}
+                  height={48}
                   className="h-12 w-12 rounded-lg border border-white/30 bg-white object-cover"
                 />
               ) : (

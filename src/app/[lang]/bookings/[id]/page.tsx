@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import QRCode from "qrcode";
 import { ArrowLeft, CheckCircle2, TicketCheck, Ban } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
@@ -103,8 +104,7 @@ export default async function BookingPage({
         {booking.trip?.bus?.operator?.name && (
           <div className="mb-4 flex items-center gap-2">
             {booking.trip.bus.operator.logo_url ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
+              <Image
                 src={booking.trip.bus.operator.logo_url}
                 alt=""
                 width={32}

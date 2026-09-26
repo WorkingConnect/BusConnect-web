@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/client';
+import { validateUploadFile } from '@/lib/validate-upload';
 
 /**
  * Uploads go browser -> Supabase Storage directly (not through BusConnect-api)
@@ -13,6 +14,10 @@ import { createClient } from '@/lib/supabase/client';
  * changing their photo) happen far more often than deletes. Public-URL
  * callers get a `?v=` cache-buster appended so browsers/CDNs don't keep
  * serving the pre-overwrite bytes under the now-unchanged URL.
+ *
+ * Every upload's content-type comes from validateUploadFile (sniffed from
+ * the file's actual bytes), not the browser-reported `file.type` — see
+ * validate-upload.ts for why that distinction matters on public buckets.
  */
 
 function withCacheBuster(url: string): string {
@@ -20,22 +25,24 @@ function withCacheBuster(url: string): string {
 }
 
 export async function uploadOperatorLogo(userId: string, file: File): Promise<string> {
+  const contentType = await validateUploadFile(file);
   const supabase = createClient();
   const path = `${userId}/logo`;
   const { error } = await supabase.storage
     .from('operator-logos')
-    .upload(path, file, { upsert: true, contentType: file.type });
+    .upload(path, file, { upsert: true, contentType });
   if (error) throw error;
   return withCacheBuster(supabase.storage.from('operator-logos').getPublicUrl(path).data.publicUrl);
 }
 
 /** Private bucket — returns a storage PATH (not a public URL); viewed later via a signed URL. */
 export async function uploadOperatorIdDocument(userId: string, file: File): Promise<string> {
+  const contentType = await validateUploadFile(file, { allowPdf: true });
   const supabase = createClient();
   const path = `${userId}/id-document`;
   const { error } = await supabase.storage
     .from('operator-documents')
-    .upload(path, file, { upsert: true, contentType: file.type });
+    .upload(path, file, { upsert: true, contentType });
   if (error) throw error;
   return path;
 }
@@ -52,13 +59,14 @@ export async function uploadBusImage(
   kind: string,
   busId?: string,
 ): Promise<string> {
+  const contentType = await validateUploadFile(file);
   const supabase = createClient();
   const path = busId
     ? `${userId}/bus/${busId}/${kind}`
     : `${userId}/${kind}-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
   const { error } = await supabase.storage
     .from('bus-images')
-    .upload(path, file, { upsert: true, contentType: file.type });
+    .upload(path, file, { upsert: true, contentType });
   if (error) throw error;
   return withCacheBuster(supabase.storage.from('bus-images').getPublicUrl(path).data.publicUrl);
 }
@@ -69,11 +77,12 @@ export async function uploadBusImage(
  * it on later edits so a re-upload overwrites in place.
  */
 export async function uploadPilotPhoto(userId: string, file: File, pilotId?: string): Promise<string> {
+  const contentType = await validateUploadFile(file);
   const supabase = createClient();
   const path = pilotId ? `${userId}/pilot/${pilotId}/photo` : `${userId}/photo-${Date.now()}`;
   const { error } = await supabase.storage
     .from('pilot-photos')
-    .upload(path, file, { upsert: true, contentType: file.type });
+    .upload(path, file, { upsert: true, contentType });
   if (error) throw error;
   return path;
 }
@@ -87,23 +96,25 @@ export async function uploadPilotPhoto(userId: string, file: File, pilotId?: str
  * is a financial record worth keeping distinct rather than overwritten.
  */
 export async function uploadPayoutSlip(tripId: string, file: File): Promise<string> {
+  const contentType = await validateUploadFile(file, { allowPdf: true });
   const supabase = createClient();
   const ext = file.name.split('.').pop() ?? 'jpg';
   const path = `${tripId}/slip-${Date.now()}.${ext}`;
   const { error } = await supabase.storage
     .from('payout-slips')
-    .upload(path, file, { upsert: true, contentType: file.type });
+    .upload(path, file, { upsert: true, contentType });
   if (error) throw error;
   return path;
 }
 
 /** Public bucket — a passenger's own profile photo. */
 export async function uploadPassengerPhoto(userId: string, file: File): Promise<string> {
+  const contentType = await validateUploadFile(file);
   const supabase = createClient();
   const path = `${userId}/avatar`;
   const { error } = await supabase.storage
     .from('passenger-photos')
-    .upload(path, file, { upsert: true, contentType: file.type });
+    .upload(path, file, { upsert: true, contentType });
   if (error) throw error;
   return withCacheBuster(supabase.storage.from('passenger-photos').getPublicUrl(path).data.publicUrl);
 }
@@ -114,13 +125,14 @@ export async function uploadPassengerPhoto(userId: string, file: File): Promise<
  * create-vs-edit split as uploadBusImage.
  */
 export async function uploadRouteImage(userId: string, file: File, routeCardId?: string): Promise<string> {
+  const contentType = await validateUploadFile(file);
   const supabase = createClient();
   const path = routeCardId
     ? `${userId}/route/${routeCardId}`
     : `${userId}/route-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
   const { error } = await supabase.storage
     .from('route-images')
-    .upload(path, file, { upsert: true, contentType: file.type });
+    .upload(path, file, { upsert: true, contentType });
   if (error) throw error;
   return withCacheBuster(supabase.storage.from('route-images').getPublicUrl(path).data.publicUrl);
 }
@@ -135,12 +147,13 @@ export async function uploadRouteImage(userId: string, file: File, routeCardId?:
  * deleteHireListingPhoto below instead of relying on overwrite.
  */
 export async function uploadHireListingPhoto(userId: string, file: File): Promise<string> {
+  const contentType = await validateUploadFile(file);
   const supabase = createClient();
   const ext = file.name.split('.').pop() ?? 'jpg';
   const path = `${userId}/${Date.now()}-${Math.random().toString(36).slice(2, 6)}.${ext}`;
   const { error } = await supabase.storage
     .from('bus-hire-photos')
-    .upload(path, file, { upsert: true, contentType: file.type });
+    .upload(path, file, { upsert: true, contentType });
   if (error) throw error;
   return supabase.storage.from('bus-hire-photos').getPublicUrl(path).data.publicUrl;
 }
@@ -167,13 +180,14 @@ export async function deleteHireListingPhoto(url: string): Promise<void> {
  * same create-vs-edit split as uploadBusImage.
  */
 export async function uploadOfferImage(userId: string, file: File, offerId?: string): Promise<string> {
+  const contentType = await validateUploadFile(file);
   const supabase = createClient();
   const path = offerId
     ? `${userId}/offer/${offerId}`
     : `${userId}/offer-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
   const { error } = await supabase.storage
     .from('offer-images')
-    .upload(path, file, { upsert: true, contentType: file.type });
+    .upload(path, file, { upsert: true, contentType });
   if (error) throw error;
   return withCacheBuster(supabase.storage.from('offer-images').getPublicUrl(path).data.publicUrl);
 }

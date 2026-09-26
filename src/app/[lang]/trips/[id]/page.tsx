@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { ArrowLeft, Star, ShieldCheck, MapPin, User } from "lucide-react";
 import {
   getTrip,
@@ -91,10 +92,11 @@ export default async function TripPage({
       <header className="mt-4 overflow-hidden rounded-3xl bg-brand p-6 sm:p-8">
         <div className="flex items-center gap-3 text-white">
           {operator?.logo_url ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
+            <Image
               src={operator.logo_url}
               alt={`${operatorName} logo`}
+              width={48}
+              height={48}
               className="h-12 w-12 shrink-0 rounded-2xl border border-white/30 bg-white object-cover"
             />
           ) : (
@@ -246,10 +248,11 @@ function CrewBadge({ role, member }: { role: string; member: { name: string; pho
   return (
     <div className="flex items-center gap-2.5">
       {member.photoUrl ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
+        <Image
           src={member.photoUrl}
           alt={`${member.name} photo`}
+          width={40}
+          height={40}
           className="h-10 w-10 shrink-0 rounded-full border border-slate-200 object-cover dark:border-zinc-800"
         />
       ) : (

@@ -1,3 +1,4 @@
+import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import {
   getMyRoles,
@@ -13,10 +14,12 @@ import { AdminNav } from "./admin-nav";
 
 // Mirrors operator/(dashboard)/layout.tsx: this is the ONLY thing that
 // actually gates the sidebar chrome — proxy.ts's route guard just checks
-// "is there a session", not "is this session an admin". Without this check
-// any signed-in passenger visiting /admin would see the admin sidebar
-// (with no working links, since the underlying API calls would 403, but
-// the chrome itself shouldn't render at all).
+// "is there a session", not "is this session an admin". A signed-out visitor
+// still falls through to render children, so each admin page's own "sign in"
+// messaging keeps working; but once we've confirmed a session belongs to a
+// non-admin, we redirect away instead of rendering admin page content at all
+// — every admin page's own API calls would 403 anyway, but a single gate
+// here means no page has to get that fail-closed behavior right on its own.
 export default async function AdminDashboardLayout({
   children,
 }: {
@@ -35,9 +38,10 @@ export default async function AdminDashboardLayout({
     } catch (e) {
       void e;
     }
+    if (!isAdmin) redirect("/");
   }
 
-  if (!isAdmin) {
+  if (!session) {
     return <div className="w-full flex-1 px-4 py-10 sm:px-6 lg:px-8">{children}</div>;
   }
 

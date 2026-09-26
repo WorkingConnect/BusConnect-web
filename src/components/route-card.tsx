@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { MapPinned } from "lucide-react";
 import { formatDuration, type PopularRoute } from "@/lib/popular-routes";
 import type { Dictionary } from "@/lib/i18n/dictionaries";
@@ -44,8 +45,15 @@ export function RouteCard({
     >
       <div className="relative">
         {r.imageUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={r.imageUrl} alt={r.name} className="aspect-video w-full object-cover" />
+          <div className="relative aspect-video w-full overflow-hidden">
+            <Image
+              src={r.imageUrl}
+              alt={r.name}
+              fill
+              sizes="(min-width: 1024px) 320px, (min-width: 640px) 45vw, 78vw"
+              className="object-cover"
+            />
+          </div>
         ) : (
           <div className="flex aspect-video w-full items-center justify-center bg-gradient-to-br from-brand to-blue-800">
             <MapPinned size={28} className="text-white/40" />

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import { Tag, X } from "lucide-react";
 import type { Offer, OfferTheme } from "@/lib/offers";
 import { CopyCodeButton } from "./copy-code-button";
@@ -38,8 +39,15 @@ export function OfferCardVisual({
     <div className={`relative overflow-hidden rounded-3xl shadow-sm shadow-black/[0.04] ${className}`}>
       {hasImage ? (
         <>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={offer.imageUrl!} alt={offer.title} className="aspect-4/3 w-full object-cover" />
+          <div className="relative aspect-4/3 w-full">
+            <Image
+              src={offer.imageUrl!}
+              alt={offer.title}
+              fill
+              sizes="(min-width: 640px) 256px, 68vw"
+              className="object-cover"
+            />
+          </div>
           <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-transparent" />
         </>
       ) : (

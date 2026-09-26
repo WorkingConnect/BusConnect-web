@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import { ChevronLeft, ChevronRight, Bus } from "lucide-react";
 
 const AUTO_ADVANCE_MS = 5000;
@@ -36,8 +37,14 @@ export function ImageGallery({ images, title }: { images: string[]; title: strin
 
   return (
     <div className="relative aspect-[16/9] w-full overflow-hidden rounded-2xl bg-slate-100 dark:bg-zinc-800">
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={images[index]} alt={`${title} photo ${index + 1}`} className="h-full w-full object-cover" />
+      <Image
+        src={images[index]}
+        alt={`${title} photo ${index + 1}`}
+        fill
+        sizes="(min-width: 1024px) 800px, 100vw"
+        priority
+        className="object-cover"
+      />
 
       {images.length > 1 && (
         <>

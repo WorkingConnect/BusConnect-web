@@ -70,10 +70,11 @@ export default async function OperatorPage({
             <div>
               <div className="flex items-center gap-3">
                 {profile.logoUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
+                  <Image
                     src={profile.logoUrl}
                     alt={`${profile.name} logo`}
+                    width={48}
+                    height={48}
                     className="h-12 w-12 shrink-0 rounded-2xl border border-border bg-card object-cover"
                   />
                 ) : (

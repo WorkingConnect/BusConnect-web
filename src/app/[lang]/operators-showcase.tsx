@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { ChevronRight, Star } from "lucide-react";
 import { SectionHeading } from "@/components/ui";
 import type { Dictionary } from "@/lib/i18n/dictionaries";
@@ -33,10 +34,15 @@ export function OperatorsShowcase({
               href={localizePath(locale, `/operators/${op.id}`)}
               className="card card-hover flex items-center gap-4 p-5"
             >
-              <span className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-border bg-white dark:bg-zinc-900">
+              <span className="relative flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-border bg-white dark:bg-zinc-900">
                 {op.logoUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={op.logoUrl} alt={`${op.name} logo`} className="h-full w-full object-contain p-1.5" />
+                  <Image
+                    src={op.logoUrl}
+                    alt={`${op.name} logo`}
+                    fill
+                    sizes="56px"
+                    className="object-contain p-1.5"
+                  />
                 ) : (
                   <span className="font-heading text-lg font-bold text-brand dark:text-blue-300">
                     {op.name.slice(0, 1)}

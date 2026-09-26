@@ -120,11 +120,12 @@ export default async function HireListingsPage({
             >
               <div className="relative aspect-square w-32 shrink-0 bg-slate-100 sm:aspect-[4/3] sm:w-48 dark:bg-zinc-800">
                 {listing.images[0] ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
+                  <Image
                     src={listing.images[0]}
                     alt={listing.title}
-                    className="h-full w-full object-cover"
+                    fill
+                    sizes="(min-width: 640px) 192px, 128px"
+                    className="object-cover"
                   />
                 ) : (
                   <div
