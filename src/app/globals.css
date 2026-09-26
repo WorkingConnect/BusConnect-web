@@ -144,14 +144,17 @@
   /* Secondary — Facebook neutral: subtle fill, no brand color */
   .btn-secondary {
     font-family: var(--font-inter), var(--font-sinhala), var(--font-tamil), sans-serif;
-    @apply inline-flex items-center justify-center gap-2 rounded-lg border border-border
+    @apply inline-flex items-center justify-center gap-2 rounded-xl border border-border
       bg-card px-5 py-2.5 text-sm font-medium text-foreground transition-colors duration-300
       hover:bg-muted disabled:cursor-not-allowed disabled:opacity-60;
   }
-  /* Seamless form input — Facebook gray fill on the card surface */
+  /* Seamless form input — gray fill on the card surface. Keeps a hairline
+     resting border (our page bg and input fill are the same gray, so without
+     it a field placed on the page background would blend in); brand ring on
+     focus. */
   .field {
     font-family: var(--font-inter), var(--font-sinhala), var(--font-tamil), sans-serif;
-    @apply w-full rounded-lg border border-border bg-muted px-3.5 py-2.5 text-sm text-foreground
+    @apply w-full rounded-xl border border-border bg-muted px-3.5 py-2.5 text-sm text-foreground
       outline-none transition duration-300 placeholder:text-muted-foreground
       focus:border-transparent focus:ring-2 focus:ring-brand;
   }
@@ -168,8 +171,8 @@
       transition-shadow duration-300 dark:border dark:border-border dark:shadow-none;
   }
   .card-hover {
-    @apply hover:shadow-lg hover:shadow-black/[0.08] dark:hover:bg-muted;
-    transition: box-shadow 0.2s, background-color 0.2s, border-color 0.2s;
+    @apply hover:-translate-y-0.5 hover:shadow-lg hover:shadow-black/[0.08] dark:hover:bg-muted;
+    transition: transform 0.2s, box-shadow 0.2s, background-color 0.2s, border-color 0.2s;
   }
   /* Horizontally swipeable rows (e.g. Popular routes) — native scroll/snap,
      just without the visible scrollbar chrome. */

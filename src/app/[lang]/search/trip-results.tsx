@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { Star, ArrowRight, Bus, ChevronDown } from "lucide-react";
+import { Star, ArrowRight, ChevronDown } from "lucide-react";
 import { ImageCarousel } from "@/components/image-carousel";
 import type { TripSearchResult } from "@/lib/api";
 
@@ -63,14 +63,15 @@ function TripCard({ trip }: { trip: TripSearchResult }) {
         {/* main content */}
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-3">
-            <span className="pill">{trip.bus_type_class.replace("_", " ")}</span>
+            <span className="ui rounded-full bg-brand-soft px-3 py-1.5 text-xs font-semibold text-brand dark:bg-brand-soft-dark dark:text-blue-300">
+              {BUS_CLASS_LABELS[trip.bus_type_class] ?? trip.bus_type_class.replace("_", " ")}
+            </span>
             {trip.booking_closed && (
               <span className="ui rounded-full bg-red-100 px-2.5 py-1 text-xs font-semibold text-red-700 dark:bg-red-950/50 dark:text-red-300">
                 Booking closed
               </span>
             )}
-            <span className="ui flex items-center gap-1.5 text-sm font-medium text-slate-600 dark:text-zinc-400">
-              <Bus size={14} className="shrink-0 text-slate-400 dark:text-zinc-500" />
+            <span className="font-heading flex items-center gap-1.5 text-sm font-semibold text-slate-700 dark:text-zinc-300">
               {trip.operator_name} <span className="text-slate-300 dark:text-zinc-700">·</span>{" "}
               {trip.bus_reg_no}
             </span>

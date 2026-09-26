@@ -1,56 +1,13 @@
 import Link from "next/link";
 import Image from "next/image";
-import {
-  ChevronRight,
-  Star,
-  Armchair,
-  Wifi,
-  Snowflake,
-  Usb,
-  Plug,
-  Tv,
-  Camera,
-  Navigation,
-  Lightbulb,
-  BedDouble,
-  Toilet,
-  Accessibility,
-  Luggage,
-  DoorOpen,
-  Flame,
-  CupSoda,
-  Sparkles,
-  type LucideIcon,
-} from "lucide-react";
+import { ChevronRight, Star } from "lucide-react";
 import { getOperatorProfile } from "@/lib/operators";
 import { formatDuration } from "@/lib/popular-routes";
 import { relativeDateLabel } from "@/components/route-card";
 import { isLocale, defaultLocale, type Locale } from "@/lib/i18n/config";
 import { localizePath } from "@/lib/i18n/navigation";
 import { BUS_CLASSES } from "@/lib/bus-constants";
-
-// Maps the fixed amenity labels operators pick from (see
-// src/lib/bus-constants.ts PREDEFINED_AMENITIES) to an icon. Operators can
-// also type a free-text amenity that won't be a key here — Sparkles covers
-// that case.
-const AMENITY_ICONS: Record<string, LucideIcon> = {
-  "Air Conditioning (AC)": Snowflake,
-  "Wi-Fi": Wifi,
-  "USB Charging": Usb,
-  "Power Outlets": Plug,
-  "Reclining Seats": Armchair,
-  "TV / Entertainment": Tv,
-  CCTV: Camera,
-  "GPS Tracking": Navigation,
-  "Reading Lights": Lightbulb,
-  "Blankets (Sleeper)": BedDouble,
-  Washroom: Toilet,
-  "Wheelchair Accessible": Accessibility,
-  "Luggage Storage": Luggage,
-  Refreshments: CupSoda,
-  "Emergency Exit": DoorOpen,
-  "Fire Extinguisher": Flame,
-};
+import { AMENITY_ICONS, DefaultAmenityIcon } from "@/lib/amenity-icons";
 
 /** "semi_luxury" -> "Semi Luxury", using the same canonical labels as the
  *  operator's own fleet-registration form (src/lib/bus-constants.ts). */
@@ -233,7 +190,7 @@ export default async function OperatorPage({
               </h2>
               <div className="mt-4 flex flex-wrap gap-2">
                 {allAmenities.map((a) => {
-                  const Icon = AMENITY_ICONS[a] ?? Sparkles;
+                  const Icon = AMENITY_ICONS[a] ?? DefaultAmenityIcon;
                   return (
                     <span
                       key={a}
@@ -276,7 +233,7 @@ export default async function OperatorPage({
                     </div>
                     <div className="flex shrink-0 items-center gap-1.5 text-slate-400 dark:text-zinc-600">
                       {f.amenities.slice(0, 4).map((a) => {
-                        const Icon = AMENITY_ICONS[a] ?? Sparkles;
+                        const Icon = AMENITY_ICONS[a] ?? DefaultAmenityIcon;
                         return <Icon key={a} size={15} />;
                       })}
                     </div>
