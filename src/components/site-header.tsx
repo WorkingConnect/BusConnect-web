@@ -3,8 +3,9 @@
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import { useState } from "react";
-import { Menu, X, Search, Route, Ticket, UserCircle, LogOut, Bus } from "lucide-react";
+import { Menu, X, UserCircle, LogOut } from "lucide-react";
 import { Logo } from "./logo";
+import { NavIcon } from "./nav-icon";
 import { ThemeToggle } from "./theme-toggle";
 import { UserMenu, Avatar } from "./user-menu";
 import { LanguageSwitcher } from "./language-switcher";
@@ -16,9 +17,9 @@ import { localizePath } from "@/lib/i18n/navigation";
 // Account section shows it (or "Become an operator") contextually based on
 // the signed-in user's actual role/status, which a fixed public nav link can't do.
 const navItems = [
-  { key: "searchBuses", href: "/", icon: Search },
-  { key: "popularRoutes", href: "/#routes", icon: Route },
-  { key: "hireBus", href: "/hire", icon: Bus },
+  { key: "searchBuses", href: "/", icon: "search" },
+  { key: "popularRoutes", href: "/#routes", icon: "route" },
+  { key: "hireBus", href: "/hire", icon: "bus" },
 ] as const;
 
 export function SiteHeader() {
@@ -30,7 +31,7 @@ export function SiteHeader() {
   const tabs = [
     navItems[0],
     navItems[1],
-    { key: "myTickets", href: "/tickets", icon: Ticket },
+    { key: "myTickets", href: "/tickets", icon: "ticket" },
     navItems[2],
   ] as const;
 
@@ -43,7 +44,7 @@ export function SiteHeader() {
             <Logo href={localizePath(locale, "/")} height={44} />
 
             <nav className="ui hidden items-center gap-1 rounded-full border border-border bg-muted/60 p-1 lg:flex">
-              {tabs.map(({ key, href, icon: Icon }) => {
+              {tabs.map(({ key, href, icon }) => {
                 const localized = localizePath(locale, href);
                 const active = href === "/" ? pathname === localized : pathname.startsWith(localized);
                 return (
@@ -56,7 +57,7 @@ export function SiteHeader() {
                         : "text-muted-foreground hover:text-foreground"
                     }`}
                   >
-                    <Icon size={15} />
+                    <NavIcon icon={icon} size={15} active={active} />
                     {t(key)}
                   </Link>
                 );
@@ -85,10 +86,10 @@ function MobileBottomNav({ onOpenMenu }: { onOpenMenu: () => void }) {
   const t = useT("nav");
   const locale = useLocale();
   const tabs = [
-    { key: "tabSearch", href: "/", icon: Search },
-    { key: "tabRoutes", href: "/#routes", icon: Route },
-    { key: "tabTickets", href: "/tickets", icon: Ticket },
-    { key: "tabHire", href: "/hire", icon: Bus },
+    { key: "tabSearch", href: "/", icon: "search" },
+    { key: "tabRoutes", href: "/#routes", icon: "route" },
+    { key: "tabTickets", href: "/tickets", icon: "ticket" },
+    { key: "tabHire", href: "/hire", icon: "bus" },
   ] as const;
 
   return (
@@ -97,7 +98,7 @@ function MobileBottomNav({ onOpenMenu }: { onOpenMenu: () => void }) {
       aria-label="Primary"
     >
       <div className="grid grid-cols-5">
-        {tabs.map(({ key, href, icon: Icon }) => {
+        {tabs.map(({ key, href, icon }) => {
           const localized = localizePath(locale, href);
           const active = href === "/" ? pathname === localized : pathname.startsWith(localized);
           return (
@@ -108,7 +109,7 @@ function MobileBottomNav({ onOpenMenu }: { onOpenMenu: () => void }) {
                 active ? "text-brand dark:text-blue-400" : "text-muted-foreground"
               }`}
             >
-              <Icon size={20} />
+              <NavIcon icon={icon} size={20} active={active} />
               {t(key)}
             </Link>
           );
@@ -182,14 +183,14 @@ function MobileDrawer({ open, onClose }: { open: boolean; onClose: () => void })
             {t("browse")}
           </p>
           <nav className="mt-2 flex flex-col gap-1">
-            {navItems.map(({ key, href, icon: Icon }) => (
+            {navItems.map(({ key, href, icon }) => (
               <Link
                 key={key}
                 href={localizePath(locale, href)}
                 onClick={onClose}
                 className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-muted"
               >
-                <Icon size={17} className="text-brand dark:text-blue-400" />
+                <NavIcon icon={icon} size={17} />
                 {t(key)}
               </Link>
             ))}
@@ -204,7 +205,7 @@ function MobileDrawer({ open, onClose }: { open: boolean; onClose: () => void })
               onClick={onClose}
               className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-muted"
             >
-              <Ticket size={17} className="text-brand dark:text-blue-400" />
+              <NavIcon icon="ticket" size={17} />
               {t("myTickets")}
             </Link>
             {identity && (

@@ -1,13 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import {
-  Armchair,
-  ShieldCheck,
-  Ticket,
-  MapPinned,
-  Languages,
-  RefreshCw,
-} from "lucide-react";
+import { ThemedIcon } from "@/components/themed-icon";
 import { listLocations } from "@/lib/locations";
 import { listPopularRoutes } from "@/lib/popular-routes";
 import { listActiveOperators } from "@/lib/operators";
@@ -177,23 +170,23 @@ function AppPromo({ dict }: { dict: Dictionary }) {
 /* ── Feature grid ──────────────────────────────────────────────────────── */
 function Features() {
   const features = [
-    [Armchair, "Live seat maps", "Held seats update instantly, so nobody double-books."],
-    [ShieldCheck, "Secure payments", "Pay by card or BusConnect wallet, secured by MPGS."],
-    [Ticket, "Instant e-tickets", "QR ticket by SMS and saved in your app."],
-    [MapPinned, "Live bus tracking", "See your bus's live GPS location on the map."],
-    [Languages, "Three languages", "Book in English, Sinhala or Tamil."],
-    [RefreshCw, "Fair refunds", "Full refund if you cancel 24h or more before departure."],
+    ["live-seat-map", "Live seat maps", "Held seats update instantly, so nobody double-books."],
+    ["secure-refund", "Secure payments", "Pay by card or BusConnect wallet, secured by MPGS."],
+    ["e-ticket", "Instant e-tickets", "QR ticket by SMS and saved in your app."],
+    ["live-tracking", "Live bus tracking", "See your bus's live GPS location on the map."],
+    ["language", "Three languages", "Book in English, Sinhala or Tamil."],
+    ["refund", "Fair refunds", "Full refund if you cancel 24h or more before departure."],
   ] as const;
 
   return (
     <section className="mx-auto w-full max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:py-20">
       <SectionHeading title="Why BusConnect" centered />
       <div className="mt-10 grid grid-cols-2 gap-4 lg:grid-cols-3 lg:gap-5">
-        {features.map(([Icon, title, body]) => (
+        {features.map(([icon, title, body]) => (
           <div key={title} className="card card-hover p-5">
-            <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-brand-soft text-brand dark:bg-brand-soft-dark dark:text-blue-300 sm:h-9 sm:w-9">
-              <Icon size={16} className="sm:hidden" />
-              <Icon size={18} className="hidden sm:block" />
+            <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-brand-soft dark:bg-brand-soft-dark sm:h-9 sm:w-9">
+              <ThemedIcon base={icon} size={16} className="sm:hidden" />
+              <ThemedIcon base={icon} size={18} className="hidden sm:block" />
             </span>
             <h3 className="mt-3 font-heading text-sm font-semibold sm:text-base">{title}</h3>
             <p className="mt-1 text-xs text-slate-600 dark:text-zinc-400 sm:text-sm">{body}</p>
@@ -243,8 +236,8 @@ function PopularRoutes({
 function HowItWorks() {
   const steps = [
     ["Search", "Enter your route and date to see every available bus."],
-    ["Pick your seat", "Choose your exact seat on a live, real-time seat map."],
-    ["Pay securely", "Pay by card, eZ Cash or bank in a few taps."],
+    ["Pick your seat", "Choose your exact seat in real time seat map."],
+    ["Pay securely", "Pay by card or your BusConnect wallet, secured by MPGS."],
     ["Board with QR", "Get your e-ticket instantly and scan it to board."],
   ];
   return (
