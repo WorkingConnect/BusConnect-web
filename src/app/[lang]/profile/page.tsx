@@ -1,9 +1,10 @@
 import Link from "next/link";
 import { Trash2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
-import { getMyProfile, ApiError, type MyProfile } from "@/lib/api";
+import { getMyProfile, getMyCo2Impact, ApiError, type MyProfile, type Co2Impact } from "@/lib/api";
 import { formatPhoneDisplay } from "@/lib/phone";
 import { ProfileForm } from "./profile-form";
+import { Co2ImpactCard } from "./co2-impact-card";
 
 export default async function ProfilePage() {
   const supabase = await createClient();
@@ -27,6 +28,15 @@ export default async function ProfilePage() {
     profile = await getMyProfile(session.access_token);
   } catch (e) {
     error = e instanceof ApiError ? e.message : "Could not reach BusConnect-api. Is it running?";
+  }
+
+  // Best-effort — a hiccup fetching the impact counter shouldn't take down
+  // the whole profile page, it just means the card doesn't render.
+  let impact: Co2Impact | null = null;
+  try {
+    impact = await getMyCo2Impact(session.access_token);
+  } catch {
+    impact = null;
   }
 
   if (error || !profile) {
@@ -63,6 +73,8 @@ export default async function ProfilePage() {
           <ProfileForm profile={profile} />
         </div>
       </div>
+
+      {impact && <Co2ImpactCard impact={impact} travelMode={profile.travel_mode} />}
 
       <Link
         href="/delete-account"

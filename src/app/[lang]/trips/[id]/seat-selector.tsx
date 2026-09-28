@@ -4,8 +4,18 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { Loader2, ArrowRight, ChevronDown } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
-import { createHold, createBooking, ApiError, type SeatLayout, type SeatState, type TripStopTime } from "@/lib/api";
+import {
+  createHold,
+  createBooking,
+  ApiError,
+  type SeatLayout,
+  type SeatState,
+  type TripStopTime,
+  type TravelMode,
+} from "@/lib/api";
 import { layoutToGrid } from "@/lib/seat-layout";
+import { TRAVEL_MODE_OPTIONS } from "@/lib/travel-modes";
+import { TravelModeIcon } from "@/components/travel-mode-icon";
 
 interface Props {
   tripId: string;
@@ -54,6 +64,7 @@ export function SeatSelector(props: Props) {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [genders, setGenders] = useState<Map<string, "male" | "female">>(new Map());
   const [genderPromptSeat, setGenderPromptSeat] = useState<string | null>(null);
+  const [showTravelModePrompt, setShowTravelModePrompt] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const popoverRef = useRef<HTMLDivElement>(null);
@@ -151,9 +162,14 @@ export function SeatSelector(props: Props) {
     setGenderPromptSeat(null);
   }
 
-  async function handleContinue() {
+  function handleContinueClick() {
     setError(null);
     if (selected.size === 0) return;
+    setShowTravelModePrompt(true);
+  }
+
+  async function confirmBooking(travelMode?: TravelMode) {
+    setShowTravelModePrompt(false);
 
     const {
       data: { session },
@@ -173,6 +189,7 @@ export function SeatSelector(props: Props) {
         holdGroup: hold.hold_group,
         fromStopId,
         toStopId,
+        travelMode,
       });
       router.push(`/bookings/${booking.booking_id}`);
     } catch (e) {
@@ -348,7 +365,7 @@ export function SeatSelector(props: Props) {
         </div>
         <button
           type="button"
-          onClick={handleContinue}
+          onClick={handleContinueClick}
           disabled={selected.size === 0 || busy}
           className="btn-primary"
         >
@@ -364,6 +381,48 @@ export function SeatSelector(props: Props) {
         </button>
         </div>
       </div>
+
+      {showTravelModePrompt && (
+        <div
+          className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 sm:items-center sm:p-4"
+          role="dialog"
+          aria-modal="true"
+        >
+          <button
+            type="button"
+            aria-label="Close"
+            onClick={() => setShowTravelModePrompt(false)}
+            className="absolute inset-0"
+          />
+          <div className="relative z-10 w-full rounded-t-3xl bg-card p-5 shadow-2xl sm:w-auto sm:max-w-sm sm:rounded-3xl sm:p-6 lg:max-w-md lg:p-7">
+            <div className="mx-auto mb-3 h-1.5 w-10 rounded-full bg-slate-300 dark:bg-zinc-700 sm:hidden" />
+            <p className="ui text-sm font-semibold text-foreground">If not by bus, you&apos;d usually travel by</p>
+            <p className="ui mt-0.5 text-xs text-slate-500 dark:text-zinc-500">
+              Helps us show how much CO₂ this trip saves. Optional.
+            </p>
+            <div className="mt-4 grid grid-cols-2 gap-2.5">
+              {TRAVEL_MODE_OPTIONS.map((opt) => (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => confirmBooking(opt.value)}
+                  className="ui flex items-center gap-1.5 rounded-xl border border-slate-200 px-3 py-3 text-sm font-medium tracking-tight text-foreground transition-colors hover:border-brand hover:bg-brand-soft hover:text-brand dark:border-zinc-700 dark:hover:border-blue-400 dark:hover:bg-brand-soft-dark dark:hover:text-blue-300"
+                >
+                  <TravelModeIcon icon={opt.icon} size={22} />
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+            <button
+              type="button"
+              onClick={() => confirmBooking(undefined)}
+              className="ui mt-4 w-full text-center text-sm font-medium text-slate-500 hover:text-slate-700 dark:text-zinc-500 dark:hover:text-zinc-300"
+            >
+              Skip
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

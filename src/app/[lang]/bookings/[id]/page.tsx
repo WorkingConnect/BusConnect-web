@@ -1,7 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import QRCode from "qrcode";
-import { ArrowLeft, CheckCircle2, TicketCheck, Ban } from "lucide-react";
+import { ArrowLeft, CheckCircle2, TicketCheck, Ban, Leaf } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { getBooking, ApiError, type Booking } from "@/lib/api";
 import { PayButton } from "./pay-button";
@@ -238,6 +238,16 @@ export default async function BookingPage({
               Ref {ticket.id.slice(0, 8).toUpperCase()} · show this QR to the conductor
             </p>
           </div>
+        </div>
+      )}
+
+      {isConfirmed && Number(booking.co2_saved_kg) > 0 && (
+        <div className="mt-6 flex items-center gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 dark:border-emerald-900/50 dark:bg-emerald-950/40">
+          <Leaf size={18} className="shrink-0 text-emerald-600 dark:text-emerald-400" />
+          <p className="ui text-sm text-emerald-800 dark:text-emerald-300">
+            This trip saves ~<span className="font-semibold">{Number(booking.co2_saved_kg).toFixed(1)} kg</span> of
+            CO₂ vs. your usual ride.
+          </p>
         </div>
       )}
 

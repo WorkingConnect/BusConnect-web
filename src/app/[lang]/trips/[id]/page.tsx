@@ -113,15 +113,15 @@ export default async function TripPage({
             </p>
           </div>
         </div>
-        <div className="ui mt-4 flex flex-wrap gap-2 text-sm">
-          <span className="rounded-lg bg-white/20 px-3 py-1.5 font-medium capitalize text-white">
+        <div className="ui mt-4 flex flex-wrap gap-2">
+          <span className="rounded-full bg-white/20 px-3 py-1.5 text-xs font-semibold capitalize text-white">
             {trip.bus.bus_type.class.replace("_", " ")}
           </span>
-          <span className="rounded-lg bg-white/20 px-3 py-1.5 font-medium text-white">
+          <span className="rounded-full bg-white/20 px-3 py-1.5 text-xs font-semibold text-white">
             Board {boardStop ? formatDateTime(boardStop.scheduled_at ?? trip.depart_at) : formatDateTime(trip.depart_at)}
           </span>
-          <span className="flex items-center gap-1 rounded-lg bg-white/20 px-3 py-1.5 font-medium text-white">
-            <Star size={13} className="fill-amber-300 text-amber-300" />
+          <span className="flex items-center gap-1 rounded-full bg-white/20 px-3 py-1.5 text-xs font-semibold text-white">
+            <Star size={12} className="fill-amber-300 text-amber-300" />
             {(operator?.rating ?? 0).toFixed(1)}
           </span>
         </div>
