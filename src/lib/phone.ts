@@ -17,6 +17,13 @@ export function toE164(localDigits: string): string {
   return `${PHONE_COUNTRY_CODE}${localDigits.replace(/\D/g, '')}`;
 }
 
+/** A Sri Lankan mobile number, stripped of the +94 prefix, is always 9
+ *  digits starting with 7 (all mobile prefixes — 70/71/72/74/75/76/77/78 —
+ *  start with 7; 1-6 and 9 are landline area codes, not mobile). */
+export function isValidLocalMobile(localDigits: string): boolean {
+  return /^7\d{8}$/.test(localDigits);
+}
+
 /** Formats a stored phone number for display, grouped for readability
  *  ("+94 76 467 8229") — Supabase stores it as E.164 digits only (no "+" or
  *  spacing), so a raw display would silently drop the country-code prefix

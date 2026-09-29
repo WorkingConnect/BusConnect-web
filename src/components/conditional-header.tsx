@@ -18,7 +18,11 @@ export async function ConditionalHeader() {
 
   // Login pages are a standalone centered card + logo, no chrome at all —
   // not even the workspace header (there's nothing to navigate to yet).
-  if (path === "/admin/login" || path === "/operator/login") return null;
+  // Same for the operator application wizard, which is its own full-height
+  // two-panel layout (see app/operator/apply/page.tsx) — a workspace header
+  // on top would eat into that full-screen split for someone who isn't an
+  // operator yet anyway.
+  if (path === "/admin/login" || path === "/operator/login" || path === "/operator/apply") return null;
 
   if (path === "/admin" || path.startsWith("/admin/")) {
     return <WorkspaceHeader homeHref="/admin" workspace="admin" />;

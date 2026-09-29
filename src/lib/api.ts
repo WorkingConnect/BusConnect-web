@@ -855,7 +855,7 @@ export interface ApplyOperatorInput {
   mobileNo: string;
   address: string;
   logoUrl: string;
-  idDocumentPath: string;
+  idDocumentPath?: string;
 }
 
 export function applyAsOperator(accessToken: string, input: ApplyOperatorInput) {

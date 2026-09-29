@@ -44,7 +44,15 @@ export function OperatorFooterLink() {
 
   return (
     <li>
-      <Link href="/operator/apply" className="transition-colors hover:text-foreground">
+      {/* Opens in a new tab — this is a context switch away from whatever the
+       *  visitor was browsing (a search, route results), so it shouldn't
+       *  cost them that page. */}
+      <Link
+        href="/operator/apply"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="transition-colors hover:text-foreground"
+      >
         {t("becomeOperator")}
       </Link>
     </li>

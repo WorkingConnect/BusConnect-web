@@ -27,12 +27,12 @@ export function OperatorsShowcase({
       {operators.length === 0 ? (
         <p className="ui mt-9 text-sm text-slate-500 dark:text-zinc-500">{dict.home.noOperators}</p>
       ) : (
-        <div className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="scrollbar-none -mx-4 mt-10 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-2 sm:mx-0 sm:grid sm:snap-none sm:grid-cols-2 sm:overflow-visible sm:px-0 sm:pb-0 lg:grid-cols-3">
           {operators.map((op) => (
             <Link
               key={op.id}
               href={localizePath(locale, `/operators/${op.id}`)}
-              className="card card-hover flex items-center gap-4 p-5"
+              className="card card-hover flex w-[70vw] shrink-0 snap-start items-center gap-4 p-5 sm:w-auto sm:shrink"
             >
               <span className="relative flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-border bg-white dark:bg-zinc-900">
                 {op.logoUrl ? (
