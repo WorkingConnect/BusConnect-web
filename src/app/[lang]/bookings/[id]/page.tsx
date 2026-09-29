@@ -1,12 +1,21 @@
 import Link from "next/link";
 import Image from "next/image";
 import QRCode from "qrcode";
-import { ArrowLeft, CheckCircle2, TicketCheck, Ban, Leaf } from "lucide-react";
+import { ArrowLeft, CheckCircle2, Ban, Leaf } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { getBooking, ApiError, type Booking } from "@/lib/api";
+import { ThemedIcon } from "@/components/themed-icon";
+import { CopyCodeButton } from "@/components/copy-code-button";
 import { PayButton } from "./pay-button";
 import { HoldTimer } from "./hold-timer";
 import { PromoCodeForm } from "./promo-code-form";
+
+const STATUS_PILL: Record<string, string> = {
+  confirmed: "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300",
+  pending: "bg-amber-100 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300",
+  reserved_unpaid: "bg-amber-100 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300",
+  cancelled: "bg-slate-100 text-slate-600 dark:bg-zinc-800 dark:text-zinc-400",
+};
 
 export default async function BookingPage({
   params,
@@ -84,10 +93,11 @@ export default async function BookingPage({
         })
       : null;
 
+  const operatorName = booking.trip?.bus?.operator?.name;
+
   return (
     <div className="mx-auto w-full max-w-lg px-4 py-10 sm:px-6 lg:px-8">
       <h1 className="font-heading text-2xl font-bold tracking-tight">Your booking</h1>
-      <p className="ui mt-1 text-sm text-slate-500 dark:text-zinc-400">Ref {booking.id}</p>
 
       {paid && !isConfirmed && (
         <p className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800 dark:border-amber-900/50 dark:bg-amber-950/40 dark:text-amber-300">
@@ -100,74 +110,107 @@ export default async function BookingPage({
         </p>
       )}
 
-      <div className="card mt-6 p-6">
-        {booking.trip?.bus?.operator?.name && (
-          <div className="mb-4 flex items-center gap-2">
-            {booking.trip.bus.operator.logo_url ? (
-              <Image
-                src={booking.trip.bus.operator.logo_url}
-                alt=""
-                width={32}
-                height={32}
-                className="rounded-lg object-cover"
-              />
+      {/* One ticket-stub card — booking details and the e-Ticket used to be
+       *  two separate cards; merging them (with a perforated divider where
+       *  the QR ticket begins) reads as a single boarding pass instead of a
+       *  receipt followed by an unrelated QR code. */}
+      <div className="card mt-6 overflow-hidden">
+        <div className="p-6">
+          <div className="flex items-center justify-between gap-3">
+            {operatorName ? (
+              <div className="flex min-w-0 items-center gap-2">
+                {booking.trip?.bus?.operator?.logo_url ? (
+                  <Image
+                    src={booking.trip.bus.operator.logo_url}
+                    alt=""
+                    width={32}
+                    height={32}
+                    className="h-8 w-8 shrink-0 rounded-lg object-cover"
+                  />
+                ) : (
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-brand text-xs font-bold text-white">
+                    {operatorName.slice(0, 1)}
+                  </span>
+                )}
+                <p className="font-heading truncate font-semibold">{operatorName}</p>
+              </div>
             ) : (
-              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand text-xs font-bold text-white">
-                {booking.trip.bus.operator.name.slice(0, 1)}
-              </span>
+              <span />
             )}
-            <p className="font-heading font-semibold">{booking.trip.bus.operator.name}</p>
+            <span
+              className={`ui flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium capitalize ${
+                STATUS_PILL[booking.status] ?? "bg-slate-100 text-slate-600 dark:bg-zinc-800 dark:text-zinc-400"
+              }`}
+            >
+              {isConfirmed && <CheckCircle2 size={12} />}
+              {booking.status.replace("_", " ")}
+            </span>
           </div>
-        )}
 
-        {(booking.from_stop?.location?.name_en || booking.to_stop?.location?.name_en) && (
-          <div className="mb-4 flex items-center justify-between gap-3">
+          {(booking.from_stop?.location?.name_en || booking.to_stop?.location?.name_en) && (
+            <div className="mt-4 flex items-center justify-between gap-3">
+              <div>
+                <p className="ui text-[11px] text-slate-500 dark:text-zinc-400">From</p>
+                <p className="font-semibold">{booking.from_stop?.location?.name_en ?? "—"}</p>
+              </div>
+              <div className="h-px flex-1 border-t border-dashed border-slate-300 dark:border-zinc-700" />
+              <ArrowLeft size={14} className="rotate-180 shrink-0 text-brand dark:text-blue-400" />
+              <div className="h-px flex-1 border-t border-dashed border-slate-300 dark:border-zinc-700" />
+              <div className="text-right">
+                <p className="ui text-[11px] text-slate-500 dark:text-zinc-400">To</p>
+                <p className="font-semibold">{booking.to_stop?.location?.name_en ?? "—"}</p>
+              </div>
+            </div>
+          )}
+
+          {/* Highlighted — same treatment as the tickets list: the things a
+           *  passenger actually checks (seats, when, reference) get a
+           *  distinct surface instead of blending into a plain list. */}
+          <dl className="ui mt-4 grid grid-cols-2 gap-x-4 gap-y-3 rounded-xl bg-slate-50 p-4 text-sm dark:bg-zinc-900/60">
             <div>
-              <p className="ui text-[11px] text-slate-500 dark:text-zinc-400">From</p>
-              <p className="font-semibold">{booking.from_stop?.location?.name_en ?? "—"}</p>
+              <dt className="text-slate-500 dark:text-zinc-400">Seats</dt>
+              <dd className="mt-0.5 font-semibold text-slate-900 dark:text-white">{booking.seats.join(", ")}</dd>
             </div>
-            <div className="h-px flex-1 border-t border-dashed border-slate-300 dark:border-zinc-700" />
-            <ArrowLeft size={14} className="rotate-180 shrink-0 text-brand dark:text-blue-400" />
-            <div className="h-px flex-1 border-t border-dashed border-slate-300 dark:border-zinc-700" />
-            <div className="text-right">
-              <p className="ui text-[11px] text-slate-500 dark:text-zinc-400">To</p>
-              <p className="font-semibold">{booking.to_stop?.location?.name_en ?? "—"}</p>
+            {booking.trip?.depart_at && (
+              <div>
+                <dt className="text-slate-500 dark:text-zinc-400">Departs</dt>
+                <dd className="mt-0.5 font-semibold text-slate-900 dark:text-white">
+                  {new Date(booking.trip.depart_at).toLocaleString("en-LK", {
+                    day: "numeric",
+                    month: "short",
+                    year: "numeric",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
+                </dd>
+              </div>
+            )}
+            <div>
+              <dt className="text-slate-500 dark:text-zinc-400">Reference</dt>
+              <dd className="mt-0.5 font-semibold text-slate-900 dark:text-white">
+                {booking.id.slice(0, 8).toUpperCase()}
+              </dd>
             </div>
-          </div>
-        )}
-
-        <dl className="flex flex-col gap-3 border-t border-slate-200 pt-4 text-sm dark:border-zinc-800">
-          <div className="flex justify-between">
-            <dt className="ui text-slate-500 dark:text-zinc-400">Seats</dt>
-            <dd className="font-semibold">{booking.seats.join(", ")}</dd>
-          </div>
-          {booking.trip?.depart_at && (
-            <div className="flex justify-between">
-              <dt className="ui text-slate-500 dark:text-zinc-400">Departs</dt>
-              <dd className="font-semibold">
-                {new Date(booking.trip.depart_at).toLocaleString("en-LK", {
-                  day: "numeric",
-                  month: "short",
-                  year: "numeric",
-                  hour: "2-digit",
-                  minute: "2-digit",
+            <div>
+              <dt className="text-slate-500 dark:text-zinc-400">{isPayable ? "Amount due" : "Amount"}</dt>
+              <dd className="mt-0.5 font-heading font-bold text-brand dark:text-blue-400">
+                LKR{" "}
+                {(isPayable ? totalWithFee : (paidAmount ?? Number(booking.amount))).toLocaleString("en-LK", {
+                  maximumFractionDigits: 2,
                 })}
               </dd>
             </div>
-          )}
-          <div className="flex justify-between">
-            <dt className="ui text-slate-500 dark:text-zinc-400">Reference</dt>
-            <dd className="font-semibold">{booking.id.slice(0, 8).toUpperCase()}</dd>
-          </div>
-          {isPayable ? (
-            <>
+          </dl>
+
+          {isPayable && (
+            <dl className="ui mt-4 flex flex-col gap-2 border-t border-slate-200 pt-4 text-sm dark:border-zinc-800">
               <div className="flex justify-between">
-                <dt className="ui text-slate-500 dark:text-zinc-400">Subtotal</dt>
+                <dt className="text-slate-500 dark:text-zinc-400">Subtotal</dt>
                 <dd>LKR {Number(booking.amount).toLocaleString("en-LK")}</dd>
               </div>
               {discountAmount > 0 && (
                 <div className="flex justify-between">
-                  <dt className="ui text-slate-500 dark:text-zinc-400">
+                  <dt className="text-slate-500 dark:text-zinc-400">
                     Discount{booking.offer?.code ? ` (${booking.offer.code})` : ""}
                   </dt>
                   <dd className="text-emerald-600 dark:text-emerald-400">
@@ -176,7 +219,7 @@ export default async function BookingPage({
                 </div>
               )}
               <div className="flex justify-between">
-                <dt className="ui text-slate-500 dark:text-zinc-400">Convenience fee ({convenienceFeePct}%)</dt>
+                <dt className="text-slate-500 dark:text-zinc-400">Convenience fee ({convenienceFeePct}%)</dt>
                 <dd>
                   LKR{" "}
                   {(subtotalAfterDiscount * (convenienceFeePct / 100)).toLocaleString("en-LK", {
@@ -184,72 +227,61 @@ export default async function BookingPage({
                   })}
                 </dd>
               </div>
-              <div className="flex justify-between border-t border-slate-200 pt-3 dark:border-zinc-800">
-                <dt className="ui font-semibold text-slate-700 dark:text-zinc-300">Amount due</dt>
-                <dd className="font-heading font-bold text-brand dark:text-blue-400">
-                  LKR {totalWithFee.toLocaleString("en-LK", { maximumFractionDigits: 2 })}
-                </dd>
-              </div>
-            </>
-          ) : (
-            <div className="flex justify-between">
-              <dt className="ui text-slate-500 dark:text-zinc-400">Amount</dt>
-              <dd className="font-heading font-bold text-brand dark:text-blue-400">
-                LKR {(paidAmount ?? Number(booking.amount)).toLocaleString("en-LK", {
-                  maximumFractionDigits: 2,
-                })}
-              </dd>
+            </dl>
+          )}
+
+          {isConfirmed && Number(booking.co2_saved_kg) > 0 && (
+            <div className="mt-4 flex items-center gap-2 text-sm text-emerald-700 dark:text-emerald-400">
+              <Leaf size={15} className="shrink-0" />
+              <p className="ui">
+                Saves ~<span className="font-semibold">{Number(booking.co2_saved_kg).toFixed(1)} kg</span> of CO₂ vs.
+                your usual ride.
+              </p>
             </div>
           )}
-          <div className="flex justify-between">
-            <dt className="ui text-slate-500 dark:text-zinc-400">Status</dt>
-            <dd
-              className={
-                isConfirmed
-                  ? "flex items-center gap-1 font-semibold text-emerald-600 dark:text-emerald-400"
-                  : "font-semibold capitalize"
-              }
-            >
-              {isConfirmed && <CheckCircle2 size={15} />}
-              {booking.status.replace("_", " ")}
-            </dd>
-          </div>
-        </dl>
+        </div>
+
+        {isConfirmed && ticket && qrDataUrl && (
+          <>
+            {/* Perforated divider — a dashed line with semicircle cutouts
+             *  colored to match the page background, punched into the
+             *  card's edges, so the QR half reads as the "tear here" stub
+             *  of the same ticket rather than a separate box. */}
+            <div className="relative h-0">
+              <div className="absolute -left-3 top-0 h-6 w-6 -translate-y-1/2 rounded-full bg-background" />
+              <div className="absolute -right-3 top-0 h-6 w-6 -translate-y-1/2 rounded-full bg-background" />
+              <div className="absolute inset-x-6 top-0 -translate-y-1/2 border-t-2 border-dashed border-slate-200 dark:border-zinc-800" />
+            </div>
+
+            <div className="flex flex-col items-center gap-3 bg-slate-50 p-6 dark:bg-zinc-900/40">
+              <p className="ui flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-zinc-400">
+                <ThemedIcon base="ticket" size={14} /> e-Ticket · scan to board
+              </p>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={qrDataUrl}
+                alt="Boarding QR code"
+                width={200}
+                height={200}
+                className="rounded-xl bg-white p-2"
+              />
+              <p className="ui text-center text-xs text-slate-500 dark:text-zinc-400">
+                Show this QR to the conductor
+              </p>
+              <div className="ui flex items-center gap-1.5 text-[11px] text-slate-400 dark:text-zinc-500">
+                <span className="font-mono">Booking ID: {booking.id}</span>
+                <CopyCodeButton
+                  code={booking.id}
+                  label="Copy"
+                  copiedLabel="Copied"
+                  iconSize={11}
+                  className="inline-flex shrink-0 items-center gap-1 text-[11px] font-medium text-brand dark:text-blue-400"
+                />
+              </div>
+            </div>
+          </>
+        )}
       </div>
-
-      {isConfirmed && ticket && qrDataUrl && (
-        <div className="mt-6 overflow-hidden rounded-2xl border border-emerald-200 bg-emerald-50 dark:border-emerald-900/50 dark:bg-emerald-950/40">
-          <div className="flex items-center gap-2 border-b border-emerald-200 px-5 py-3 dark:border-emerald-900/50">
-            <TicketCheck size={18} className="text-emerald-600 dark:text-emerald-400" />
-            <p className="font-heading font-semibold text-emerald-800 dark:text-emerald-300">
-              e-Ticket · scan to board
-            </p>
-          </div>
-          <div className="flex flex-col items-center gap-3 p-6">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={qrDataUrl}
-              alt="Boarding QR code"
-              width={200}
-              height={200}
-              className="rounded-xl bg-white p-2"
-            />
-            <p className="ui text-center text-xs text-emerald-700 dark:text-emerald-400/90">
-              Ref {ticket.id.slice(0, 8).toUpperCase()} · show this QR to the conductor
-            </p>
-          </div>
-        </div>
-      )}
-
-      {isConfirmed && Number(booking.co2_saved_kg) > 0 && (
-        <div className="mt-6 flex items-center gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 dark:border-emerald-900/50 dark:bg-emerald-950/40">
-          <Leaf size={18} className="shrink-0 text-emerald-600 dark:text-emerald-400" />
-          <p className="ui text-sm text-emerald-800 dark:text-emerald-300">
-            This trip saves ~<span className="font-semibold">{Number(booking.co2_saved_kg).toFixed(1)} kg</span> of
-            CO₂ vs. your usual ride.
-          </p>
-        </div>
-      )}
 
       {isCancelled && latestRefund && (
         <div className="mt-6 flex items-start gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-5 text-sm dark:border-zinc-800 dark:bg-zinc-900">
@@ -282,13 +314,6 @@ export default async function BookingPage({
           <PayButton bookingId={booking.id} holdExpiresAt={booking.holds?.[0]?.expires_at} />
         </div>
       )}
-
-      <Link
-        href="/"
-        className="ui mt-6 inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 transition-colors hover:text-slate-900 dark:text-zinc-400 dark:hover:text-white"
-      >
-        <ArrowLeft size={15} /> Back to search
-      </Link>
     </div>
   );
 }

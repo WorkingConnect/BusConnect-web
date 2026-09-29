@@ -8,11 +8,13 @@ export function CopyCodeButton({
   label,
   copiedLabel,
   className = "btn-primary w-full rounded-full py-3.5 text-base sm:w-auto sm:px-10",
+  iconSize = 18,
 }: {
   code: string;
   label: string;
   copiedLabel: string;
   className?: string;
+  iconSize?: number;
 }) {
   const [copied, setCopied] = useState(false);
 
@@ -28,7 +30,7 @@ export function CopyCodeButton({
 
   return (
     <button type="button" onClick={copy} className={className}>
-      {copied ? <Check size={18} /> : <Copy size={18} />}
+      {copied ? <Check size={iconSize} /> : <Copy size={iconSize} />}
       {copied ? copiedLabel : label}
     </button>
   );
