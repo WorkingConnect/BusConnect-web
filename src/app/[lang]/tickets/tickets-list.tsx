@@ -1,11 +1,14 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useState } from "react";
-import { Bus, CalendarDays, CheckCircle2, ChevronDown, Loader2, MapPin, QrCode, Trash2 } from "lucide-react";
+import { CheckCircle2, ChevronDown, Loader2, QrCode, Trash2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { hideBooking, ApiError } from "@/lib/api";
 import { RateTripButton } from "./rate-trip-button";
+import { ThemedIcon } from "@/components/themed-icon";
+import { BUS_CLASSES } from "@/lib/bus-constants";
 
 export interface TicketBooking {
   id: string;
@@ -168,34 +171,60 @@ function TicketCard({ b, t, onDeleted }: { b: TicketBooking; t: Tab; onDeleted: 
     }
   }
 
+  const busClassLabel = b.busClass
+    ? (BUS_CLASSES.find((c) => c.value === b.busClass)?.label ?? b.busClass.replace("_", " "))
+    : null;
+
   return (
     <div className="card overflow-hidden p-5">
-      <div className="flex flex-wrap items-center gap-2">
-        <span className={`ui rounded-full px-2.5 py-0.5 text-xs font-semibold ${STATUS_BADGE[t]}`}>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <h3 className="font-heading text-lg font-bold tracking-tight">{b.routeName ?? b.operatorName}</h3>
+        <span className={`ui shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold ${STATUS_BADGE[t]}`}>
           {STATUS_LABEL[t]}
         </span>
-        {b.busClass && (
-          <span className="ui rounded-full bg-brand-soft px-2.5 py-0.5 text-xs font-semibold uppercase tracking-wide text-brand dark:bg-brand-soft-dark dark:text-blue-300">
-            {b.busClass.replace("_", " ")}
-          </span>
-        )}
-        {boarded && (
-          <span className="ui flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-semibold text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300">
-            <CheckCircle2 size={12} /> Boarded
+      </div>
+
+      {boarded && (
+        <span className="ui mt-2 flex w-fit items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-semibold text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300">
+          <CheckCircle2 size={12} /> Boarded
+        </span>
+      )}
+
+      {/* Highlighted — this is the one thing a passenger checks at a glance
+       *  (when, and which bus), so it gets a distinct surface + bold text
+       *  instead of blending into the muted body copy around it. */}
+      <div className="ui mt-3 flex flex-col gap-1.5 rounded-xl bg-slate-50 p-3 text-sm font-semibold text-slate-800 dark:bg-zinc-900/60 dark:text-zinc-100">
+        <span className="flex items-center gap-1.5">
+          <ThemedIcon base="date" size={14} /> {dateTime(b.departAt)}
+        </span>
+        <span className="flex items-center gap-1.5">
+          {b.operatorLogo ? (
+            <Image
+              src={b.operatorLogo}
+              alt=""
+              width={16}
+              height={16}
+              className="h-4 w-4 shrink-0 rounded object-cover"
+            />
+          ) : (
+            <ThemedIcon base="bus-icon" size={14} />
+          )}
+          {b.operatorName}
+        </span>
+        {b.regNo && (
+          <span className="flex items-center gap-2">
+            <span className="flex items-center gap-1.5">
+              <ThemedIcon base="bus-icon" size={14} />
+              {b.regNo}
+            </span>
+            {busClassLabel && (
+              <span className="ui rounded-md bg-white px-2 py-0.5 text-[11px] font-semibold normal-case tracking-normal text-slate-600 dark:bg-zinc-800 dark:text-zinc-300">
+                {busClassLabel}
+              </span>
+            )}
           </span>
         )}
       </div>
-
-      <h3 className="mt-2.5 font-heading text-lg font-bold tracking-tight">{b.routeName ?? b.operatorName}</h3>
-      <p className="ui mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-slate-500 dark:text-zinc-400">
-        <span className="flex items-center gap-1.5">
-          <CalendarDays size={13} /> {dateTime(b.departAt)}
-        </span>
-        <span className="flex items-center gap-1.5">
-          <Bus size={13} /> {b.operatorName}
-          {b.regNo ? ` · ${b.regNo}` : ""}
-        </span>
-      </p>
 
       {/* stats grid */}
       <dl className="ui mt-4 grid grid-cols-2 gap-x-4 gap-y-3 border-t border-slate-200 pt-4 sm:grid-cols-4 dark:border-zinc-800">
@@ -284,8 +313,8 @@ function TicketCard({ b, t, onDeleted }: { b: TicketBooking; t: Tab; onDeleted: 
                 </div>
               )}
             </div>
-            <p className="ui mt-3 flex items-center gap-1.5 text-center text-xs text-slate-500 dark:text-zinc-500">
-              <MapPin size={12} /> Show this at boarding · covers all {b.seats.length} seat
+            <p className="ui mt-3 text-center text-xs text-slate-500 dark:text-zinc-500">
+              Show this at boarding · covers all {b.seats.length} seat
               {b.seats.length === 1 ? "" : "s"}
             </p>
           </div>
