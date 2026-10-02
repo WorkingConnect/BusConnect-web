@@ -70,6 +70,7 @@ interface EditorState {
   operatorIds: string[];
   stops: EditorStop[];
   path: [number, number][] | null; // [lng,lat] chosen/saved road path
+  mode: "reserved" | "onboard";
 }
 
 function emptyStop(): EditorStop {
@@ -102,6 +103,7 @@ function editorFromRoute(r: AdminRoute): EditorState {
       isWaypoint: s.is_waypoint,
     })),
     path: r.path?.coordinates ?? null,
+    mode: r.mode,
   };
 }
 
@@ -196,6 +198,7 @@ export default function AdminRoutesPage() {
                 operatorIds: [],
                 stops: [emptyStop(), emptyStop()],
                 path: null,
+                mode: "reserved",
               })
             }
             className="btn-primary shrink-0"
@@ -246,7 +249,14 @@ export default function AdminRoutesPage() {
                 )}
                 <div className="flex flex-1 items-start justify-between gap-3">
                   <div className="min-w-0">
-                    <p className="font-medium">{r.name}</p>
+                    <p className="flex items-center gap-2 font-medium">
+                      {r.name}
+                      {r.mode === "onboard" && (
+                        <span className="ui rounded-full bg-brand-soft px-2 py-0.5 text-[11px] font-semibold text-brand dark:bg-brand-soft-dark dark:text-blue-300">
+                          Onboard
+                        </span>
+                      )}
+                    </p>
                     <p className="ui mt-1 text-sm text-slate-500 dark:text-zinc-400">
                       {visible.map((s) => s.name ?? "—").join("  →  ")}
                     </p>
@@ -572,6 +582,7 @@ function RouteEditor({
         imageUrl: editor.imageUrl,
         routeCardId: editor.routeCardId,
         operatorIds: editor.operatorIds,
+        mode: editor.mode,
       };
       if (editor.id) await updateAdminRoute(token, editor.id, body);
       else await createAdminRoute(token, body);
@@ -784,6 +795,31 @@ function RouteEditor({
             <p className="text-sm font-medium">{editor.name}</p>
           </div>
         )}
+      </div>
+
+      <div>
+        <p className="ui text-sm font-semibold text-slate-900 dark:text-white">Route mode</p>
+        <p className="ui mt-0.5 text-xs text-slate-500 dark:text-zinc-400">
+          Reserved routes use the normal seat-booking flow. Onboard routes have no seat map —
+          passengers pay the conductor on board by scanning their wallet QR instead of booking in
+          advance.
+        </p>
+        <div className="mt-2 inline-flex rounded-lg border border-slate-200 p-0.5 dark:border-zinc-800">
+          {(["reserved", "onboard"] as const).map((m) => (
+            <button
+              key={m}
+              type="button"
+              onClick={() => setEditor({ ...editor, mode: m })}
+              className={`ui rounded-md px-3 py-1.5 text-xs font-semibold transition-colors ${
+                editor.mode === m
+                  ? "bg-brand text-white"
+                  : "text-slate-600 hover:text-slate-900 dark:text-zinc-400 dark:hover:text-white"
+              }`}
+            >
+              {m === "reserved" ? "Reserved (seat booking)" : "Onboard (city bus, pay by QR)"}
+            </button>
+          ))}
+        </div>
       </div>
 
       <div>

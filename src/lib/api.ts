@@ -1359,6 +1359,9 @@ export interface AdminRoute {
   route_card_id: string | null;
   /** Operators this route is restricted to — empty means unrestricted (every operator can use it). */
   operator_ids: string[];
+  /** 'reserved': normal seat-booking product. 'onboard': unreserved city-bus
+   *  route — no seat map, fare paid onboard via wallet QR. */
+  mode: "reserved" | "onboard";
 }
 
 /** A shared name+image template a route can link to, so physically different
@@ -1833,6 +1836,8 @@ export interface UpsertRouteInput {
   routeCardId?: string | null;
   /** Operators to restrict this route to. Omit/empty to leave it unrestricted (every operator can use it). */
   operatorIds?: string[];
+  /** 'reserved' (default) or 'onboard' — see AdminRoute.mode. */
+  mode?: "reserved" | "onboard";
 }
 
 export function createAdminRoute(accessToken: string, body: UpsertRouteInput) {
