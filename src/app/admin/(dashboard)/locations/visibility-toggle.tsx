@@ -39,7 +39,7 @@ export function VisibilityToggle({ locationId, isPublic }: { locationId: string;
         className={`ui flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-semibold transition-colors disabled:opacity-60 ${
           isPublic
             ? "bg-emerald-100 text-emerald-700 hover:bg-emerald-200 dark:bg-emerald-950/50 dark:text-emerald-300 dark:hover:bg-emerald-950"
-            : "bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-700"
+            : "bg-muted text-muted-foreground hover:bg-border"
         }`}
       >
         {busy ? (

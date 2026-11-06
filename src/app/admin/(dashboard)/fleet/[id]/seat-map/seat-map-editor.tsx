@@ -146,7 +146,7 @@ export function SeatMapEditor({
     <div>
       {/* templates */}
       <div>
-        <p className="ui text-xs font-semibold uppercase tracking-wide text-slate-400 dark:text-zinc-600">
+        <p className="ui text-xs font-semibold uppercase tracking-wide text-muted-foreground">
           Draft templates
         </p>
         <div className="mt-2 flex flex-wrap gap-2">
@@ -155,7 +155,7 @@ export function SeatMapEditor({
               key={t.id}
               type="button"
               onClick={() => applyTemplate(t.style, t.seatCount)}
-              className="ui rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-600 transition-colors hover:border-brand hover:text-brand dark:border-zinc-700 dark:text-zinc-400 dark:hover:border-blue-400 dark:hover:text-blue-300"
+              className="ui rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:border-brand hover:text-brand"
             >
               {t.label}
             </button>
@@ -163,7 +163,7 @@ export function SeatMapEditor({
           <button
             type="button"
             onClick={resetToOriginal}
-            className="ui flex items-center gap-1.5 rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-600 transition-colors hover:bg-slate-50 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-900"
+            className="ui flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted"
           >
             <RotateCcw size={12} /> Operator&apos;s original
           </button>
@@ -172,18 +172,18 @@ export function SeatMapEditor({
 
       {/* editor */}
       <div className="mt-6">
-        <p className="ui text-xs font-semibold uppercase tracking-wide text-slate-400 dark:text-zinc-600">
+        <p className="ui text-xs font-semibold uppercase tracking-wide text-muted-foreground">
           Edit layout
         </p>
-        <p className="ui mt-1 text-xs text-slate-500 dark:text-zinc-500">
+        <p className="ui mt-1 text-xs text-muted-foreground">
           Click a seat to rename it, the trash icon to remove it, a blank slot to add a seat, drag a seat
           onto another slot to swap them, and use the row controls to add or remove rows.
         </p>
 
-        <div className="mt-4 flex flex-col items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 p-5 dark:border-zinc-800 dark:bg-zinc-900/40">
+        <div className="mt-4 flex flex-col items-center gap-2 rounded-xl border border-border bg-muted p-5">
           {grid.map((row, r) => (
             <div key={r} className="flex items-center gap-2">
-              <span className="ui w-5 text-right text-[10px] text-slate-400 dark:text-zinc-600">{r + 1}</span>
+              <span className="ui w-5 text-right text-[10px] text-muted-foreground">{r + 1}</span>
               {row.map((label, c) =>
                 label === null ? (
                   <button
@@ -193,7 +193,7 @@ export function SeatMapEditor({
                     onDragOver={(e) => e.preventDefault()}
                     onDrop={() => onDrop(r, c)}
                     title="Add a seat here"
-                    className="flex h-9 w-9 items-center justify-center rounded-lg border border-dashed border-slate-300 text-slate-300 transition-colors hover:border-brand hover:text-brand dark:border-zinc-700 dark:text-zinc-700 dark:hover:border-blue-400 dark:hover:text-blue-400"
+                    className="flex h-9 w-9 items-center justify-center rounded-lg border border-dashed border-border text-muted-foreground/60 transition-colors hover:border-brand hover:text-brand"
                   >
                     <Plus size={14} />
                   </button>
@@ -205,7 +205,7 @@ export function SeatMapEditor({
                     onChange={(e) => setRenameValue(e.target.value)}
                     onBlur={commitRename}
                     onKeyDown={(e) => e.key === "Enter" && commitRename()}
-                    className="h-9 w-9 rounded-lg border border-brand bg-white text-center text-xs font-medium text-slate-900 outline-none dark:bg-zinc-800 dark:text-white"
+                    className="h-9 w-9 rounded-lg border border-brand bg-card text-center text-xs font-medium text-foreground outline-none"
                   />
                 ) : (
                   <span
@@ -243,7 +243,7 @@ export function SeatMapEditor({
                   type="button"
                   onClick={() => addSeatToRow(r)}
                   title="Add a seat to this row"
-                  className="flex h-6 w-6 items-center justify-center rounded text-slate-400 hover:bg-slate-200 dark:text-zinc-600 dark:hover:bg-zinc-800"
+                  className="flex h-6 w-6 items-center justify-center rounded text-muted-foreground hover:bg-muted"
                 >
                   <Plus size={11} />
                 </button>
@@ -251,7 +251,7 @@ export function SeatMapEditor({
                   type="button"
                   onClick={() => removeLastCellFromRow(r)}
                   title="Remove the last slot in this row"
-                  className="flex h-6 w-6 items-center justify-center rounded text-slate-400 hover:bg-slate-200 dark:text-zinc-600 dark:hover:bg-zinc-800"
+                  className="flex h-6 w-6 items-center justify-center rounded text-muted-foreground hover:bg-muted"
                 >
                   <Trash2 size={11} />
                 </button>
@@ -263,14 +263,14 @@ export function SeatMapEditor({
             <button
               type="button"
               onClick={addRow}
-              className="ui flex items-center gap-1.5 rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-600 transition-colors hover:bg-slate-50 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-800"
+              className="ui flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-card"
             >
               <Plus size={12} /> Row
             </button>
             <button
               type="button"
               onClick={removeRow}
-              className="ui flex items-center gap-1.5 rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-600 transition-colors hover:bg-slate-50 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-800"
+              className="ui flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-card"
             >
               <Trash2 size={12} /> Row
             </button>
@@ -280,8 +280,8 @@ export function SeatMapEditor({
 
       {/* summary + save */}
       <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
-        <p className="ui text-sm text-slate-600 dark:text-zinc-400">
-          <span className="font-semibold text-slate-900 dark:text-white">{seatCount}</span> seats
+        <p className="ui text-sm text-muted-foreground">
+          <span className="font-semibold text-foreground">{seatCount}</span> seats
           {countChanged && (
             <span className="ml-1.5 text-amber-600 dark:text-amber-400">
               (operator submitted {submittedSeatCount})

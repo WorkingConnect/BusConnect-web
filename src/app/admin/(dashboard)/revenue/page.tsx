@@ -1,9 +1,12 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { TrendingUp, Users, ArrowUpRight, ChevronDown, Loader2 } from "lucide-react";
+import { Users, ArrowUpRight, ChevronDown, Loader2, Wallet, TrendingUp, Lock, HandCoins, Banknote, Percent } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { listAdminPayouts, ApiError, type AdminPayoutRow } from "@/lib/api";
+import { Card } from "@/components/ui/card";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { KpiCard, EmptyState } from "../dashboard-ui";
 import { TripDetailModal } from "../payouts/trip-detail-modal";
 
 const TRIP_STATUS_STYLE: Record<string, string> = {
@@ -95,7 +98,7 @@ export default function AdminRevenuePage() {
 
   if (!rows) {
     return (
-      <div className="flex items-center gap-2 text-slate-500 dark:text-zinc-400">
+      <div className="flex items-center gap-2 text-muted-foreground">
         <Loader2 size={16} className="animate-spin" /> Loading revenue…
       </div>
     );
@@ -133,93 +136,88 @@ export default function AdminRevenuePage() {
 
   return (
     <div>
-      <div className="flex items-center gap-2.5">
-        <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand-soft text-brand dark:bg-brand-soft-dark dark:text-blue-300">
-          <TrendingUp size={18} />
-        </span>
-        <div>
-          <h1 className="font-heading text-2xl font-bold tracking-tight">Revenue</h1>
-          <p className="ui text-sm text-slate-500 dark:text-zinc-400">
-            Every trip across every operator, split by whether it&apos;s finished or still upcoming.
-          </p>
-        </div>
-      </div>
+      <h1 className="font-heading text-3xl font-bold tracking-tight">Revenue</h1>
+      <p className="ui mt-1 text-sm text-muted-foreground">
+        Every trip across every operator, split by whether it&apos;s finished or still upcoming.
+      </p>
 
-      <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
-        <Stat label="Gross revenue" value={money(sum(filtered, "gross"))} />
-        <Stat label="Net revenue" value={money(sum(filtered, "net_amount"))} />
-        <Stat label="Ready payouts" value={money(sum(ready, "net_amount"))} accent />
-        <Stat label="Locked payouts" value={money(sum(locked, "net_amount"))} />
-        <Stat label="BusConnect revenue" value={money(sum(filtered, "commission_amount"))} />
-        <Stat label="Walk-in revenue (cash)" value={money(sum(filtered, "walkup_gross"))} />
+      <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+        <KpiCard icon={<TrendingUp size={16} />} tone="blue" label="Gross revenue" value={money(sum(filtered, "gross"))} />
+        <KpiCard icon={<Wallet size={16} />} tone="purple" label="Net revenue" value={money(sum(filtered, "net_amount"))} />
+        <KpiCard icon={<HandCoins size={16} />} tone="emerald" label="Ready payouts" value={money(sum(ready, "net_amount"))} />
+        <KpiCard icon={<Lock size={16} />} tone="amber" label="Locked payouts" value={money(sum(locked, "net_amount"))} />
+        <KpiCard icon={<Percent size={16} />} tone="blue" label="BusConnect revenue" value={money(sum(filtered, "commission_amount"))} />
+        <KpiCard icon={<Banknote size={16} />} tone="slate" label="Walk-in revenue" value={money(sum(filtered, "walkup_gross"))} />
       </div>
-      <p className="ui mt-2 text-xs text-slate-400 dark:text-zinc-500">
+      <p className="ui mt-2 text-xs text-muted-foreground">
         Walk-in revenue is cash collected directly by the operator&apos;s conductor. It never passes through
         BusConnect, so it&apos;s excluded from every other figure above.
       </p>
 
-      <div className="mt-6 flex flex-wrap items-end gap-3">
-        <label className="ui flex flex-col gap-1.5 text-xs font-medium text-slate-600 dark:text-zinc-400">
-          Operator
-          <div className="relative">
-            <select value={operatorId} onChange={(e) => setOperatorId(e.target.value)} className="field appearance-none py-2 pr-8 text-sm">
-              <option value="">All operators</option>
-              {operatorOptions.map(([id, name]) => (
-                <option key={id} value={id}>
-                  {name}
-                </option>
-              ))}
-            </select>
-            <ChevronDown size={14} className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
-          </div>
-        </label>
-        <label className="ui flex flex-col gap-1.5 text-xs font-medium text-slate-600 dark:text-zinc-400">
-          Route
-          <div className="relative">
-            <select value={routeId} onChange={(e) => setRouteId(e.target.value)} className="field appearance-none py-2 pr-8 text-sm">
-              <option value="">All routes</option>
-              {routeOptions.map(([id, name]) => (
-                <option key={id} value={id}>
-                  {name}
-                </option>
-              ))}
-            </select>
-            <ChevronDown size={14} className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
-          </div>
-        </label>
-        <label className="ui flex flex-col gap-1.5 text-xs font-medium text-slate-600 dark:text-zinc-400">
-          Bus
-          <div className="relative">
-            <select value={busRegNo} onChange={(e) => setBusRegNo(e.target.value)} className="field appearance-none py-2 pr-8 text-sm">
-              <option value="">All buses</option>
-              {busOptions.map((reg) => (
-                <option key={reg} value={reg}>
-                  {reg}
-                </option>
-              ))}
-            </select>
-            <ChevronDown size={14} className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
-          </div>
-        </label>
-        <label className="ui flex flex-col gap-1.5 text-xs font-medium text-slate-600 dark:text-zinc-400">
-          Date
-          <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="field py-2 text-sm" />
-        </label>
-        {filtersActive && (
-          <button
-            type="button"
-            onClick={() => {
-              setOperatorId("");
-              setRouteId("");
-              setBusRegNo("");
-              setDate("");
-            }}
-            className="ui pb-2 text-xs font-semibold text-slate-500 hover:text-slate-700 dark:text-zinc-500 dark:hover:text-zinc-300"
-          >
-            Reset filters
-          </button>
-        )}
-      </div>
+      <Card className="mt-5">
+        <div className="flex flex-wrap items-end gap-3 p-4">
+          <label className="ui flex flex-col gap-1.5 text-xs font-medium text-muted-foreground">
+            Operator
+            <div className="relative">
+              <select value={operatorId} onChange={(e) => setOperatorId(e.target.value)} className="field appearance-none py-2 pr-8 text-sm">
+                <option value="">All operators</option>
+                {operatorOptions.map(([id, name]) => (
+                  <option key={id} value={id}>
+                    {name}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown size={14} className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
+            </div>
+          </label>
+          <label className="ui flex flex-col gap-1.5 text-xs font-medium text-muted-foreground">
+            Route
+            <div className="relative">
+              <select value={routeId} onChange={(e) => setRouteId(e.target.value)} className="field appearance-none py-2 pr-8 text-sm">
+                <option value="">All routes</option>
+                {routeOptions.map(([id, name]) => (
+                  <option key={id} value={id}>
+                    {name}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown size={14} className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
+            </div>
+          </label>
+          <label className="ui flex flex-col gap-1.5 text-xs font-medium text-muted-foreground">
+            Bus
+            <div className="relative">
+              <select value={busRegNo} onChange={(e) => setBusRegNo(e.target.value)} className="field appearance-none py-2 pr-8 text-sm">
+                <option value="">All buses</option>
+                {busOptions.map((reg) => (
+                  <option key={reg} value={reg}>
+                    {reg}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown size={14} className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
+            </div>
+          </label>
+          <label className="ui flex flex-col gap-1.5 text-xs font-medium text-muted-foreground">
+            Date
+            <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="field py-2 text-sm" />
+          </label>
+          {filtersActive && (
+            <button
+              type="button"
+              onClick={() => {
+                setOperatorId("");
+                setRouteId("");
+                setBusRegNo("");
+                setDate("");
+              }}
+              className="ui pb-2 text-xs font-semibold text-muted-foreground hover:text-foreground"
+            >
+              Reset filters
+            </button>
+          )}
+        </div>
+      </Card>
 
       <RevenueSection sections={sections} selected={selected} onSelect={setSelected} onView={setViewTripId} />
 
@@ -245,95 +243,104 @@ function RevenueSection({
   const order: Bucket[] = ["ready", "locked"];
 
   return (
-    <section className="mt-8">
-      <div className="ui flex flex-wrap gap-1 rounded-xl bg-slate-100 p-1 dark:bg-zinc-800">
+    <section className="mt-6">
+      <div className="ui flex flex-wrap gap-1 rounded-xl bg-muted p-1">
         {order.map((b) => (
           <button
             key={b}
             type="button"
             onClick={() => onSelect(b)}
-            className={`font-heading rounded-lg px-3 py-1.5 text-lg font-semibold transition-colors ${
-              selected === b
-                ? "bg-white text-slate-900 shadow-sm dark:bg-zinc-950 dark:text-white"
-                : "text-slate-400 hover:text-slate-600 dark:text-zinc-500 dark:hover:text-zinc-300"
+            className={`font-heading rounded-lg px-3 py-1.5 text-base font-semibold transition-colors ${
+              selected === b ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
             }`}
           >
-            {sections[b].title}{" "}
-            <span className="ui text-sm font-normal text-slate-400 dark:text-zinc-500">
-              ({sections[b].rows.length})
-            </span>
+            {sections[b].title} <span className="ui text-sm font-normal text-muted-foreground">({sections[b].rows.length})</span>
           </button>
         ))}
       </div>
-      <p className="ui mt-2 text-xs text-slate-500 dark:text-zinc-500">{active.subtitle}</p>
+      <p className="ui mt-2 text-xs text-muted-foreground">{active.subtitle}</p>
 
-      <div className="mt-3 flex flex-col gap-2">
+      <div className="mt-3">
         {active.rows.length === 0 ? (
-          <div className="card p-6 text-center text-sm text-slate-500 dark:text-zinc-400">{active.emptyMessage}</div>
+          <EmptyState
+            icon={<Wallet size={32} className="mx-auto text-slate-400 dark:text-zinc-600" />}
+            title="Nothing here"
+            subtitle={active.emptyMessage}
+          />
         ) : (
-          active.rows.map((r) => (
-            <div key={r.id} className="card p-4">
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <div className="min-w-0">
-                  <div className="flex items-center gap-2">
-                    <p className="truncate font-heading font-semibold">{r.route?.name ?? "—"}</p>
-                    {r.status === "arrived" ? (
-                      r.payout_status === "paid" ? (
-                        <span className="ui shrink-0 rounded-full bg-emerald-100 px-2 py-0.5 text-[11px] font-semibold text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300">
-                          Paid
-                        </span>
-                      ) : (
-                        <span className="ui shrink-0 rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-semibold text-amber-700 dark:bg-amber-950/50 dark:text-amber-300">
-                          Pending
-                        </span>
-                      )
-                    ) : (
-                      <span className={`ui shrink-0 rounded-full px-2 py-0.5 text-[11px] font-semibold capitalize ${TRIP_STATUS_STYLE[r.status] ?? TRIP_STATUS_STYLE.scheduled}`}>
-                        {r.status}
+          <Card>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Trip</TableHead>
+                  <TableHead>Operator &amp; bus</TableHead>
+                  <TableHead>Seats</TableHead>
+                  <TableHead className="text-right">Net amount</TableHead>
+                  <TableHead className="text-right">Action</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {active.rows.map((r) => (
+                  <TableRow key={r.id} className="hover:bg-muted/50">
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <span className="truncate font-heading font-semibold">{r.route?.name ?? "—"}</span>
+                        {r.status === "arrived" ? (
+                          r.payout_status === "paid" ? (
+                            <span className="ui shrink-0 rounded-full bg-emerald-100 px-2 py-0.5 text-[11px] font-semibold text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300">
+                              Paid
+                            </span>
+                          ) : (
+                            <span className="ui shrink-0 rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-semibold text-amber-700 dark:bg-amber-950/50 dark:text-amber-300">
+                              Pending
+                            </span>
+                          )
+                        ) : (
+                          <span className={`ui shrink-0 rounded-full px-2 py-0.5 text-[11px] font-semibold capitalize ${TRIP_STATUS_STYLE[r.status] ?? TRIP_STATUS_STYLE.scheduled}`}>
+                            {r.status}
+                          </span>
+                        )}
+                      </div>
+                      <p className="ui mt-0.5 text-xs text-muted-foreground">
+                        {dateTime(r.depart_at)}
+                        {r.walkup_count > 0 ? ` · ${r.walkup_count} walk-in (${money(r.walkup_gross)})` : ""}
+                        {r.payout_status === "paid" && r.paid_at ? ` · paid ${dateTime(r.paid_at)}` : ""}
+                      </p>
+                    </TableCell>
+                    <TableCell className="ui text-sm text-muted-foreground">
+                      {r.bus?.operator?.name ?? "—"}
+                      <span className="block text-xs">Bus {r.bus?.reg_no ?? "—"}</span>
+                    </TableCell>
+                    <TableCell className="ui text-sm text-muted-foreground">
+                      <span className="inline-flex items-center gap-1.5">
+                        <Users size={12} /> {r.seats_sold}
                       </span>
-                    )}
-                  </div>
-                  <p className="ui mt-0.5 text-sm text-slate-500 dark:text-zinc-400">
-                    {r.bus?.operator?.name ?? "—"} · Bus {r.bus?.reg_no ?? "—"} · {dateTime(r.depart_at)}
-                  </p>
-                  <p className="ui mt-0.5 flex items-center gap-1.5 text-xs text-slate-400 dark:text-zinc-500">
-                    <Users size={12} /> {r.seats_sold} seat{r.seats_sold === 1 ? "" : "s"} sold · {r.booking_count} booking
-                    {r.booking_count === 1 ? "" : "s"}
-                    {r.walkup_count > 0 ? ` · ${r.walkup_count} walk-in (${money(r.walkup_gross)})` : ""}
-                    {r.payout_status === "paid" && r.paid_at ? ` · paid ${dateTime(r.paid_at)}` : ""}
-                  </p>
-                </div>
-                <div className="flex items-center justify-between gap-4 sm:justify-end">
-                  <div className="text-right">
-                    <p className="ui text-xs text-slate-400 dark:text-zinc-500">
-                      {money(r.gross)} − {r.commission_pct}%
-                    </p>
-                    <p className="font-heading text-lg font-bold text-brand dark:text-blue-400">{money(r.net_amount)}</p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => onView(r.id)}
-                    className="ui inline-flex items-center gap-1 rounded-lg border border-slate-200 px-2 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-50 dark:border-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-800"
-                  >
-                    View <ArrowUpRight size={12} />
-                  </button>
-                </div>
-              </div>
-            </div>
-          ))
+                      <span className="block text-xs">
+                        {r.booking_count} booking{r.booking_count === 1 ? "" : "s"}
+                      </span>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <p className="ui text-xs text-muted-foreground">
+                        {money(r.gross)} − {r.commission_pct}%
+                      </p>
+                      <p className="font-heading text-base font-bold text-brand dark:text-blue-400">{money(r.net_amount)}</p>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <button
+                        type="button"
+                        onClick={() => onView(r.id)}
+                        className="ui inline-flex items-center gap-1 rounded-lg border border-border px-2 py-1 text-xs font-semibold text-foreground hover:bg-muted"
+                      >
+                        View <ArrowUpRight size={12} />
+                      </button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </Card>
         )}
       </div>
     </section>
-  );
-}
-
-function Stat({ label, value, accent }: { label: string; value: string; accent?: boolean }) {
-  return (
-    <div className="card px-4 py-4 text-center">
-      <div className={`font-heading text-lg font-bold ${accent ? "text-emerald-600 dark:text-emerald-400" : "text-brand dark:text-blue-400"}`}>
-        {value}
-      </div>
-      <div className="ui mt-1 text-xs uppercase tracking-wide text-slate-500 dark:text-zinc-500">{label}</div>
-    </div>
   );
 }

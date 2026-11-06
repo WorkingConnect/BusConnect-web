@@ -34,7 +34,7 @@ export function TripDetailModal({ token, tripId, onClose }: { token: string; tri
         <div className="flex items-start justify-between gap-4">
           <div>
             <h2 className="font-heading text-lg font-bold tracking-tight">Trip details</h2>
-            <p className="ui text-sm text-slate-500 dark:text-zinc-400">
+            <p className="ui text-sm text-muted-foreground">
               {detail?.route?.name ?? "…"} · {detail?.bus?.operator?.name ?? ""}
             </p>
           </div>
@@ -42,7 +42,7 @@ export function TripDetailModal({ token, tripId, onClose }: { token: string; tri
             type="button"
             onClick={onClose}
             aria-label="Close"
-            className="rounded-lg p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-zinc-800 dark:hover:text-zinc-300"
+            className="rounded-lg p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
           >
             <X size={18} />
           </button>
@@ -51,26 +51,26 @@ export function TripDetailModal({ token, tripId, onClose }: { token: string; tri
         {error ? (
           <p className="ui mt-4 text-sm text-red-600 dark:text-red-400">{error}</p>
         ) : !detail ? (
-          <div className="mt-6 flex items-center gap-2 text-slate-500 dark:text-zinc-400">
+          <div className="mt-6 flex items-center gap-2 text-muted-foreground">
             <Loader2 size={16} className="animate-spin" /> Loading…
           </div>
         ) : (
           <div className="mt-4">
-            <div className="rounded-xl bg-slate-50 p-4 dark:bg-zinc-900">
+            <div className="rounded-xl bg-muted p-4">
               <Row label="Bus" value={`${detail.bus?.reg_no ?? "—"} · ${detail.bus?.bus_type?.name ?? "—"}`} />
               <Row label="Departs" value={dateTime(detail.depart_at)} />
               <Row label="Status" value={detail.status} />
               <Row label="Seats sold" value={`${detail.seats_sold} / ${detail.bus?.bus_type?.seat_count ?? "—"}`} />
             </div>
 
-            <div className="mt-3 rounded-xl bg-slate-50 p-4 dark:bg-zinc-900">
+            <div className="mt-3 rounded-xl bg-muted p-4">
               <Row label={`Gross fares (${detail.seats_sold} seat${detail.seats_sold === 1 ? "" : "s"})`} value={money(detail.gross)} />
               <Row label={`Commission (${detail.commission_pct}%)`} value={`− ${money(detail.commission_amount)}`} muted />
-              <div className="my-2 border-t border-slate-200 dark:border-zinc-800" />
+              <div className="my-2 border-t border-border" />
               <Row label="Net" value={money(detail.net_amount)} bold />
               {detail.payout && (
                 <>
-                  <div className="my-2 border-t border-slate-200 dark:border-zinc-800" />
+                  <div className="my-2 border-t border-border" />
                   <Row label="Paid" value={dateTime(detail.payout.paid_at)} />
                   {detail.payout.reference && <Row label="Reference" value={detail.payout.reference} />}
                 </>
@@ -78,29 +78,29 @@ export function TripDetailModal({ token, tripId, onClose }: { token: string; tri
             </div>
 
             {detail.walkup_count > 0 && (
-              <div className="mt-3 rounded-xl bg-slate-50 p-4 dark:bg-zinc-900">
+              <div className="mt-3 rounded-xl bg-muted p-4">
                 <Row
                   label={`Walk-in cash (${detail.walkup_count} seat${detail.walkup_count === 1 ? "" : "s"})`}
                   value={money(detail.walkup_gross)}
                   muted
                 />
-                <p className="ui mt-1 text-xs text-slate-400 dark:text-zinc-500">
+                <p className="ui mt-1 text-xs text-muted-foreground">
                   Collected directly by the operator. Not part of the payout above.
                 </p>
               </div>
             )}
 
-            <p className="ui mt-4 text-xs font-medium uppercase tracking-wide text-slate-400 dark:text-zinc-500">
+            <p className="ui mt-4 text-xs font-medium uppercase tracking-wide text-muted-foreground">
               Bookings ({detail.bookings.length})
             </p>
             <div className="mt-2 flex flex-col gap-1.5">
               {detail.bookings.length === 0 ? (
-                <p className="ui text-sm text-slate-400 dark:text-zinc-500">No bookings on this trip.</p>
+                <p className="ui text-sm text-muted-foreground">No bookings on this trip.</p>
               ) : (
                 detail.bookings.map((b) => (
                   <div
                     key={b.id}
-                    className="flex items-center justify-between rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-zinc-800"
+                    className="flex items-center justify-between rounded-lg border border-border px-3 py-2 text-sm"
                   >
                     <div className="min-w-0">
                       <span className="ui font-medium">{b.seats.join(", ")}</span>
@@ -109,9 +109,9 @@ export function TripDetailModal({ token, tripId, onClose }: { token: string; tri
                       >
                         {b.status}
                       </span>
-                      <p className="ui text-xs text-slate-400 dark:text-zinc-500">{dateTime(b.created_at)}</p>
+                      <p className="ui text-xs text-muted-foreground">{dateTime(b.created_at)}</p>
                     </div>
-                    <span className="ui shrink-0 font-medium text-slate-700 dark:text-zinc-300">{money(b.amount)}</span>
+                    <span className="ui shrink-0 font-medium text-foreground">{money(b.amount)}</span>
                   </div>
                 ))
               )}
@@ -133,8 +133,8 @@ export function TripDetailModal({ token, tripId, onClose }: { token: string; tri
 function Row({ label, value, muted, bold }: { label: string; value: string; muted?: boolean; bold?: boolean }) {
   return (
     <div className="ui flex items-center justify-between py-0.5 text-sm">
-      <span className={muted ? "text-slate-400 dark:text-zinc-500" : "text-slate-600 dark:text-zinc-400"}>{label}</span>
-      <span className={bold ? "font-heading font-bold text-slate-900 dark:text-white" : "font-medium text-slate-700 dark:text-zinc-300"}>
+      <span className={muted ? "text-muted-foreground/70" : "text-muted-foreground"}>{label}</span>
+      <span className={bold ? "font-heading font-bold text-foreground" : "font-medium text-foreground"}>
         {value}
       </span>
     </div>

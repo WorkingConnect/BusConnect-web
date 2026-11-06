@@ -100,14 +100,14 @@ export function PaidRowActions({
     return (
       <div className="flex shrink-0 flex-col items-end gap-1">
         <div className="flex items-center gap-1.5">
-          <span className="ui whitespace-nowrap text-xs text-slate-600 dark:text-zinc-400">
+          <span className="ui whitespace-nowrap text-xs text-muted-foreground">
             {isDelete ? "Delete this trip for good?" : "Reopen this payout?"}
           </span>
           <button
             type="button"
             onClick={() => setConfirming(null)}
             disabled={!!busy}
-            className="ui rounded-lg border border-slate-200 px-2 py-1 text-xs font-semibold text-slate-700 disabled:opacity-60 dark:border-zinc-800 dark:text-zinc-200"
+            className="ui rounded-lg border border-border px-2 py-1 text-xs font-semibold text-foreground disabled:opacity-60"
           >
             No
           </button>
@@ -144,7 +144,7 @@ export function PaidRowActions({
           type="button"
           onClick={viewSlip}
           disabled={!!busy}
-          className="ui inline-flex items-center gap-1 rounded-lg border border-slate-200 px-2 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-60 dark:border-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-800"
+          className="ui inline-flex items-center gap-1 rounded-lg border border-border px-2 py-1 text-xs font-semibold text-foreground hover:bg-muted disabled:opacity-60"
         >
           {busy === "slip" ? <Loader2 size={12} className="animate-spin" /> : <FileText size={12} />} View slip
         </button>
@@ -152,7 +152,7 @@ export function PaidRowActions({
           type="button"
           onClick={downloadSlip}
           disabled={!!busy}
-          className="ui inline-flex items-center gap-1 rounded-lg border border-slate-200 px-2 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-60 dark:border-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-800"
+          className="ui inline-flex items-center gap-1 rounded-lg border border-border px-2 py-1 text-xs font-semibold text-foreground hover:bg-muted disabled:opacity-60"
         >
           {busy === "download" ? <Loader2 size={12} className="animate-spin" /> : <Download size={12} />}
         </button>
@@ -160,7 +160,7 @@ export function PaidRowActions({
           type="button"
           onClick={() => setConfirming("reopen")}
           aria-label="Reopen payout"
-          className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-amber-50 hover:text-amber-600 dark:hover:bg-amber-950/30"
+          className="rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-amber-50 hover:text-amber-600 dark:hover:bg-amber-950/30"
         >
           <Undo2 size={14} />
         </button>
@@ -168,12 +168,12 @@ export function PaidRowActions({
           type="button"
           onClick={() => setConfirming("delete")}
           aria-label="Delete trip"
-          className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/30"
+          className="rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/30"
         >
           <Trash2 size={14} />
         </button>
       </div>
-      {reference && <span className="ui text-[11px] text-slate-400 dark:text-zinc-500">Ref: {reference}</span>}
+      {reference && <span className="ui text-[11px] text-muted-foreground">Ref: {reference}</span>}
       {error && <span className="ui text-[11px] text-red-600 dark:text-red-400">{error}</span>}
     </div>
   );

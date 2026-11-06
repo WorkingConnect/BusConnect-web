@@ -31,6 +31,15 @@ function initSlot(url: string | null): ImageSlotState {
   return { file: null, preview: url };
 }
 
+function Row({ label, value }: { label: string; value: React.ReactNode }) {
+  return (
+    <div className="flex items-center justify-between gap-3 py-2.5 text-sm">
+      <dt className="shrink-0 text-muted-foreground">{label}</dt>
+      <dd className="break-words text-right font-medium">{value || "—"}</dd>
+    </div>
+  );
+}
+
 export function BusDetailCard({ bus, busTypes }: { bus: AdminBusDetail; busTypes: AdminBusType[] }) {
   const router = useRouter();
   const [editing, setEditing] = useState(false);
@@ -136,11 +145,12 @@ export function BusDetailCard({ bus, busTypes }: { bus: AdminBusDetail; busTypes
     return (
       <form onSubmit={save} className="flex flex-col gap-6">
         <section className="card-lg p-6">
-          <h2 className="ui text-xs font-semibold uppercase tracking-wide text-slate-400 dark:text-zinc-600">
+          <p className="ui text-xs font-semibold uppercase tracking-wide text-muted-foreground">Editing bus</p>
+          <h2 className="ui mt-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
             Basic information
           </h2>
           <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <label className="ui flex flex-col gap-1.5 text-sm font-medium text-slate-700 dark:text-zinc-300">
+            <label className="ui flex flex-col gap-1.5 text-sm font-medium text-foreground">
               Vehicle registration number
               <input
                 value={regNo}
@@ -150,7 +160,7 @@ export function BusDetailCard({ bus, busTypes }: { bus: AdminBusDetail; busTypes
                 className="field text-sm"
               />
             </label>
-            <label className="ui flex flex-col gap-1.5 text-sm font-medium text-slate-700 dark:text-zinc-300">
+            <label className="ui flex flex-col gap-1.5 text-sm font-medium text-foreground">
               Bus type
               <div className="relative">
                 <select
@@ -166,18 +176,18 @@ export function BusDetailCard({ bus, busTypes }: { bus: AdminBusDetail; busTypes
                 </select>
                 <ChevronDown
                   size={16}
-                  className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-zinc-500"
+                  className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
                 />
               </div>
             </label>
           </div>
-          <p className="ui mt-3 text-xs text-slate-500 dark:text-zinc-500">
-            Operator: <span className="font-medium text-slate-700 dark:text-zinc-300">{bus.operator?.name ?? "—"}</span>
+          <p className="ui mt-3 text-xs text-muted-foreground">
+            Operator: <span className="font-medium text-foreground">{bus.operator?.name ?? "—"}</span>
           </p>
         </section>
 
         <section className="card-lg p-6">
-          <h2 className="ui text-xs font-semibold uppercase tracking-wide text-slate-400 dark:text-zinc-600">
+          <h2 className="ui text-xs font-semibold uppercase tracking-wide text-muted-foreground">
             Bus features / amenities
           </h2>
           <div className="mt-4">
@@ -186,7 +196,7 @@ export function BusDetailCard({ bus, busTypes }: { bus: AdminBusDetail; busTypes
         </section>
 
         <section className="card-lg p-6">
-          <h2 className="ui text-xs font-semibold uppercase tracking-wide text-slate-400 dark:text-zinc-600">
+          <h2 className="ui text-xs font-semibold uppercase tracking-wide text-muted-foreground">
             Bus images
           </h2>
           <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -215,7 +225,7 @@ export function BusDetailCard({ bus, busTypes }: { bus: AdminBusDetail; busTypes
         </section>
 
         <section className="card-lg p-6">
-          <h2 className="ui text-xs font-semibold uppercase tracking-wide text-slate-400 dark:text-zinc-600">
+          <h2 className="ui text-xs font-semibold uppercase tracking-wide text-muted-foreground">
             Notes
           </h2>
           <textarea
@@ -238,7 +248,7 @@ export function BusDetailCard({ bus, busTypes }: { bus: AdminBusDetail; busTypes
             type="button"
             onClick={cancel}
             disabled={busy}
-            className="ui inline-flex items-center gap-1.5 rounded-lg border border-slate-200 px-3 py-3 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50 disabled:opacity-60 dark:border-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-800"
+            className="ui inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-3 text-sm font-medium text-foreground transition-colors hover:bg-muted disabled:opacity-60"
           >
             <X size={16} /> Cancel
           </button>
@@ -249,68 +259,52 @@ export function BusDetailCard({ bus, busTypes }: { bus: AdminBusDetail; busTypes
 
   return (
     <div className="card-lg p-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-4">
         <div className="flex items-center gap-4">
           {bus.front_image_url ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
               src={bus.front_image_url}
               alt={`${bus.reg_no} photo`}
-              className="h-16 w-20 shrink-0 rounded-xl border border-slate-200 object-cover dark:border-zinc-800"
+              className="h-18 w-24 shrink-0 rounded-xl border border-border object-cover"
             />
           ) : (
-            <div className="flex h-16 w-20 shrink-0 items-center justify-center rounded-xl border border-dashed border-slate-300 text-slate-400 dark:border-zinc-700 dark:text-zinc-600">
-              <BusIcon size={20} />
+            <div className="flex h-18 w-24 shrink-0 items-center justify-center rounded-xl border border-dashed border-border text-muted-foreground">
+              <BusIcon size={22} />
             </div>
           )}
-          <div>
-            <h1 className="font-heading text-xl font-bold tracking-tight">{bus.reg_no}</h1>
-            <span className={`ui mt-1 inline-block rounded-full px-2 py-0.5 text-xs font-semibold ${STATUS_STYLE[bus.status]}`}>
+          <div className="min-w-0">
+            <h1 className="font-heading truncate text-xl font-bold tracking-tight">{bus.reg_no}</h1>
+            <span className={`ui mt-1.5 inline-block rounded-full px-2.5 py-0.5 text-xs font-semibold ${STATUS_STYLE[bus.status]}`}>
               {STATUS_LABEL[bus.status] ?? bus.status}
             </span>
           </div>
         </div>
-        <div className="flex shrink-0 items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2 border-t border-border pt-4">
           <StatusActions busId={bus.id} status={bus.status} />
           <button
             type="button"
             onClick={startEditing}
-            className="ui inline-flex items-center gap-1.5 rounded-lg border border-slate-200 px-2.5 py-1.5 text-xs font-semibold text-slate-700 transition-colors hover:bg-slate-50 dark:border-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-800"
+            className="ui inline-flex items-center gap-1.5 rounded-lg border border-border px-2.5 py-1.5 text-xs font-semibold text-foreground transition-colors hover:bg-muted"
           >
             <Pencil size={13} /> Edit details
           </button>
         </div>
       </div>
 
-      <dl className="ui mt-6 grid grid-cols-1 gap-5 border-t border-slate-200 pt-6 sm:grid-cols-2 dark:border-zinc-800">
-        <div>
-          <p className="text-xs font-medium text-slate-500 dark:text-zinc-500">Operator</p>
-          <p className="mt-0.5 text-sm font-medium">{bus.operator?.name ?? "—"}</p>
-        </div>
-        <div>
-          <p className="text-xs font-medium text-slate-500 dark:text-zinc-500">Bus type</p>
-          <p className="mt-0.5 text-sm font-medium capitalize">
-            {bus.bus_type?.name ?? "—"} ({bus.bus_type?.class.replace("_", " ") ?? "—"})
-          </p>
-        </div>
-        <div>
-          <p className="text-xs font-medium text-slate-500 dark:text-zinc-500">Seat capacity</p>
-          <p className="mt-0.5 text-sm font-medium">
-            {bus.bus_type?.seat_count ?? "—"} seats · {bus.seat_layout_style ?? "—"} layout
-          </p>
-        </div>
-        <div>
-          <p className="text-xs font-medium text-slate-500 dark:text-zinc-500">Amenities</p>
-          <p className="mt-0.5 text-sm font-medium">
-            {bus.amenities.length > 0 ? bus.amenities.join(", ") : "None listed"}
-          </p>
-        </div>
-        {bus.notes && (
-          <div className="sm:col-span-2">
-            <p className="text-xs font-medium text-slate-500 dark:text-zinc-500">Notes</p>
-            <p className="mt-0.5 text-sm font-medium">{bus.notes}</p>
-          </div>
-        )}
+      <dl className="mt-5 divide-y divide-border border-t border-border">
+        <Row label="Operator" value={bus.operator?.name} />
+        <Row
+          label="Bus type"
+          value={
+            <span className="capitalize">
+              {bus.bus_type?.name ?? "—"} ({bus.bus_type?.class.replace("_", " ") ?? "—"})
+            </span>
+          }
+        />
+        <Row label="Seat capacity" value={`${bus.bus_type?.seat_count ?? "—"} seats · ${bus.seat_layout_style ?? "—"} layout`} />
+        <Row label="Amenities" value={bus.amenities.length > 0 ? bus.amenities.join(", ") : "None listed"} />
+        {bus.notes && <Row label="Notes" value={bus.notes} />}
       </dl>
     </div>
   );

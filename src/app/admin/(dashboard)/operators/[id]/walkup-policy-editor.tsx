@@ -52,7 +52,7 @@ export function WalkupPolicyEditor({
 
   if (!editing) {
     return (
-      <div className="mt-3 flex items-center gap-3">
+      <div className="flex items-center gap-3">
         <span className="font-heading text-lg font-bold text-brand dark:text-blue-400">
           {initialEnabled ? (initialLimit === null ? "Unlimited" : `Up to ${initialLimit} per trip`) : "Turned off"}
         </span>
@@ -64,7 +64,7 @@ export function WalkupPolicyEditor({
             setError(null);
             setEditing(true);
           }}
-          className="ui inline-flex items-center gap-1.5 rounded-lg border border-slate-200 px-2.5 py-1.5 text-xs font-semibold text-slate-700 transition-colors hover:bg-slate-50 dark:border-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-800"
+          className="ui inline-flex items-center gap-1.5 rounded-lg border border-border px-2.5 py-1.5 text-xs font-semibold text-foreground transition-colors hover:bg-muted"
         >
           <Pencil size={13} /> Edit
         </button>
@@ -73,7 +73,7 @@ export function WalkupPolicyEditor({
   }
 
   return (
-    <div className="mt-3">
+    <div>
       <div className="flex flex-wrap items-center gap-2">
         <button
           type="button"
@@ -81,7 +81,7 @@ export function WalkupPolicyEditor({
           className={`ui rounded-lg px-3 py-2 text-xs font-semibold transition-colors ${
             enabled
               ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300"
-              : "bg-slate-100 text-slate-500 dark:bg-zinc-800 dark:text-zinc-400"
+              : "bg-muted text-muted-foreground"
           }`}
         >
           {enabled ? "Walk-ups allowed" : "Walk-ups turned off"}
@@ -98,7 +98,7 @@ export function WalkupPolicyEditor({
             className="field py-2 text-sm disabled:opacity-50"
           />
         </div>
-        <span className="ui text-xs text-slate-500 dark:text-zinc-500">max per trip</span>
+        <span className="ui text-xs text-muted-foreground">max per trip</span>
         <button
           type="button"
           onClick={save}
@@ -111,7 +111,7 @@ export function WalkupPolicyEditor({
           type="button"
           onClick={() => setEditing(false)}
           disabled={busy}
-          className="rounded-lg p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-600 disabled:opacity-60 dark:hover:bg-zinc-800"
+          className="rounded-lg p-2 text-muted-foreground hover:bg-muted disabled:opacity-60"
           aria-label="Cancel"
         >
           <X size={14} />

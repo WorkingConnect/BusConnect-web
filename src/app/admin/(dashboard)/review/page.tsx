@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ClipboardCheck, ShieldAlert } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import {
   listAdminJourneys,
@@ -7,6 +8,7 @@ import {
   type AdminJourney,
   type AdminCancellationRequest,
 } from "@/lib/api";
+import { KpiCard } from "../dashboard-ui";
 import { JourneyList } from "./journey-list";
 import { CancellationRequestList } from "./cancellation-request-list";
 
@@ -55,16 +57,21 @@ export default async function AdminReviewPage() {
 
   return (
     <div>
-      <h1 className="font-heading text-2xl font-bold tracking-tight">Review</h1>
-      <p className="ui mt-1 text-sm text-slate-600 dark:text-zinc-400">
+      <h1 className="font-heading text-3xl font-bold tracking-tight">Review</h1>
+      <p className="ui mt-1 text-sm text-muted-foreground">
         Journeys operators have created. Approve before they can be scheduled for trips.
       </p>
+
+      <div className="mt-5 grid grid-cols-2 gap-3 sm:max-w-md">
+        <KpiCard icon={<ClipboardCheck size={16} />} tone="amber" label="Journeys" value={String(pendingJourneys.length)} meta="awaiting approval" />
+        <KpiCard icon={<ShieldAlert size={16} />} tone="purple" label="Cancellations" value={String(cancellationRequests.length)} meta="awaiting approval" />
+      </div>
 
       <JourneyList journeys={pendingJourneys} />
 
       <div className="mt-10">
         <h2 className="font-heading text-lg font-semibold">Trip cancellation requests</h2>
-        <p className="ui mt-1 text-sm text-slate-600 dark:text-zinc-400">
+        <p className="ui mt-1 text-sm text-muted-foreground">
           An operator can&apos;t cancel a trip with bookings on their own. Approve or reject their request here.
         </p>
         <CancellationRequestList requests={cancellationRequests} />

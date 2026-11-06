@@ -46,7 +46,7 @@ export function ConvenienceFeeEditor({
 
   if (!editing) {
     return (
-      <div className="mt-3 flex items-center gap-3">
+      <div className="flex items-center gap-3">
         <span className="font-heading text-2xl font-bold text-brand dark:text-blue-400">{initialPct}%</span>
         <button
           type="button"
@@ -55,7 +55,7 @@ export function ConvenienceFeeEditor({
             setError(null);
             setEditing(true);
           }}
-          className="ui inline-flex items-center gap-1.5 rounded-lg border border-slate-200 px-2.5 py-1.5 text-xs font-semibold text-slate-700 transition-colors hover:bg-slate-50 dark:border-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-800"
+          className="ui inline-flex items-center gap-1.5 rounded-lg border border-border px-2.5 py-1.5 text-xs font-semibold text-foreground transition-colors hover:bg-muted"
         >
           <Pencil size={13} /> Edit
         </button>
@@ -64,7 +64,7 @@ export function ConvenienceFeeEditor({
   }
 
   return (
-    <div className="mt-3">
+    <div>
       <div className="flex items-center gap-2">
         <div className="relative w-28">
           <input
@@ -76,7 +76,7 @@ export function ConvenienceFeeEditor({
             onChange={(e) => setValue(e.target.value)}
             className="field py-2 pr-7 text-sm"
           />
-          <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-zinc-500">%</span>
+          <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">%</span>
         </div>
         <button
           type="button"
@@ -90,7 +90,7 @@ export function ConvenienceFeeEditor({
           type="button"
           onClick={() => setEditing(false)}
           disabled={busy}
-          className="rounded-lg p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-600 disabled:opacity-60 dark:hover:bg-zinc-800"
+          className="rounded-lg p-2 text-muted-foreground hover:bg-muted disabled:opacity-60"
           aria-label="Cancel"
         >
           <X size={14} />

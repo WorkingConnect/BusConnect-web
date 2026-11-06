@@ -2,8 +2,11 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { ChevronRight, Search } from "lucide-react";
+import { Bus as BusIcon, ChevronRight, Search } from "lucide-react";
 import type { AdminBus } from "@/lib/api";
+import { Card } from "@/components/ui/card";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { EmptyState } from "../dashboard-ui";
 import { StatusActions } from "./status-actions";
 
 const STATUS_STYLE: Record<string, string> = {
@@ -25,10 +28,10 @@ export function BusList({ buses }: { buses: AdminBus[] }) {
 
   return (
     <div>
-      <div className="relative mt-6">
+      <div className="relative mt-6 max-w-md">
         <Search
           size={16}
-          className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-zinc-500"
+          className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
         />
         <input
           value={query}
@@ -38,13 +41,31 @@ export function BusList({ buses }: { buses: AdminBus[] }) {
         />
       </div>
 
-      <div className="mt-4 flex flex-col gap-2">
+      <div className="mt-4">
         {filtered.length === 0 ? (
-          <div className="card p-10 text-center text-sm text-slate-500 dark:text-zinc-400">
-            {buses.length === 0 ? "No buses registered yet." : `No buses match "${query}".`}
-          </div>
+          <EmptyState
+            icon={<BusIcon size={32} className="mx-auto text-slate-400 dark:text-zinc-600" />}
+            title={buses.length === 0 ? "No buses registered yet" : "No matches"}
+            subtitle={buses.length === 0 ? "New registrations will show up here." : `No buses match "${query}".`}
+          />
         ) : (
-          filtered.map((b) => <BusRow key={b.id} bus={b} />)
+          <Card>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Bus</TableHead>
+                  <TableHead>Operator &amp; type</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filtered.map((b) => (
+                  <BusRow key={b.id} bus={b} />
+                ))}
+              </TableBody>
+            </Table>
+          </Card>
         )}
       </div>
     </div>
@@ -52,67 +73,50 @@ export function BusList({ buses }: { buses: AdminBus[] }) {
 }
 
 function BusRow({ bus: b }: { bus: AdminBus }) {
-  const photos: [string, string | null | undefined][] = [
-    ["Front", b.front_image_url],
-    ["Side 1", b.side_image_urls?.[0]],
-    ["Side 2", b.side_image_urls?.[1]],
-    ["Interior", b.interior_image_url],
-    ["Seat layout", b.seat_layout_image_url],
-  ];
-
   return (
-    <div className="card card-hover flex items-start justify-between gap-4 p-4">
-      <Link href={`/admin/fleet/${b.id}`} className="flex flex-1 items-start gap-3">
-        {b.front_image_url ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={b.front_image_url}
-            alt={`${b.reg_no} front`}
-            className="h-14 w-20 shrink-0 rounded-lg border border-slate-200 object-cover dark:border-zinc-800"
-          />
-        ) : (
-          <div className="h-14 w-20 shrink-0 rounded-lg border border-dashed border-slate-300 dark:border-zinc-700" />
-        )}
-        <div>
-          <div className="flex items-center gap-2">
-            <p className="font-medium">{b.reg_no}</p>
-            <span className={`ui rounded-full px-2 py-0.5 text-xs font-semibold capitalize ${STATUS_STYLE[b.status]}`}>
-              {b.status}
-            </span>
-          </div>
-          <p className="ui mt-0.5 text-sm text-slate-500 dark:text-zinc-400">
-            {b.operator?.name ?? "—"} · {b.bus_type?.name ?? "—"} · {b.bus_type?.seat_count ?? "—"} seats
-          </p>
-          {b.amenities.length > 0 && (
-            <p className="ui mt-1 text-xs text-slate-500 dark:text-zinc-500">{b.amenities.join(", ")}</p>
+    <TableRow className="hover:bg-muted/50">
+      <TableCell>
+        <Link href={`/admin/fleet/${b.id}`} className="flex min-w-0 items-center gap-3">
+          {b.front_image_url ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={b.front_image_url}
+              alt={`${b.reg_no} front`}
+              className="h-10 w-14 shrink-0 rounded-lg border border-border object-cover"
+            />
+          ) : (
+            <div className="flex h-10 w-14 shrink-0 items-center justify-center rounded-lg border border-dashed border-border text-muted-foreground">
+              <BusIcon size={14} />
+            </div>
           )}
-          {b.notes && <p className="ui mt-1 text-xs italic text-slate-500 dark:text-zinc-500">&ldquo;{b.notes}&rdquo;</p>}
-        </div>
-      </Link>
-      <div className="flex shrink-0 flex-col items-end gap-2">
-        <StatusActions busId={b.id} status={b.status} />
-        <div className="flex flex-wrap justify-end gap-x-3 gap-y-1 text-xs">
-          {photos.map(([label, url]) =>
-            url ? (
-              <a
-                key={label}
-                href={url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-brand underline dark:text-blue-400"
-              >
-                {label}
-              </a>
-            ) : null,
-          )}
-        </div>
-        <Link
-          href={`/admin/fleet/${b.id}`}
-          className="ui mt-1 flex items-center gap-0.5 text-xs font-medium text-slate-500 transition-colors hover:text-slate-900 dark:text-zinc-400 dark:hover:text-white"
-        >
-          Details <ChevronRight size={13} />
+          <span className="truncate font-heading font-semibold hover:text-brand dark:hover:text-blue-400">
+            {b.reg_no}
+          </span>
         </Link>
-      </div>
-    </div>
+        {b.notes && <p className="ui mt-0.5 truncate text-xs italic text-muted-foreground">&ldquo;{b.notes}&rdquo;</p>}
+      </TableCell>
+      <TableCell className="ui text-sm text-muted-foreground">
+        {b.operator?.name ?? "—"}
+        <span className="block text-xs">
+          {b.bus_type?.name ?? "—"}
+        </span>
+      </TableCell>
+      <TableCell>
+        <span className={`ui inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold capitalize ${STATUS_STYLE[b.status]}`}>
+          {b.status}
+        </span>
+      </TableCell>
+      <TableCell className="text-right">
+        <div className="flex items-center justify-end gap-1.5">
+          <StatusActions busId={b.id} status={b.status} />
+          <Link
+            href={`/admin/fleet/${b.id}`}
+            className="ui inline-flex items-center gap-0.5 rounded-lg border border-border px-2.5 py-1.5 text-xs font-semibold text-foreground transition-colors hover:bg-muted"
+          >
+            Details <ChevronRight size={13} />
+          </Link>
+        </div>
+      </TableCell>
+    </TableRow>
   );
 }

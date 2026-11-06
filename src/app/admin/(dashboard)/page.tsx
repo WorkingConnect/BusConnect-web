@@ -26,6 +26,10 @@ import {
   type AdminAnalytics,
   type AdminAnalyticsActivity,
 } from "@/lib/api";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { StatusChip } from "@/components/status-chip";
+import { KpiCard } from "./dashboard-ui";
 
 function money(n: number) {
   return `LKR ${Math.round(n).toLocaleString("en-LK")}`;
@@ -203,111 +207,129 @@ export default async function AdminOverviewPage() {
       </div>
 
       {/* ── Headline stats ────────────────────────────────────────────────── */}
-      <div className="mt-4 grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <Stat
+      <div className="mt-5 grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <KpiCard
           icon={<Building2 size={16} />}
           tone="blue"
           label="Operators"
           value={String(analytics.totalOperators)}
-          sub={`${analytics.pendingOperators} pending`}
+          meta={`${analytics.pendingOperators} pending`}
         />
-        <Stat icon={<RouteIcon size={16} />} tone="amber" label="Trips" value={String(analytics.totalTrips)} />
-        <Stat icon={<Ticket size={16} />} tone="purple" label="Bookings" value={String(analytics.totalBookings)} />
-        <Stat icon={<Wallet size={16} />} tone="emerald" label="Revenue" value={money(analytics.totalRevenue)} />
+        <KpiCard icon={<RouteIcon size={16} />} tone="amber" label="Trips" value={String(analytics.totalTrips)} />
+        <KpiCard icon={<Ticket size={16} />} tone="purple" label="Bookings" value={String(analytics.totalBookings)} />
+        <KpiCard icon={<Wallet size={16} />} tone="emerald" label="Revenue" value={money(analytics.totalRevenue)} />
       </div>
 
       {/* ── Revenue trend + recent activity ──────────────────────────────── */}
-      <div className="mt-4 grid gap-4 lg:grid-cols-2">
-        <div className="card-lg p-5">
-          <p className="ui text-sm font-semibold text-slate-900 dark:text-white">Revenue: last 6 months</p>
-          <p className="ui mt-0.5 text-xs text-slate-500 dark:text-zinc-400">Confirmed bookings, net of refunds</p>
-          <div className="mt-5 flex flex-col gap-3.5">
-            {analytics.monthlyRevenue.map((m) => (
-              <div key={m.label}>
-                <div className="flex items-baseline justify-between gap-2">
-                  <span className="ui text-xs font-medium text-slate-600 dark:text-zinc-300">
-                    {m.label} <span className="text-slate-400 dark:text-zinc-500">· {m.bookings} bookings</span>
-                  </span>
-                  <span className="ui text-xs font-semibold tabular-nums text-slate-900 dark:text-white">
-                    {money(m.revenue)}
-                  </span>
-                </div>
-                <div className="mt-1.5 h-2 w-full overflow-hidden rounded-full bg-brand-soft dark:bg-brand-soft-dark">
-                  <div
-                    className="h-full rounded-full bg-brand"
-                    style={{ width: `${Math.max(3, (m.revenue / maxMonthRevenue) * 100)}%` }}
-                  />
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="card-lg p-5">
-          <p className="ui text-sm font-semibold text-slate-900 dark:text-white">Recent activity</p>
-          <p className="ui mt-0.5 text-xs text-slate-500 dark:text-zinc-400">Latest bookings, signups, and reviews</p>
-          <div className="mt-4 flex flex-col gap-3">
-            {analytics.recentActivity.length === 0 ? (
-              <p className="ui text-sm text-slate-500 dark:text-zinc-400">Nothing yet.</p>
-            ) : (
-              analytics.recentActivity.map((a) => (
-                <div key={a.id} className="flex items-start gap-3">
-                  <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${ACTIVITY_TONE[a.type]}`}>
-                    {ACTIVITY_ICON[a.type]}
-                  </span>
-                  <div className="min-w-0">
-                    <p className="truncate text-sm font-medium">{a.title}</p>
-                    <p className="ui text-xs text-slate-500 dark:text-zinc-400">
-                      {a.subtitle} · {timeAgo(a.at)}
-                    </p>
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* ── Quick actions + top operators ─────────────────────────────────── */}
-      <div className="mt-4 grid gap-4 lg:grid-cols-2">
-        <div className="card-lg p-5">
-          <p className="ui text-sm font-semibold text-slate-900 dark:text-white">Quick actions</p>
-          <div className="mt-4 grid grid-cols-2 gap-3">
-            <QuickAction href="/admin/operators" icon={<Building2 size={18} />} tone="blue" title="Operators" subtitle="Review & manage" />
-            <QuickAction href="/admin/review" icon={<ClipboardCheck size={18} />} tone="emerald" title="Review queue" subtitle="Journeys & requests" />
-            <QuickAction href="/admin/revenue" icon={<TrendingUp size={18} />} tone="amber" title="Revenue" subtitle="Full breakdown" />
-            <QuickAction href="/admin/routes" icon={<MapPin size={18} />} tone="purple" title="Routes" subtitle="Manage catalog" />
-          </div>
-        </div>
-
-        <div className="card-lg p-5">
-          <div className="flex items-center justify-between">
-            <p className="ui text-sm font-semibold text-slate-900 dark:text-white">Top operators</p>
-            <Link href="/admin/operators" className="ui text-xs font-medium text-brand hover:underline dark:text-blue-400">
-              View all
-            </Link>
-          </div>
-          {topOperators.length === 0 ? (
-            <p className="ui mt-4 text-sm text-slate-500 dark:text-zinc-400">No revenue yet.</p>
-          ) : (
-            <div className="mt-4 flex flex-col gap-2">
-              {topOperators.map((op, i) => (
-                <div key={op.operatorId} className="flex items-center justify-between gap-3 rounded-xl border border-slate-200 p-3 dark:border-zinc-800">
-                  <div className="flex min-w-0 items-center gap-3">
-                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brand-soft text-sm font-bold text-brand dark:bg-brand-soft-dark dark:text-blue-300">
-                      {i + 1}
+      <div className="mt-5 grid gap-5 lg:grid-cols-2">
+        <Card>
+          <CardHeader>
+            <div>
+              <CardTitle>Revenue: last 6 months</CardTitle>
+              <CardDescription className="mt-0.5">Confirmed bookings, net of refunds</CardDescription>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-col gap-3.5">
+              {analytics.monthlyRevenue.map((m) => (
+                <div key={m.label}>
+                  <div className="flex items-baseline justify-between gap-2">
+                    <span className="ui text-xs font-medium text-muted-foreground">
+                      {m.label} <span>· {m.bookings} bookings</span>
                     </span>
-                    <div className="min-w-0">
-                      <p className="truncate text-sm font-medium">{op.name}</p>
-                      <p className="ui text-xs text-slate-500 dark:text-zinc-400">{op.bookings} bookings</p>
-                    </div>
+                    <span className="ui text-xs font-semibold tabular-nums text-foreground">
+                      {money(m.revenue)}
+                    </span>
                   </div>
-                  <span className="ui shrink-0 text-sm font-semibold text-brand dark:text-blue-400">{money(op.revenue)}</span>
+                  <div className="mt-1.5 h-2 w-full overflow-hidden rounded-full bg-brand-soft dark:bg-brand-soft-dark">
+                    <div
+                      className="h-full rounded-full bg-brand"
+                      style={{ width: `${Math.max(3, (m.revenue / maxMonthRevenue) * 100)}%` }}
+                    />
+                  </div>
                 </div>
               ))}
             </div>
-          )}
-        </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <div>
+              <CardTitle>Recent activity</CardTitle>
+              <CardDescription className="mt-0.5">Latest bookings, signups, and reviews</CardDescription>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-col gap-3">
+              {analytics.recentActivity.length === 0 ? (
+                <p className="ui text-sm text-muted-foreground">Nothing yet.</p>
+              ) : (
+                analytics.recentActivity.map((a) => (
+                  <div key={a.id} className="flex items-start gap-3">
+                    <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${ACTIVITY_TONE[a.type]}`}>
+                      {ACTIVITY_ICON[a.type]}
+                    </span>
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-medium">{a.title}</p>
+                      <p className="ui text-xs text-muted-foreground">
+                        {a.subtitle} · {timeAgo(a.at)}
+                      </p>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* ── Quick actions + top operators ─────────────────────────────────── */}
+      <div className="mt-5 grid gap-5 lg:grid-cols-2">
+        <Card>
+          <CardHeader>
+            <CardTitle>Quick actions</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 gap-3">
+              <QuickAction href="/admin/operators" icon={<Building2 size={18} />} tone="blue" title="Operators" subtitle="Review & manage" />
+              <QuickAction href="/admin/review" icon={<ClipboardCheck size={18} />} tone="emerald" title="Review queue" subtitle="Journeys & requests" />
+              <QuickAction href="/admin/revenue" icon={<TrendingUp size={18} />} tone="amber" title="Revenue" subtitle="Full breakdown" />
+              <QuickAction href="/admin/routes" icon={<MapPin size={18} />} tone="purple" title="Routes" subtitle="Manage catalog" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Top operators</CardTitle>
+            <Link href="/admin/operators" className="ui text-xs font-medium text-brand hover:underline dark:text-blue-400">
+              View all
+            </Link>
+          </CardHeader>
+          <CardContent>
+            {topOperators.length === 0 ? (
+              <p className="ui text-sm text-muted-foreground">No revenue yet.</p>
+            ) : (
+              <div className="flex flex-col gap-2">
+                {topOperators.map((op, i) => (
+                  <div key={op.operatorId} className="flex items-center justify-between gap-3 rounded-xl border border-border p-3">
+                    <div className="flex min-w-0 items-center gap-3">
+                      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brand-soft text-sm font-bold text-brand dark:bg-brand-soft-dark dark:text-blue-300">
+                        {i + 1}
+                      </span>
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-medium">{op.name}</p>
+                        <p className="ui text-xs text-muted-foreground">{op.bookings} bookings</p>
+                      </div>
+                    </div>
+                    <span className="ui shrink-0 text-sm font-semibold text-brand dark:text-blue-400">{money(op.revenue)}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
       </div>
 
       {/* ── Pending actions ───────────────────────────────────────────────── */}
@@ -327,30 +349,32 @@ export default async function AdminOverviewPage() {
 
       {/* ── Full operator breakdown ───────────────────────────────────────── */}
       <h2 className="mt-8 font-heading text-lg font-semibold">By operator</h2>
-      <div className="mt-3 overflow-x-auto rounded-2xl border border-slate-200 dark:border-zinc-800">
-        <table className="ui w-full text-left text-sm">
-          <thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-500 dark:bg-zinc-900 dark:text-zinc-400">
-            <tr>
-              <th className="px-4 py-2.5">Operator</th>
-              <th className="px-4 py-2.5">Status</th>
-              <th className="px-4 py-2.5 text-right">Bookings</th>
-              <th className="px-4 py-2.5 text-right">Revenue</th>
-            </tr>
-          </thead>
-          <tbody>
+      <Card className="mt-3">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Operator</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead className="text-right">Bookings</TableHead>
+              <TableHead className="text-right">Revenue</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
             {analytics.perOperator.map((op) => (
-              <tr key={op.operatorId} className="border-t border-slate-200 dark:border-zinc-800">
-                <td className="px-4 py-2.5 font-medium">{op.name}</td>
-                <td className="px-4 py-2.5 capitalize text-slate-500 dark:text-zinc-400">{op.status}</td>
-                <td className="px-4 py-2.5 text-right">{op.bookings}</td>
-                <td className="px-4 py-2.5 text-right font-medium text-brand dark:text-blue-400">
+              <TableRow key={op.operatorId} className="hover:bg-muted/50">
+                <TableCell className="font-medium">{op.name}</TableCell>
+                <TableCell>
+                  <StatusChip status={op.status} />
+                </TableCell>
+                <TableCell className="text-right tabular-nums">{op.bookings}</TableCell>
+                <TableCell className="text-right font-medium text-brand dark:text-blue-400">
                   {money(op.revenue)}
-                </td>
-              </tr>
+                </TableCell>
+              </TableRow>
             ))}
-          </tbody>
-        </table>
-      </div>
+          </TableBody>
+        </Table>
+      </Card>
     </div>
   );
 }
@@ -397,29 +421,6 @@ const TONE_STYLE: Record<string, string> = {
   slate: "bg-slate-100 text-slate-600 dark:bg-zinc-800 dark:text-zinc-400",
 };
 
-function Stat({
-  icon,
-  tone,
-  label,
-  value,
-  sub,
-}: {
-  icon: React.ReactNode;
-  tone: keyof typeof TONE_STYLE;
-  label: string;
-  value: string;
-  sub?: string;
-}) {
-  return (
-    <div className="card p-4">
-      <span className={`flex h-9 w-9 items-center justify-center rounded-xl ${TONE_STYLE[tone]}`}>{icon}</span>
-      <div className="mt-3 font-heading text-xl font-bold tracking-tight sm:text-2xl">{value}</div>
-      <div className="ui mt-0.5 text-xs text-slate-500 dark:text-zinc-400">{label}</div>
-      {sub && <div className="ui mt-0.5 text-xs text-slate-400 dark:text-zinc-600">{sub}</div>}
-    </div>
-  );
-}
-
 function QuickAction({
   href,
   icon,
@@ -438,7 +439,7 @@ function QuickAction({
       <span className={`flex h-9 w-9 items-center justify-center rounded-xl ${TONE_STYLE[tone]}`}>{icon}</span>
       <div>
         <p className="text-sm font-semibold">{title}</p>
-        <p className="ui text-xs text-slate-500 dark:text-zinc-400">{subtitle}</p>
+        <p className="ui text-xs text-muted-foreground">{subtitle}</p>
       </div>
     </Link>
   );
@@ -471,7 +472,7 @@ function PendingCard({
       </div>
       <div>
         <p className="text-sm font-semibold">{title}</p>
-        <p className="ui mt-0.5 text-xs text-slate-500 dark:text-zinc-400">{subtitle}</p>
+        <p className="ui mt-0.5 text-xs text-muted-foreground">{subtitle}</p>
       </div>
     </Link>
   );

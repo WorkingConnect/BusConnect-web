@@ -3,6 +3,8 @@
 import { useMemo, useState } from "react";
 import { CalendarRange, Search, ShieldAlert, Users } from "lucide-react";
 import type { AdminTrip } from "@/lib/api";
+import { Card } from "@/components/ui/card";
+import { EmptyState } from "../dashboard-ui";
 
 const STATUS_STYLE: Record<string, string> = {
   scheduled: "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300",
@@ -83,7 +85,7 @@ export function TimetableList({ trips }: { trips: AdminTrip[] }) {
 
   return (
     <div>
-      <div className="ui mt-6 flex flex-wrap gap-1 rounded-xl bg-slate-100 p-1 dark:bg-zinc-800">
+      <div className="ui mt-6 flex flex-wrap gap-1 rounded-xl bg-muted p-1">
         {tabs.map((t) => (
           <button
             key={t.id}
@@ -93,12 +95,10 @@ export function TimetableList({ trips }: { trips: AdminTrip[] }) {
               setStatus("all");
             }}
             className={`rounded-lg px-3 py-1.5 text-sm font-semibold transition-colors ${
-              section === t.id
-                ? "bg-white text-slate-900 shadow-sm dark:bg-zinc-950 dark:text-white"
-                : "text-slate-500 hover:text-slate-700 dark:text-zinc-400 dark:hover:text-zinc-200"
+              section === t.id ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
             }`}
           >
-            {t.label} <span className="font-normal text-slate-400 dark:text-zinc-500">({sections[t.id].length})</span>
+            {t.label} <span className="font-normal text-muted-foreground">({sections[t.id].length})</span>
           </button>
         ))}
       </div>
@@ -107,7 +107,7 @@ export function TimetableList({ trips }: { trips: AdminTrip[] }) {
         <div className="relative flex-1">
           <Search
             size={16}
-            className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-zinc-500"
+            className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
           />
           <input
             value={query}
@@ -132,69 +132,73 @@ export function TimetableList({ trips }: { trips: AdminTrip[] }) {
       </div>
 
       {byDate.size === 0 ? (
-        <div className="card mt-6 p-10 text-center text-sm text-slate-500 dark:text-zinc-400">
-          <CalendarRange size={28} className="mx-auto mb-3 text-slate-300 dark:text-zinc-700" />
-          {activeTrips.length === 0 ? `No ${section} trips.` : `No trips match "${query}".`}
+        <div className="mt-6">
+          <EmptyState
+            icon={<CalendarRange size={32} className="mx-auto text-slate-400 dark:text-zinc-600" />}
+            title={activeTrips.length === 0 ? `No ${section} trips` : "No matches"}
+            subtitle={activeTrips.length === 0 ? "Trips will show up here once scheduled." : `No trips match "${query}".`}
+          />
         </div>
       ) : (
         <div className="mt-6 flex flex-col gap-6">
           {[...byDate.entries()].map(([date, dayTrips]) => (
             <div key={date}>
-              <p className="ui mb-2 text-sm font-semibold text-slate-500 dark:text-zinc-400">
-                {prettyDate(date)}{" "}
-                <span className="font-normal text-slate-400 dark:text-zinc-600">
-                  · {dayTrips.length} trip{dayTrips.length === 1 ? "" : "s"}
-                </span>
+              <p className="ui mb-2 text-sm font-semibold text-muted-foreground">
+                {prettyDate(date)} <span className="font-normal">· {dayTrips.length} trip{dayTrips.length === 1 ? "" : "s"}</span>
               </p>
-              <div className="flex flex-col gap-2">
-                {dayTrips.map((t) => {
-                  const operatorId = t.bus?.operator?.id;
-                  const href = operatorId ? `/admin/trip-enter?operatorId=${operatorId}&tripId=${t.id}` : null;
-                  const row = (
-                    <div className="min-w-0 flex-1">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <p className="truncate font-heading font-semibold">{t.route?.name ?? "—"}</p>
-                        <span
-                          className={`ui shrink-0 rounded-full px-2 py-0.5 text-[11px] font-semibold capitalize ${STATUS_STYLE[t.status] ?? STATUS_STYLE.scheduled}`}
-                        >
-                          {t.status}
-                        </span>
-                        {t.cancellation_requested_at && (
-                          <span className="ui flex shrink-0 items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-semibold text-amber-700 dark:bg-amber-950/50 dark:text-amber-300">
-                            <ShieldAlert size={11} /> Cancellation requested
+              <Card>
+                <div className="flex flex-col">
+                  {dayTrips.map((t) => {
+                    const operatorId = t.bus?.operator?.id;
+                    const href = operatorId ? `/admin/trip-enter?operatorId=${operatorId}&tripId=${t.id}` : null;
+                    const row = (
+                      <div className="min-w-0 flex-1">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <p className="truncate font-heading font-semibold">{t.route?.name ?? "—"}</p>
+                          <span
+                            className={`ui shrink-0 rounded-full px-2 py-0.5 text-[11px] font-semibold capitalize ${STATUS_STYLE[t.status] ?? STATUS_STYLE.scheduled}`}
+                          >
+                            {t.status}
                           </span>
-                        )}
+                          {t.cancellation_requested_at && (
+                            <span className="ui flex shrink-0 items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-semibold text-amber-700 dark:bg-amber-950/50 dark:text-amber-300">
+                              <ShieldAlert size={11} /> Cancellation requested
+                            </span>
+                          )}
+                        </div>
+                        <p className="ui mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted-foreground">
+                          <span className="font-medium text-foreground">{t.bus?.operator?.name ?? "—"}</span>
+                          <span>·</span>
+                          <span className="flex items-center gap-1">
+                            <Users size={13} />
+                            {t.bus?.bus_type?.name ?? "—"} · {t.bus?.bus_type?.seat_count ?? "—"} seats · Bus{" "}
+                            {t.bus?.reg_no ?? "—"}
+                          </span>
+                        </p>
                       </div>
-                      <p className="ui mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-slate-500 dark:text-zinc-400">
-                        <span className="font-medium text-slate-700 dark:text-zinc-300">
-                          {t.bus?.operator?.name ?? "—"}
+                    );
+                    return href ? (
+                      <a
+                        key={t.id}
+                        href={href}
+                        className="flex items-center justify-between gap-3 border-b border-border p-4 transition-colors last:border-0 hover:bg-muted/50"
+                      >
+                        {row}
+                        <span className="shrink-0 font-heading font-bold text-brand dark:text-blue-400">
+                          {colomboTime(t.depart_at)}
                         </span>
-                        <span className="text-slate-300 dark:text-zinc-700">·</span>
-                        <span className="flex items-center gap-1">
-                          <Users size={13} />
-                          {t.bus?.bus_type?.name ?? "—"} · {t.bus?.bus_type?.seat_count ?? "—"} seats · Bus{" "}
-                          {t.bus?.reg_no ?? "—"}
+                      </a>
+                    ) : (
+                      <div key={t.id} className="flex items-center justify-between gap-3 border-b border-border p-4 last:border-0">
+                        {row}
+                        <span className="shrink-0 font-heading font-bold text-brand dark:text-blue-400">
+                          {colomboTime(t.depart_at)}
                         </span>
-                      </p>
-                    </div>
-                  );
-                  return href ? (
-                    <a key={t.id} href={href} className="card card-hover flex items-center justify-between gap-3 p-4">
-                      {row}
-                      <span className="shrink-0 font-heading font-bold text-brand dark:text-blue-400">
-                        {colomboTime(t.depart_at)}
-                      </span>
-                    </a>
-                  ) : (
-                    <div key={t.id} className="card flex items-center justify-between gap-3 p-4">
-                      {row}
-                      <span className="shrink-0 font-heading font-bold text-brand dark:text-blue-400">
-                        {colomboTime(t.depart_at)}
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </Card>
             </div>
           ))}
         </div>

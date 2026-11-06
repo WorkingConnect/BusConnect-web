@@ -93,13 +93,13 @@ export function PayoutActions({ tripId }: { tripId: string }) {
       <div className="flex items-center gap-1.5">
         {error && <span className="ui text-xs text-red-600 dark:text-red-400">{error}</span>}
         {!error && (
-          <span className="ui text-xs text-slate-600 dark:text-zinc-400">Delete this trip for good?</span>
+          <span className="ui text-xs text-muted-foreground">Delete this trip for good?</span>
         )}
         <button
           type="button"
           onClick={() => setConfirming(false)}
           disabled={busy}
-          className="ui rounded-lg border border-slate-200 px-2.5 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-60 dark:border-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-800"
+          className="ui rounded-lg border border-border px-2.5 py-1.5 text-xs font-semibold text-foreground hover:bg-muted disabled:opacity-60"
         >
           No
         </button>

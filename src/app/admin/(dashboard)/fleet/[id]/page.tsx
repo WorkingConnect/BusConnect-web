@@ -1,8 +1,9 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, LayoutGrid } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { getAdminBus, listAdminBusTypes, getAdminBusLayout, ApiError, type AdminBusDetail, type AdminBusType, type AdminBusLayoutContext } from "@/lib/api";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BusDetailCard } from "./bus-detail-card";
 import { SeatMapEditor } from "./seat-map/seat-map-editor";
 
@@ -53,7 +54,7 @@ export default async function AdminBusDetailPage({
     <div className="mx-auto w-full max-w-2xl">
       <Link
         href="/admin/fleet"
-        className="ui inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 transition-colors hover:text-slate-900 dark:text-zinc-400 dark:hover:text-white"
+        className="ui inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
       >
         <ArrowLeft size={15} /> Back to fleet
       </Link>
@@ -62,18 +63,20 @@ export default async function AdminBusDetailPage({
         <BusDetailCard bus={bus} busTypes={busTypes} />
       </div>
 
-      <div className="card-lg mt-6 p-6">
-        <h2 className="ui text-xs font-semibold uppercase tracking-wide text-slate-400 dark:text-zinc-600">
-          Seat map
-        </h2>
-        <div className="mt-4">
+      <Card className="mt-5">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <LayoutGrid size={15} className="text-brand dark:text-blue-400" /> Seat map
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
           <SeatMapEditor
             busId={bus.id}
             initialLayout={layoutCtx?.bus_type?.layout_json ?? null}
             submittedSeatCount={layoutCtx?.bus_type?.seat_count ?? bus.bus_type?.seat_count ?? 40}
           />
-        </div>
-      </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

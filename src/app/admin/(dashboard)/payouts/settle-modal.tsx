@@ -57,7 +57,7 @@ export function SettleModal({
         <div className="flex items-start justify-between gap-4">
           <div>
             <h2 className="font-heading text-lg font-bold tracking-tight">Settle payout</h2>
-            <p className="ui text-sm text-slate-500 dark:text-zinc-400">
+            <p className="ui text-sm text-muted-foreground">
               {detail?.route?.name ?? "…"} · {detail?.bus?.operator?.name ?? ""}
             </p>
           </div>
@@ -65,7 +65,7 @@ export function SettleModal({
             type="button"
             onClick={onClose}
             aria-label="Close"
-            className="rounded-lg p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-zinc-800 dark:hover:text-zinc-300"
+            className="rounded-lg p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
           >
             <X size={18} />
           </button>
@@ -74,28 +74,28 @@ export function SettleModal({
         {loadErr ? (
           <p className="ui mt-4 text-sm text-red-600 dark:text-red-400">{loadErr}</p>
         ) : !detail ? (
-          <div className="mt-6 flex items-center gap-2 text-slate-500 dark:text-zinc-400">
+          <div className="mt-6 flex items-center gap-2 text-muted-foreground">
             <Loader2 size={16} className="animate-spin" /> Loading…
           </div>
         ) : (
           <form onSubmit={submit} className="mt-4">
             {/* Money breakdown */}
-            <div className="rounded-xl bg-slate-50 p-4 dark:bg-zinc-900">
+            <div className="rounded-xl bg-muted p-4">
               <Row label={`Gross fares (${detail.seats_sold} seat${detail.seats_sold === 1 ? "" : "s"})`} value={money(detail.gross)} />
               <Row label={`Commission (${detail.commission_pct}%)`} value={`− ${money(detail.commission_amount)}`} muted />
-              <div className="my-2 border-t border-slate-200 dark:border-zinc-800" />
+              <div className="my-2 border-t border-border" />
               <Row label="Net payable to operator" value={money(detail.net_amount)} bold />
             </div>
 
             {/* Bank account */}
-            <div className="mt-4 flex items-start gap-3 rounded-xl border border-slate-200 p-3 dark:border-zinc-800">
-              <Landmark size={16} className="mt-0.5 shrink-0 text-slate-400" />
+            <div className="mt-4 flex items-start gap-3 rounded-xl border border-border p-3">
+              <Landmark size={16} className="mt-0.5 shrink-0 text-muted-foreground" />
               <div className="ui text-sm">
-                <p className="text-xs font-medium uppercase tracking-wide text-slate-400 dark:text-zinc-500">
+                <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                   Operator bank account
                 </p>
                 {bank ? (
-                  <p className="mt-0.5 text-slate-700 dark:text-zinc-300">
+                  <p className="mt-0.5 text-foreground">
                     {bank.bankName ?? "—"} · {bank.branchName ?? "—"}
                     <br />
                     A/C {bank.accountNumber ?? "—"}
@@ -109,8 +109,8 @@ export function SettleModal({
             </div>
 
             {/* Reference + slip */}
-            <label className="ui mt-4 flex flex-col gap-1.5 text-sm font-medium text-slate-700 dark:text-zinc-300">
-              Bank reference <span className="font-normal text-slate-400 dark:text-zinc-500">(optional)</span>
+            <label className="ui mt-4 flex flex-col gap-1.5 text-sm font-medium text-foreground">
+              Bank reference <span className="font-normal text-muted-foreground">(optional)</span>
               <input
                 value={reference}
                 onChange={(e) => setReference(e.target.value)}
@@ -119,9 +119,9 @@ export function SettleModal({
               />
             </label>
 
-            <div className="ui mt-4 flex flex-col gap-1.5 text-sm font-medium text-slate-700 dark:text-zinc-300">
+            <div className="ui mt-4 flex flex-col gap-1.5 text-sm font-medium text-foreground">
               Transfer slip
-              <label className="flex cursor-pointer items-center gap-2 rounded-xl border border-dashed border-slate-300 px-3 py-3 text-sm text-slate-500 hover:border-brand hover:text-brand dark:border-zinc-700 dark:text-zinc-400">
+              <label className="flex cursor-pointer items-center gap-2 rounded-xl border border-dashed border-border px-3 py-3 text-sm text-muted-foreground hover:border-brand hover:text-brand">
                 <Upload size={15} />
                 {slip ? slip.name : "Choose an image or PDF…"}
                 <input
@@ -155,8 +155,8 @@ export function SettleModal({
 function Row({ label, value, muted, bold }: { label: string; value: string; muted?: boolean; bold?: boolean }) {
   return (
     <div className="ui flex items-center justify-between py-0.5 text-sm">
-      <span className={muted ? "text-slate-400 dark:text-zinc-500" : "text-slate-600 dark:text-zinc-400"}>{label}</span>
-      <span className={bold ? "font-heading font-bold text-slate-900 dark:text-white" : "font-medium text-slate-700 dark:text-zinc-300"}>
+      <span className={muted ? "text-muted-foreground/70" : "text-muted-foreground"}>{label}</span>
+      <span className={bold ? "font-heading font-bold text-foreground" : "font-medium text-foreground"}>
         {value}
       </span>
     </div>

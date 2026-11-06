@@ -3,13 +3,15 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { ArrowLeft, Loader2, Trash2, User, Building2, IdCard, ShieldCheck, Ticket, ArrowUpRight, Wallet } from "lucide-react";
+import { ArrowLeft, Loader2, Trash2, IdCard, ShieldCheck, Ticket, ArrowUpRight } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { getAdminUser, hideAdminBooking, ApiError, type AdminUserDetail, type AdminUserBooking } from "@/lib/api";
 import { DeleteUserButton } from "./delete-user-button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { KpiCard } from "../../dashboard-ui";
 
 function money(n: number) {
   return `LKR ${Number(n).toLocaleString("en-LK", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
@@ -70,7 +72,7 @@ export default function AdminUserDetailPage() {
 
   if (!detail) {
     return (
-      <div className="flex items-center gap-2 text-slate-500 dark:text-zinc-400">
+      <div className="flex items-center gap-2 text-muted-foreground">
         <Loader2 size={16} className="animate-spin" /> Loading user…
       </div>
     );
@@ -83,73 +85,96 @@ export default function AdminUserDetailPage() {
     <div>
       <Link
         href="/admin/users"
-        className="ui inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 transition-colors hover:text-slate-900 dark:text-zinc-400 dark:hover:text-white"
+        className="ui inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
       >
         <ArrowLeft size={15} /> Back to Users
       </Link>
 
-      <div className="mt-4 flex items-center gap-3">
-        <Avatar className="h-14 w-14 overflow-hidden rounded-2xl border border-slate-200 after:rounded-2xl dark:border-zinc-800">
-          {p?.avatar_url && <AvatarImage src={p.avatar_url} alt={`${displayName} avatar`} className="rounded-2xl" />}
-          <AvatarFallback className="rounded-2xl bg-brand-soft text-brand dark:bg-brand-soft-dark dark:text-blue-300">
-            <User size={22} />
-          </AvatarFallback>
-        </Avatar>
-        <div className="min-w-0">
-          <h1 className="truncate font-heading text-2xl font-bold tracking-tight">{displayName}</h1>
-          <p className="ui mt-0.5 truncate text-sm text-slate-500 dark:text-zinc-400">
-            {[detail.email, p?.phone].filter(Boolean).join(" · ") || "No contact on file"} · Joined{" "}
-            {formatDate(detail.created_at)}
-          </p>
-        </div>
-      </div>
-
-      {p?.deleted_at && (
-        <p className="ui mt-4 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-950/40 dark:text-red-300">
-          This passenger profile was deleted on {formatDate(p.deleted_at)}.
-        </p>
-      )}
-
-      {/* ── Passenger profile ─────────────────────────────────────────── */}
-      {p && (
-        <Section icon={<User size={16} />} title="Passenger profile">
-          <div className="grid grid-cols-1 gap-x-6 gap-y-2 sm:grid-cols-2">
-            <Field label="Name" value={p.name} />
-            <Field label="Phone" value={p.phone} />
-            <Field label="Email" value={p.email} />
-            <Field label="NIC" value={p.nic} />
-          </div>
-        </Section>
-      )}
-
-      {/* ── Wallet ─────────────────────────────────────────────────────── */}
-      <Section icon={<Wallet size={16} />} title="Wallet">
-        <p className="font-heading text-2xl font-bold text-brand dark:text-blue-400">
-          {money(detail.wallet_balance)}
-        </p>
-      </Section>
-
-      {/* ── Operator memberships ──────────────────────────────────────── */}
-      {detail.operator_memberships.length > 0 && (
-        <Section icon={<Building2 size={16} />} title="Operator membership">
-          <div className="flex flex-col gap-2">
-            {detail.operator_memberships.map((m, i) => (
-              <div key={i} className="flex items-center justify-between rounded-xl border border-slate-200 p-3 dark:border-zinc-800">
-                <div>
-                  <p className="font-medium">{m.operator?.name ?? "—"}</p>
-                  <p className="ui text-xs capitalize text-slate-500 dark:text-zinc-400">
-                    {m.role} · {m.operator?.status ?? "—"}
-                  </p>
-                </div>
-                {m.operator && (
-                  <Button render={<Link href={`/admin/operators/${m.operator.id}`} />} nativeButton={false} variant="link" size="sm" className="gap-1">
-                    View operator <ArrowUpRight size={12} />
-                  </Button>
-                )}
+      {/* ── Identity card: avatar/name/contact + passenger fields, one
+          compact card instead of a header bar plus a separate full-width
+          "Passenger profile" section. ──────────────────────────────────── */}
+      <Card className="mt-4">
+        <CardContent className="pt-6">
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex min-w-0 items-center gap-3">
+              <Avatar className="h-14 w-14 shrink-0 overflow-hidden rounded-2xl border border-border after:rounded-2xl">
+                {p?.avatar_url && <AvatarImage src={p.avatar_url} alt={`${displayName} avatar`} className="rounded-2xl" />}
+                <AvatarFallback className="rounded-2xl bg-brand-soft text-lg font-bold leading-none text-brand dark:bg-brand-soft-dark dark:text-blue-300">
+                  {displayName.charAt(0).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+              <div className="min-w-0">
+                <h1 className="truncate font-heading text-2xl font-bold tracking-tight">{displayName}</h1>
+                <p className="ui mt-0.5 truncate text-sm text-muted-foreground">
+                  {[detail.email, p?.phone].filter(Boolean).join(" · ") || "No contact on file"} · Joined{" "}
+                  {formatDate(detail.created_at)}
+                </p>
               </div>
-            ))}
+            </div>
+            <div className="shrink-0 text-right">
+              <p className="ui text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                Wallet balance
+              </p>
+              <p className="font-heading mt-0.5 text-xl font-bold text-brand dark:text-blue-400">
+                {money(detail.wallet_balance)}
+              </p>
+            </div>
           </div>
-        </Section>
+
+          {p?.deleted_at && (
+            <p className="ui mt-4 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-950/40 dark:text-red-300">
+              This passenger profile was deleted on {formatDate(p.deleted_at)}.
+            </p>
+          )}
+
+          {p && (
+            <dl className="mt-4 divide-y divide-border border-t border-border">
+              <Row label="Name" value={p.name} />
+              <Row label="Phone" value={p.phone} />
+              <Row label="Email" value={p.email} />
+              <Row label="NIC" value={p.nic} />
+            </dl>
+          )}
+
+          {/* ── Operator membership: folded into the identity card rather
+              than its own separate full-width section below. ──────────── */}
+          {detail.operator_memberships.length > 0 && (
+            <div className="mt-4 border-t border-border pt-4">
+              <p className="ui text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                Operator membership
+              </p>
+              <div className="mt-3 flex flex-col gap-2">
+                {detail.operator_memberships.map((m, i) => (
+                  <div key={i} className="flex items-center justify-between rounded-xl border border-border p-3">
+                    <div>
+                      <p className="font-medium">{m.operator?.name ?? "—"}</p>
+                      <p className="ui text-xs capitalize text-muted-foreground">
+                        {m.role} · {m.operator?.status ?? "—"}
+                      </p>
+                    </div>
+                    {m.operator && (
+                      <Button render={<Link href={`/admin/operators/${m.operator.id}`} />} nativeButton={false} variant="link" size="sm" className="gap-1">
+                        View operator <ArrowUpRight size={12} />
+                      </Button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* ── Admin access: a small tile, not a full-width bar ─────────────── */}
+      {detail.admin_role && (
+        <div className="mt-5 flex flex-wrap gap-3">
+          <KpiCard
+            icon={<ShieldCheck size={16} />}
+            tone="emerald"
+            label="Platform admin"
+            value={detail.admin_role.charAt(0).toUpperCase() + detail.admin_role.slice(1)}
+          />
+        </div>
       )}
 
       {/* ── Pilot roster ──────────────────────────────────────────────── */}
@@ -157,12 +182,12 @@ export default function AdminUserDetailPage() {
         <Section icon={<IdCard size={16} />} title="Pilot / conductor roster">
           <div className="flex flex-col gap-2">
             {detail.pilot_roster.map((r) => (
-              <div key={r.id} className="flex items-center justify-between rounded-xl border border-slate-200 p-3 dark:border-zinc-800">
+              <div key={r.id} className="flex items-center justify-between rounded-xl border border-border p-3">
                 <div>
                   <p className="font-medium">
                     {r.operator?.name ?? "—"} {r.assigned_role ? `· ${r.assigned_role}` : ""}
                   </p>
-                  <p className="ui text-xs capitalize text-slate-500 dark:text-zinc-400">
+                  <p className="ui text-xs capitalize text-muted-foreground">
                     {r.status} {r.bus ? `· Bus ${r.bus.reg_no}` : "· Not assigned to a bus"}
                   </p>
                 </div>
@@ -175,22 +200,10 @@ export default function AdminUserDetailPage() {
         </Section>
       )}
 
-      {/* ── Admin role ────────────────────────────────────────────────── */}
-      {detail.admin_role && (
-        <Section icon={<ShieldCheck size={16} />} title="Platform admin">
-          <p className="ui flex items-center gap-2 text-sm">
-            This account has platform admin access:
-            <Badge className="rounded-full border-transparent bg-emerald-100 capitalize text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300">
-              {detail.admin_role}
-            </Badge>
-          </p>
-        </Section>
-      )}
-
       {/* ── Bookings ──────────────────────────────────────────────────── */}
       <Section icon={<Ticket size={16} />} title={`Bookings (${detail.bookings.length})`}>
         {detail.bookings.length === 0 ? (
-          <p className="ui text-sm text-slate-500 dark:text-zinc-400">No bookings on this account.</p>
+          <p className="ui text-sm text-muted-foreground">No bookings on this account.</p>
         ) : (
           <div className="flex flex-col gap-2">
             {detail.bookings.map((b) => (
@@ -206,7 +219,7 @@ export default function AdminUserDetailPage() {
           Danger zone
         </h2>
         <div className="mt-3 flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center">
-          <p className="ui text-xs text-slate-600 dark:text-zinc-400">
+          <p className="ui text-xs text-muted-foreground">
             Deleting removes this account for good. Only possible if it has no booking history and
             isn&apos;t linked to an operator or pilot login. Accounts with real history should stay
             as-is instead.
@@ -242,7 +255,7 @@ function BookingRow({ b, onHidden }: { b: AdminUserBooking; onHidden: () => void
   }
 
   return (
-    <div className="rounded-xl border border-slate-200 p-3 dark:border-zinc-800">
+    <div className="rounded-xl border border-border p-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="flex items-center gap-2">
           <p className="font-medium">{b.trip?.route?.name ?? "—"}</p>
@@ -275,18 +288,18 @@ function BookingRow({ b, onHidden }: { b: AdminUserBooking; onHidden: () => void
           )}
         </div>
       </div>
-      <p className="ui mt-1 text-xs text-slate-500 dark:text-zinc-400">
+      <p className="ui mt-1 text-xs text-muted-foreground">
         {b.trip?.bus?.operator?.name ?? "—"} · Bus {b.trip?.bus?.reg_no ?? "—"} ·{" "}
         {b.trip ? dateTime(b.trip.depart_at) : "—"} · Seats {b.seats.join(", ")}
       </p>
       {b.tickets.length > 0 && (
-        <p className="ui mt-1 text-xs text-slate-400 dark:text-zinc-500">
+        <p className="ui mt-1 text-xs text-muted-foreground">
           Ticket: {b.tickets[0].status}
           {b.tickets[0].boarded_seats.length > 0 ? ` (boarded ${b.tickets[0].boarded_seats.join(", ")})` : ""}
         </p>
       )}
       {b.payments.length > 0 && (
-        <p className="ui mt-1 text-xs text-slate-400 dark:text-zinc-500">
+        <p className="ui mt-1 text-xs text-muted-foreground">
           Payment: {b.payments[0].status} · {money(b.payments[0].amount)} · {b.payments[0].method}
         </p>
       )}
@@ -302,20 +315,22 @@ function BookingRow({ b, onHidden }: { b: AdminUserBooking; onHidden: () => void
 
 function Section({ icon, title, children }: { icon: React.ReactNode; title: string; children: React.ReactNode }) {
   return (
-    <section className="mt-8">
-      <div className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-zinc-400">
-        {icon} {title}
-      </div>
-      <div className="card p-4">{children}</div>
-    </section>
+    <Card className="mt-8">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          {icon} {title}
+        </CardTitle>
+      </CardHeader>
+      <CardContent>{children}</CardContent>
+    </Card>
   );
 }
 
-function Field({ label, value }: { label: string; value: string | null }) {
+function Row({ label, value }: { label: string; value: string | null }) {
   return (
-    <div>
-      <p className="ui text-xs font-medium uppercase tracking-wide text-slate-400 dark:text-zinc-500">{label}</p>
-      <p className="mt-0.5 text-sm">{value || "—"}</p>
+    <div className="flex items-center justify-between gap-3 py-2.5 text-sm">
+      <dt className="shrink-0 text-muted-foreground">{label}</dt>
+      <dd className="break-words text-right font-medium">{value || "—"}</dd>
     </div>
   );
 }

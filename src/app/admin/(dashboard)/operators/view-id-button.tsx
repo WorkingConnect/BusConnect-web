@@ -48,7 +48,7 @@ export function ViewIdButton({ operatorId }: { operatorId: string }) {
         type="button"
         onClick={open}
         disabled={busy}
-        className="ui inline-flex items-center gap-1.5 rounded-lg border border-slate-200 px-2.5 py-1.5 text-xs font-semibold text-slate-700 transition-colors hover:bg-slate-50 disabled:opacity-60 dark:border-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-800"
+        className="ui inline-flex items-center gap-1.5 rounded-lg border border-border px-2.5 py-1.5 text-xs font-semibold text-foreground transition-colors hover:bg-muted disabled:opacity-60"
       >
         {busy ? <Loader2 size={13} className="animate-spin" /> : <FileText size={13} />}
         View ID

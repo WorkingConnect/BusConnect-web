@@ -2,9 +2,12 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { PiggyBank, Search, Loader2, Users, ArrowUpRight } from "lucide-react";
+import { Search, Loader2, Users, ArrowUpRight, Wallet } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { getAdminWalletOverview, ApiError, type AdminWalletOverview } from "@/lib/api";
+import { Card } from "@/components/ui/card";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { KpiCard, EmptyState } from "../dashboard-ui";
 
 function money(n: number, currency: string) {
   return `${currency} ${Number(n).toLocaleString("en-LK", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
@@ -61,7 +64,7 @@ export default function AdminWalletPage() {
 
   if (!overview) {
     return (
-      <div className="flex items-center gap-2 text-slate-500 dark:text-zinc-400">
+      <div className="flex items-center gap-2 text-muted-foreground">
         <Loader2 size={16} className="animate-spin" /> Loading wallet balances…
       </div>
     );
@@ -69,25 +72,18 @@ export default function AdminWalletPage() {
 
   return (
     <div>
-      <div className="flex items-center gap-2.5">
-        <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand-soft text-brand dark:bg-brand-soft-dark dark:text-blue-300">
-          <PiggyBank size={18} />
-        </span>
-        <div>
-          <h1 className="font-heading text-2xl font-bold tracking-tight">Wallet</h1>
-          <p className="ui text-sm text-slate-500 dark:text-zinc-400">
-            Total money BusConnect currently owes passengers, and who it&apos;s owed to.
-          </p>
-        </div>
-      </div>
+      <h1 className="font-heading text-3xl font-bold tracking-tight">Wallet</h1>
+      <p className="ui mt-1 text-sm text-muted-foreground">
+        Total money BusConnect currently owes passengers, and who it&apos;s owed to.
+      </p>
 
-      <div className="mt-6 grid grid-cols-2 gap-3">
-        <Stat label="Total wallet balance" value={money(overview.totalBalance, overview.currency)} accent />
-        <Stat label="Users with a balance" value={String(overview.holderCount)} />
+      <div className="mt-5 grid grid-cols-2 gap-3 sm:max-w-md">
+        <KpiCard icon={<Wallet size={16} />} tone="emerald" label="Total balance" value={money(overview.totalBalance, overview.currency)} />
+        <KpiCard icon={<Users size={16} />} tone="blue" label="Users with a balance" value={String(overview.holderCount)} />
       </div>
 
       <div className="relative mt-6 max-w-md">
-        <Search size={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+        <Search size={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
         <input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
@@ -96,57 +92,59 @@ export default function AdminWalletPage() {
         />
       </div>
 
-      <p className="ui mt-3 text-xs text-slate-400 dark:text-zinc-500">
+      <p className="ui mt-3 text-xs text-muted-foreground">
         {filtered.length} of {overview.wallets.length} users with a balance
       </p>
 
-      <div className="mt-3 flex flex-col gap-2">
+      <div className="mt-3">
         {filtered.length === 0 ? (
-          <div className="card p-10 text-center text-sm text-slate-500 dark:text-zinc-400">
-            {overview.wallets.length === 0 ? (
-              <span className="inline-flex items-center gap-2">
-                <Users size={16} /> No users currently hold a wallet balance.
-              </span>
-            ) : (
-              "No users match that search."
-            )}
-          </div>
+          <EmptyState
+            icon={<Users size={32} className="mx-auto text-slate-400 dark:text-zinc-600" />}
+            title={overview.wallets.length === 0 ? "No wallet balances" : "No matches"}
+            subtitle={overview.wallets.length === 0 ? "No users currently hold a wallet balance." : "No users match that search."}
+          />
         ) : (
-          filtered.map((w) => (
-            <div key={w.passengerId} className="card flex items-center justify-between gap-4 p-4">
-              <div className="min-w-0">
-                <p className="truncate font-heading font-semibold">{w.name ?? w.email ?? w.phone ?? "—"}</p>
-                <p className="ui mt-0.5 truncate text-sm text-slate-500 dark:text-zinc-400">
-                  {[w.email, w.phone].filter(Boolean).join(" · ") || "No contact on file"}
-                </p>
-                <p className="ui mt-0.5 text-xs text-slate-400 dark:text-zinc-500">Updated {formatDate(w.updatedAt)}</p>
-              </div>
-              <div className="flex shrink-0 items-center gap-4">
-                <p className="font-heading text-lg font-bold text-brand dark:text-blue-400">
-                  {money(w.balance, w.currency)}
-                </p>
-                <Link
-                  href={`/admin/users/${w.passengerId}`}
-                  className="ui inline-flex items-center gap-1 rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 dark:border-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-800"
-                >
-                  Details <ArrowUpRight size={12} />
-                </Link>
-              </div>
-            </div>
-          ))
+          <Card>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>User</TableHead>
+                  <TableHead>Contact</TableHead>
+                  <TableHead>Updated</TableHead>
+                  <TableHead className="text-right">Balance</TableHead>
+                  <TableHead className="text-right">Action</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filtered.map((w) => (
+                  <TableRow key={w.passengerId} className="hover:bg-muted/50">
+                    <TableCell>
+                      <span className="truncate font-heading font-semibold">{w.name ?? w.email ?? w.phone ?? "—"}</span>
+                    </TableCell>
+                    <TableCell className="ui text-sm text-muted-foreground">
+                      {[w.email, w.phone].filter(Boolean).join(" · ") || "No contact on file"}
+                    </TableCell>
+                    <TableCell className="ui text-sm text-muted-foreground">{formatDate(w.updatedAt)}</TableCell>
+                    <TableCell className="text-right">
+                      <span className="font-heading font-bold text-brand dark:text-blue-400">
+                        {money(w.balance, w.currency)}
+                      </span>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <Link
+                        href={`/admin/users/${w.passengerId}`}
+                        className="ui inline-flex items-center gap-1 rounded-lg border border-border px-2.5 py-1.5 text-xs font-semibold text-foreground hover:bg-muted"
+                      >
+                        Details <ArrowUpRight size={12} />
+                      </Link>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </Card>
         )}
       </div>
-    </div>
-  );
-}
-
-function Stat({ label, value, accent }: { label: string; value: string; accent?: boolean }) {
-  return (
-    <div className="card px-4 py-4 text-center">
-      <div className={`font-heading text-lg font-bold ${accent ? "text-emerald-600 dark:text-emerald-400" : "text-brand dark:text-blue-400"}`}>
-        {value}
-      </div>
-      <div className="ui mt-1 text-xs uppercase tracking-wide text-slate-500 dark:text-zinc-500">{label}</div>
     </div>
   );
 }

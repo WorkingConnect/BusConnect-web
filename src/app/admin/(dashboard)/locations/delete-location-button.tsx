@@ -35,7 +35,7 @@ export function DeleteLocationButton({ locationId, locationName }: { locationId:
       <button
         type="button"
         onClick={() => setConfirming(true)}
-        className="ui inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg bg-slate-100 px-2.5 py-1.5 text-xs font-semibold text-slate-600 transition-colors hover:bg-red-100 hover:text-red-700 dark:bg-zinc-800 dark:text-zinc-400 dark:hover:bg-red-950/50 dark:hover:text-red-300"
+        className="ui inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg bg-muted px-2.5 py-1.5 text-xs font-semibold text-muted-foreground transition-colors hover:bg-red-100 hover:text-red-700 dark:hover:bg-red-950/50 dark:hover:text-red-300"
       >
         <Trash2 size={13} />
       </button>
@@ -45,14 +45,14 @@ export function DeleteLocationButton({ locationId, locationName }: { locationId:
   return (
     <div className="flex flex-nowrap items-center gap-2">
       {error && <span className="ui whitespace-nowrap text-xs text-red-600 dark:text-red-400">{error}</span>}
-      <span className="ui whitespace-nowrap text-xs text-slate-600 dark:text-zinc-400">
+      <span className="ui whitespace-nowrap text-xs text-muted-foreground">
         Permanently delete <strong>{locationName}</strong>?
       </span>
       <button
         type="button"
         onClick={() => setConfirming(false)}
         disabled={busy}
-        className="ui shrink-0 whitespace-nowrap rounded-lg border border-slate-200 px-2.5 py-1.5 text-xs font-semibold text-slate-700 transition-colors hover:bg-slate-50 disabled:opacity-60 dark:border-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-800"
+        className="ui shrink-0 whitespace-nowrap rounded-lg border border-border px-2.5 py-1.5 text-xs font-semibold text-foreground transition-colors hover:bg-muted disabled:opacity-60"
       >
         Cancel
       </button>

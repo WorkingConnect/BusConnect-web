@@ -1,6 +1,8 @@
 import Link from "next/link";
+import { Building2, CheckCircle2, Clock, Ban } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { listAdminOperators, ApiError, type AdminOperator } from "@/lib/api";
+import { KpiCard } from "../dashboard-ui";
 import { OperatorList } from "./operator-list";
 
 export default async function AdminOperatorsPage() {
@@ -38,12 +40,23 @@ export default async function AdminOperatorsPage() {
     );
   }
 
+  const activeCount = operators.filter((o) => o.status === "active").length;
+  const pendingCount = operators.filter((o) => o.status === "pending").length;
+  const suspendedCount = operators.filter((o) => o.status === "suspended").length;
+
   return (
     <div>
-      <h1 className="font-heading text-2xl font-bold tracking-tight">Operators</h1>
-      <p className="ui mt-1 text-sm text-slate-600 dark:text-zinc-400">
+      <h1 className="font-heading text-3xl font-bold tracking-tight">Operators</h1>
+      <p className="ui mt-1 text-sm text-muted-foreground">
         Approve new bus companies before their trips become bookable, or put one on hold if needed.
       </p>
+
+      <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <KpiCard icon={<Building2 size={16} />} tone="blue" label="Total operators" value={String(operators.length)} />
+        <KpiCard icon={<CheckCircle2 size={16} />} tone="emerald" label="Active" value={String(activeCount)} />
+        <KpiCard icon={<Clock size={16} />} tone="amber" label="Pending" value={String(pendingCount)} />
+        <KpiCard icon={<Ban size={16} />} tone="slate" label="On hold" value={String(suspendedCount)} />
+      </div>
 
       <OperatorList operators={operators} />
     </div>

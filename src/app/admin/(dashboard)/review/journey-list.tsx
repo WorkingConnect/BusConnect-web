@@ -2,8 +2,11 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { ChevronRight, Search } from "lucide-react";
+import { ChevronRight, Search, ClipboardCheck } from "lucide-react";
 import type { AdminJourney } from "@/lib/api";
+import { Card } from "@/components/ui/card";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { EmptyState } from "../dashboard-ui";
 import { ReviewStatusActions } from "./review-status-actions";
 
 const STATUS_STYLE: Record<string, string> = {
@@ -32,10 +35,10 @@ export function JourneyList({ journeys }: { journeys: AdminJourney[] }) {
 
   return (
     <div>
-      <div className="relative mt-6">
+      <div className="relative mt-6 max-w-md">
         <Search
           size={16}
-          className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-zinc-500"
+          className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
         />
         <input
           value={query}
@@ -45,45 +48,70 @@ export function JourneyList({ journeys }: { journeys: AdminJourney[] }) {
         />
       </div>
 
-      <div className="mt-4 flex flex-col gap-2">
+      <div className="mt-4">
         {filtered.length === 0 ? (
-          <div className="card p-10 text-center text-sm text-slate-500 dark:text-zinc-400">
-            {journeys.length === 0 ? "No journeys created yet." : `No journeys match "${query}".`}
-          </div>
+          <EmptyState
+            icon={<ClipboardCheck size={32} className="mx-auto text-slate-400 dark:text-zinc-600" />}
+            title={journeys.length === 0 ? "Nothing to review" : "No matches"}
+            subtitle={journeys.length === 0 ? "New journeys will show up here." : `No journeys match "${query}".`}
+          />
         ) : (
-          filtered.map((j) => <JourneyRow key={j.id} journey={j} />)
+          <Card>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Journey</TableHead>
+                  <TableHead>Schedule</TableHead>
+                  <TableHead>Bus &amp; crew</TableHead>
+                  <TableHead>Fare</TableHead>
+                  <TableHead className="text-right">Action</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filtered.map((j) => (
+                  <TableRow key={j.id} className="hover:bg-muted/50">
+                    <TableCell>
+                      <Link href={`/admin/review/${j.id}`} className="flex min-w-0 items-center gap-2">
+                        <span className="truncate font-heading font-semibold hover:text-brand dark:hover:text-blue-400">
+                          {j.route?.name ?? "—"}
+                        </span>
+                        <span className={`ui shrink-0 rounded-full px-2 py-0.5 text-[11px] font-semibold capitalize ${STATUS_STYLE[j.review_status]}`}>
+                          {j.review_status}
+                        </span>
+                      </Link>
+                      <p className="ui mt-0.5 text-xs text-muted-foreground">
+                        {j.operator?.name ?? "—"} · {j.code ?? "—"}
+                      </p>
+                    </TableCell>
+                    <TableCell className="ui text-sm text-muted-foreground">
+                      {formatTime(j.depart_time)} → {formatTime(j.arrive_time)}
+                    </TableCell>
+                    <TableCell className="ui text-sm text-muted-foreground">
+                      {j.bus?.reg_no ?? "—"}
+                      <span className="block text-xs">
+                        {j.driver?.name ?? "—"} · {j.conductor?.name ?? "—"}
+                      </span>
+                    </TableCell>
+                    <TableCell className="ui text-sm tabular-nums text-muted-foreground">
+                      LKR {Number(j.base_fare).toLocaleString("en-LK")}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex items-center justify-end gap-1.5">
+                        <ReviewStatusActions journeyId={j.id} reviewStatus={j.review_status} />
+                        <Link
+                          href={`/admin/review/${j.id}`}
+                          className="ui inline-flex items-center text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
+                        >
+                          <ChevronRight size={15} />
+                        </Link>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </Card>
         )}
-      </div>
-    </div>
-  );
-}
-
-function JourneyRow({ journey: j }: { journey: AdminJourney }) {
-  return (
-    <div className="card card-hover flex items-start justify-between gap-4 p-4">
-      <Link href={`/admin/review/${j.id}`} className="flex-1">
-        <div className="flex items-center gap-2">
-          <p className="font-medium">{j.route?.name ?? "—"}</p>
-          <span className={`ui rounded-full px-2 py-0.5 text-xs font-semibold capitalize ${STATUS_STYLE[j.review_status]}`}>
-            {j.review_status}
-          </span>
-        </div>
-        <p className="ui mt-0.5 text-sm text-slate-500 dark:text-zinc-400">
-          {j.operator?.name ?? "—"} · {j.code ?? "—"} · {formatTime(j.depart_time)} → {formatTime(j.arrive_time)}
-        </p>
-        <p className="ui mt-1 text-xs text-slate-500 dark:text-zinc-500">
-          {j.bus?.reg_no ?? "—"} · Driver {j.driver?.name ?? "—"} · Conductor {j.conductor?.name ?? "—"} · LKR{" "}
-          {Number(j.base_fare).toLocaleString("en-LK")}
-        </p>
-      </Link>
-      <div className="flex shrink-0 flex-col items-end gap-2">
-        <ReviewStatusActions journeyId={j.id} reviewStatus={j.review_status} />
-        <Link
-          href={`/admin/review/${j.id}`}
-          className="ui mt-1 flex items-center gap-0.5 text-xs font-medium text-slate-500 transition-colors hover:text-slate-900 dark:text-zinc-400 dark:hover:text-white"
-        >
-          Details <ChevronRight size={13} />
-        </Link>
       </div>
     </div>
   );

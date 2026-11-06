@@ -10,7 +10,7 @@ import {
   listAdminPayouts,
   ApiError,
 } from "@/lib/api";
-import { AdminNav } from "./admin-nav";
+import { AdminChrome } from "./admin-chrome";
 
 // Mirrors operator/(dashboard)/layout.tsx: this is the ONLY thing that
 // actually gates the sidebar chrome — proxy.ts's route guard just checks
@@ -74,24 +74,18 @@ export default async function AdminDashboardLayout({
   }
 
   return (
-    <div className="flex w-full flex-1 flex-col gap-6 px-4 py-8 sm:px-6 lg:flex-row lg:gap-8 lg:px-8">
-      <aside className="w-full shrink-0 lg:w-52">
-        <p className="ui text-xs font-semibold uppercase tracking-wide text-slate-400 dark:text-zinc-600">
-          BusConnect
-        </p>
-        <p className="font-heading mb-4 text-base font-bold tracking-tight">Admin</p>
-        <AdminNav
-          counts={{
-            operators: operatorsPending,
-            fleet: fleetPending,
-            pilots: pilotsPending,
-            refunds: refundsPending,
-            review: reviewPending,
-            payouts: payoutsPending,
-          }}
-        />
-      </aside>
-      <div className="min-w-0 flex-1">{children}</div>
+    <div className="flex w-full flex-1 flex-col lg:flex-row">
+      <AdminChrome
+        counts={{
+          operators: operatorsPending,
+          fleet: fleetPending,
+          pilots: pilotsPending,
+          refunds: refundsPending,
+          review: reviewPending,
+          payouts: payoutsPending,
+        }}
+      />
+      <div className="min-w-0 flex-1 px-4 py-8 pb-24 sm:px-6 lg:px-8 lg:pb-8">{children}</div>
     </div>
   );
 }

@@ -3,6 +3,9 @@
 import { useMemo, useState } from "react";
 import { ChevronDown, MapPin, Route as RouteIcon, Search } from "lucide-react";
 import type { AdminLocation, AdminRoute } from "@/lib/api";
+import { Card } from "@/components/ui/card";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { EmptyState } from "../dashboard-ui";
 import { VisibilityToggle } from "./visibility-toggle";
 import { DeleteLocationButton } from "./delete-location-button";
 
@@ -69,10 +72,10 @@ export function LocationList({ locations, routes }: { locations: AdminLocation[]
 
   return (
     <div>
-      <div className="relative mt-6">
+      <div className="relative mt-6 max-w-md">
         <Search
           size={16}
-          className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-zinc-500"
+          className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
         />
         <input
           value={query}
@@ -82,20 +85,24 @@ export function LocationList({ locations, routes }: { locations: AdminLocation[]
         />
       </div>
 
-      <div className="mt-4 flex flex-col gap-2">
+      <div className="mt-4 flex flex-col gap-3">
         {locations.length === 0 ? (
-          <div className="card p-10 text-center text-sm text-slate-500 dark:text-zinc-400">
-            No locations created yet.
-          </div>
+          <EmptyState
+            icon={<MapPin size={32} className="mx-auto text-slate-400 dark:text-zinc-600" />}
+            title="No locations created yet"
+            subtitle="Locations are created from the route editor."
+          />
         ) : visibleGroups.length === 0 ? (
-          <div className="card p-10 text-center text-sm text-slate-500 dark:text-zinc-400">
-            No locations match &quot;{query}&quot;.
-          </div>
+          <EmptyState
+            icon={<MapPin size={32} className="mx-auto text-slate-400 dark:text-zinc-600" />}
+            title="No matches"
+            subtitle={`No locations match "${query}".`}
+          />
         ) : (
           visibleGroups.map((g) => {
             const open = searching || openKeys.has(g.key);
             return (
-              <div key={g.key} className="card overflow-hidden p-0">
+              <Card key={g.key} className="overflow-hidden">
                 <button
                   type="button"
                   onClick={() => toggle(g.key)}
@@ -106,32 +113,44 @@ export function LocationList({ locations, routes }: { locations: AdminLocation[]
                     <img
                       src={g.imageUrl}
                       alt={`${g.label} photo`}
-                      className="h-12 w-12 shrink-0 rounded-lg border border-slate-200 object-cover dark:border-zinc-800"
+                      className="h-12 w-12 shrink-0 rounded-lg border border-border object-cover"
                     />
                   ) : (
-                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg border border-dashed border-slate-300 text-slate-400 dark:border-zinc-700 dark:text-zinc-600">
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg border border-dashed border-border text-muted-foreground">
                       {g.key === "__unassigned" ? <MapPin size={18} /> : <RouteIcon size={18} />}
                     </div>
                   )}
                   <span className="flex-1 font-medium">{g.label}</span>
                   <span className="flex shrink-0 items-center gap-2">
-                    <span className="ui text-xs text-slate-400 dark:text-zinc-500">
+                    <span className="ui text-xs text-muted-foreground">
                       {g.locations.length} location{g.locations.length === 1 ? "" : "s"}
                     </span>
                     <ChevronDown
                       size={15}
-                      className={`text-slate-400 transition-transform dark:text-zinc-500 ${open ? "rotate-180" : ""}`}
+                      className={`text-muted-foreground transition-transform ${open ? "rotate-180" : ""}`}
                     />
                   </span>
                 </button>
                 {open && (
-                  <div className="flex flex-col gap-2 border-t border-slate-100 p-2.5 dark:border-zinc-800">
-                    {g.locations.map((l) => (
-                      <LocationRow key={l.id} location={l} />
-                    ))}
+                  <div className="border-t border-border">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Location</TableHead>
+                          <TableHead>Coordinates</TableHead>
+                          <TableHead>Routes</TableHead>
+                          <TableHead className="text-right">Actions</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {g.locations.map((l) => (
+                          <LocationRow key={l.id} location={l} />
+                        ))}
+                      </TableBody>
+                    </Table>
                   </div>
                 )}
-              </div>
+              </Card>
             );
           })
         )}
@@ -144,22 +163,20 @@ function LocationRow({ location: l }: { location: AdminLocation }) {
   const names = [l.name_en, l.name_si, l.name_ta].filter(Boolean).join(" · ");
 
   return (
-    <div className="card card-hover flex items-start justify-between gap-4 p-4">
-      <div>
-        <p className="font-medium">{names}</p>
-        <p className="ui mt-0.5 text-sm text-slate-500 dark:text-zinc-400">
-          {l.lat !== null && l.lng !== null ? `${l.lat.toFixed(4)}, ${l.lng.toFixed(4)}` : "No pin set"}
-        </p>
-        <p className="ui mt-1 text-xs text-slate-500 dark:text-zinc-500">
-          {l.route_count === 0
-            ? "Not on any route yet"
-            : `Used on ${l.route_count} route${l.route_count === 1 ? "" : "s"}`}
-        </p>
-      </div>
-      <div className="flex items-center gap-1.5">
-        <VisibilityToggle locationId={l.id} isPublic={l.is_public} />
-        <DeleteLocationButton locationId={l.id} locationName={names} />
-      </div>
-    </div>
+    <TableRow className="hover:bg-muted/50">
+      <TableCell className="font-medium">{names}</TableCell>
+      <TableCell className="ui text-sm tabular-nums text-muted-foreground">
+        {l.lat !== null && l.lng !== null ? `${l.lat.toFixed(4)}, ${l.lng.toFixed(4)}` : "No pin set"}
+      </TableCell>
+      <TableCell className="ui text-sm text-muted-foreground">
+        {l.route_count === 0 ? "Not on any route yet" : `${l.route_count} route${l.route_count === 1 ? "" : "s"}`}
+      </TableCell>
+      <TableCell className="text-right">
+        <div className="flex items-center justify-end gap-1.5">
+          <VisibilityToggle locationId={l.id} isPublic={l.is_public} />
+          <DeleteLocationButton locationId={l.id} locationName={names} />
+        </div>
+      </TableCell>
+    </TableRow>
   );
 }

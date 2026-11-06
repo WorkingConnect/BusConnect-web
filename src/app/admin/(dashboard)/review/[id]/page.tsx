@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { getAdminJourney, ApiError, type AdminJourneyDetail } from "@/lib/api";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ReviewStatusActions } from "../review-status-actions";
 
 const STATUS_STYLE: Record<string, string> = {
@@ -13,6 +14,15 @@ const STATUS_STYLE: Record<string, string> = {
 
 function formatTime(hhmmss: string) {
   return hhmmss.slice(0, 5);
+}
+
+function Row({ label, value }: { label: string; value: React.ReactNode }) {
+  return (
+    <div className="flex items-center justify-between gap-3 py-2.5 text-sm">
+      <dt className="shrink-0 text-muted-foreground">{label}</dt>
+      <dd className="break-words text-right font-medium">{value || "—"}</dd>
+    </div>
+  );
 }
 
 export default async function AdminReviewDetailPage({
@@ -56,92 +66,83 @@ export default async function AdminReviewDetailPage({
     <div className="mx-auto w-full max-w-2xl">
       <Link
         href="/admin/review"
-        className="ui inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 transition-colors hover:text-slate-900 dark:text-zinc-400 dark:hover:text-white"
+        className="ui inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
       >
         <ArrowLeft size={15} /> Back to review
       </Link>
 
-      <div className="card-lg mt-4 p-6">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h1 className="font-heading text-xl font-bold tracking-tight">{journey.route?.name ?? "—"}</h1>
-            <span
-              className={`ui mt-1 inline-block rounded-full px-2 py-0.5 text-xs font-semibold capitalize ${STATUS_STYLE[journey.review_status]}`}
-            >
-              {journey.review_status}
-            </span>
+      <Card className="mt-4">
+        <CardContent className="pt-6">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h1 className="font-heading text-xl font-bold tracking-tight">{journey.route?.name ?? "—"}</h1>
+              <span
+                className={`ui mt-1 inline-block rounded-full px-2 py-0.5 text-xs font-semibold capitalize ${STATUS_STYLE[journey.review_status]}`}
+              >
+                {journey.review_status}
+              </span>
+            </div>
+            <ReviewStatusActions journeyId={journey.id} reviewStatus={journey.review_status} />
           </div>
-          <ReviewStatusActions journeyId={journey.id} reviewStatus={journey.review_status} />
-        </div>
 
-        <dl className="ui mt-6 grid grid-cols-1 gap-5 border-t border-slate-200 pt-6 sm:grid-cols-2 dark:border-zinc-800">
-          <div>
-            <p className="text-xs font-medium text-slate-500 dark:text-zinc-500">Operator</p>
-            <p className="mt-0.5 text-sm font-medium">{journey.operator?.name ?? "—"}</p>
-          </div>
-          <div>
-            <p className="text-xs font-medium text-slate-500 dark:text-zinc-500">Journey code</p>
-            <p className="mt-0.5 text-sm font-medium">{journey.code ?? "—"}</p>
-          </div>
-          <div>
-            <p className="text-xs font-medium text-slate-500 dark:text-zinc-500">Bus</p>
-            <p className="mt-0.5 text-sm font-medium">
-              {journey.bus?.reg_no ?? "—"} — {journey.bus?.bus_type?.name ?? "—"} (
-              {journey.bus?.bus_type?.seat_count ?? "—"} seats)
-            </p>
-          </div>
-          <div>
-            <p className="text-xs font-medium text-slate-500 dark:text-zinc-500">Base fare</p>
-            <p className="mt-0.5 text-sm font-medium">LKR {Number(journey.base_fare).toLocaleString("en-LK")}</p>
-          </div>
-          <div>
-            <p className="text-xs font-medium text-slate-500 dark:text-zinc-500">Crew</p>
-            <p className="mt-0.5 text-sm font-medium">
-              Driver: {journey.driver?.name ?? "—"} · Conductor: {journey.conductor?.name ?? "—"}
-            </p>
-          </div>
-          <div>
-            <p className="text-xs font-medium text-slate-500 dark:text-zinc-500">Schedule</p>
-            <p className="mt-0.5 text-sm font-medium">
-              Departs {formatTime(journey.depart_time)} → Arrives {formatTime(journey.arrive_time)}
-              {journey.arrive_day_offset > 0 && " (+1 day)"}
-            </p>
-          </div>
-          {(journey.depart_location || journey.arrive_location) && (
-            <div className="sm:col-span-2">
-              <p className="text-xs font-medium text-slate-500 dark:text-zinc-500">Boarding / drop-off points</p>
-              <p className="mt-0.5 text-sm font-medium">
-                {journey.depart_location ?? "—"} → {journey.arrive_location ?? "—"}
-              </p>
+          <dl className="mt-4 divide-y divide-border border-t border-border">
+            <Row label="Operator" value={journey.operator?.name} />
+            <Row label="Journey code" value={journey.code} />
+            <Row
+              label="Bus"
+              value={
+                journey.bus
+                  ? `${journey.bus.reg_no} — ${journey.bus.bus_type?.name ?? "—"} (${journey.bus.bus_type?.seat_count ?? "—"} seats)`
+                  : null
+              }
+            />
+            <Row label="Base fare" value={`LKR ${Number(journey.base_fare).toLocaleString("en-LK")}`} />
+            <Row
+              label="Crew"
+              value={`Driver: ${journey.driver?.name ?? "—"} · Conductor: ${journey.conductor?.name ?? "—"}`}
+            />
+            <Row
+              label="Schedule"
+              value={`${formatTime(journey.depart_time)} → ${formatTime(journey.arrive_time)}${
+                journey.arrive_day_offset > 0 ? " (+1 day)" : ""
+              }`}
+            />
+            {(journey.depart_location || journey.arrive_location) && (
+              <Row
+                label="Boarding / drop-off points"
+                value={`${journey.depart_location ?? "—"} → ${journey.arrive_location ?? "—"}`}
+              />
+            )}
+          </dl>
+        </CardContent>
+      </Card>
+
+      <Card className="mt-5">
+        <CardHeader>
+          <CardTitle>Stop timetable</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {journey.stops.length === 0 ? (
+            <p className="text-sm text-muted-foreground">No stops set.</p>
+          ) : (
+            <div className="flex flex-col gap-2">
+              {journey.stops.map((s) => (
+                <div
+                  key={s.id}
+                  className="flex items-center justify-between gap-3 border-b border-border pb-2 text-sm last:border-0 last:pb-0"
+                >
+                  <span className="font-medium">{s.route_stop?.location?.name_en ?? "—"}</span>
+                  <span className="ui text-muted-foreground">
+                    {formatTime(s.scheduled_time)}
+                    {s.day_offset > 0 && " (+1)"} ·{" "}
+                    {s.can_board && s.can_drop ? "Board & drop" : s.can_board ? "Board only" : "Drop only"}
+                  </span>
+                </div>
+              ))}
             </div>
           )}
-        </dl>
-      </div>
-
-      <div className="card-lg mt-6 p-6">
-        <h2 className="ui text-xs font-semibold uppercase tracking-wide text-slate-400 dark:text-zinc-600">
-          Stop timetable
-        </h2>
-        <div className="mt-4 flex flex-col gap-2">
-          {journey.stops.length === 0 ? (
-            <p className="text-sm text-slate-500 dark:text-zinc-400">No stops set.</p>
-          ) : (
-            journey.stops.map((s) => (
-              <div
-                key={s.id}
-                className="flex items-center justify-between gap-3 border-b border-slate-100 pb-2 text-sm last:border-0 last:pb-0 dark:border-zinc-800"
-              >
-                <span className="font-medium">{s.route_stop?.location?.name_en ?? "—"}</span>
-                <span className="ui text-slate-500 dark:text-zinc-400">
-                  {formatTime(s.scheduled_time)}
-                  {s.day_offset > 0 && " (+1)"} ·{" "}
-                  {s.can_board && s.can_drop ? "Board & drop" : s.can_board ? "Board only" : "Drop only"}
-                </span>
-              </div>
-            ))
-          )}
-        </div>
-      </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }
