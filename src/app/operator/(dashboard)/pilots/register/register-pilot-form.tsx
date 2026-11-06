@@ -70,7 +70,9 @@ export function RegisterPilotForm() {
 
   return (
     <form onSubmit={submit} className="card-lg flex flex-col gap-5 p-6">
-      <label className="ui flex flex-col gap-1.5 text-sm font-medium text-slate-700 dark:text-zinc-300">
+      <p className="ui text-xs font-semibold uppercase tracking-wide text-muted-foreground">New pilot</p>
+
+      <label className="ui flex flex-col gap-1.5 text-sm font-medium text-foreground">
         Pilot name
         <input
           value={name}
@@ -81,7 +83,7 @@ export function RegisterPilotForm() {
         />
       </label>
 
-      <label className="ui flex flex-col gap-1.5 text-sm font-medium text-slate-700 dark:text-zinc-300">
+      <label className="ui flex flex-col gap-1.5 text-sm font-medium text-foreground">
         ID number
         <input
           value={idNumber}
@@ -93,7 +95,7 @@ export function RegisterPilotForm() {
         />
       </label>
 
-      <label className="ui flex flex-col gap-1.5 text-sm font-medium text-slate-700 dark:text-zinc-300">
+      <label className="ui flex flex-col gap-1.5 text-sm font-medium text-foreground">
         Phone number
         <input
           value={phoneNo}
@@ -105,10 +107,10 @@ export function RegisterPilotForm() {
         />
       </label>
 
-      <div className="ui flex flex-col gap-1.5 text-sm font-medium text-slate-700 dark:text-zinc-300">
+      <div className="ui flex flex-col gap-1.5 text-sm font-medium text-foreground">
         Profile photo
         <AvatarSlot preview={photoPreview} onChange={onPhotoChange} />
-        <span className="text-xs text-slate-400 dark:text-zinc-500">
+        <span className="text-xs text-muted-foreground">
           Kept private. Only visible to you and BusConnect admins.
         </span>
       </div>

@@ -24,7 +24,7 @@ const STATUS_LABEL: Record<string, string> = {
 function Row({ label, value }: { label: string; value: string | null | undefined }) {
   return (
     <div className="flex items-center justify-between gap-3 py-2.5 text-sm">
-      <dt className="shrink-0 text-slate-600 dark:text-zinc-400">{label}</dt>
+      <dt className="shrink-0 text-muted-foreground">{label}</dt>
       <dd className="break-words text-right font-heading font-bold">{value || "—"}</dd>
     </div>
   );
@@ -38,10 +38,10 @@ function Header({ profile, logoPreview }: { profile: OperatorProfile; logoPrevie
         <img
           src={logoPreview}
           alt={`${profile.name} logo`}
-          className="h-16 w-16 shrink-0 rounded-xl border border-slate-200 object-cover dark:border-zinc-800"
+          className="h-16 w-16 shrink-0 rounded-xl border border-border object-cover"
         />
       ) : (
-        <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl border border-dashed border-slate-300 text-slate-400 dark:border-zinc-700 dark:text-zinc-600">
+        <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl border border-dashed border-border text-muted-foreground">
           <ImagePlus size={20} />
         </div>
       )}
@@ -159,14 +159,18 @@ export function ProfileForm({
         <button
           type="button"
           onClick={cancel}
-          className="ui shrink-0 text-sm font-medium text-slate-500 dark:text-zinc-500"
+          className="ui shrink-0 text-sm font-medium text-muted-foreground"
         >
           Cancel
         </button>
       </div>
 
-      <form onSubmit={submit} className="mt-4 flex flex-col gap-5">
-        <label className="ui flex flex-col gap-1.5 text-sm font-medium text-slate-700 dark:text-zinc-300">
+      <p className="ui mt-4 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+        Editing operator profile
+      </p>
+
+      <form onSubmit={submit} className="mt-3 flex flex-col gap-5">
+        <label className="ui flex flex-col gap-1.5 text-sm font-medium text-foreground">
           Update logo
           <input
             type="file"
@@ -176,17 +180,17 @@ export function ProfileForm({
           />
         </label>
 
-        <label className="ui flex flex-col gap-1.5 text-sm font-medium text-slate-700 dark:text-zinc-300">
+        <label className="ui flex flex-col gap-1.5 text-sm font-medium text-foreground">
           Witness name
           <input value={profile.witness_name ?? "—"} disabled className="field opacity-70" />
         </label>
 
-        <label className="ui flex flex-col gap-1.5 text-sm font-medium text-slate-700 dark:text-zinc-300">
+        <label className="ui flex flex-col gap-1.5 text-sm font-medium text-foreground">
           Mobile number
           <input value={mobileNo} onChange={(e) => setMobileNo(e.target.value)} className="field" />
         </label>
 
-        <label className="ui flex flex-col gap-1.5 text-sm font-medium text-slate-700 dark:text-zinc-300">
+        <label className="ui flex flex-col gap-1.5 text-sm font-medium text-foreground">
           Company address
           <textarea
             value={address}

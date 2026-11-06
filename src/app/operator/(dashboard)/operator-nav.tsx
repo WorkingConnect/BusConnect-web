@@ -2,29 +2,9 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import {
-  LayoutDashboard,
-  Bus,
-  CalendarClock,
-  CalendarRange,
-  Wallet,
-  UserPlus,
-  UserCircle,
-  ScanLine,
-  LogOut,
-} from "lucide-react";
+import { LogOut } from "lucide-react";
 import { useIdentity } from "@/lib/use-identity";
-
-const items = [
-  { label: "Overview", href: "/operator", icon: LayoutDashboard, ownerOnly: false },
-  { label: "Pilots", href: "/operator/pilots", icon: UserPlus, ownerOnly: true },
-  { label: "Fleet", href: "/operator/fleet", icon: Bus, ownerOnly: true },
-  { label: "Journeys", href: "/operator/journeys", icon: CalendarClock, ownerOnly: true },
-  { label: "Timetable", href: "/operator/timetable", icon: CalendarRange, ownerOnly: true },
-  { label: "Revenue", href: "/operator/revenue", icon: Wallet, ownerOnly: true },
-  { label: "Scan tickets", href: "/operator/scan", icon: ScanLine, ownerOnly: false },
-  { label: "Profile", href: "/operator/profile", icon: UserCircle, ownerOnly: false },
-] as const;
+import { OPERATOR_NAV_ITEMS } from "./operator-nav-items";
 
 export function OperatorNav({
   role,
@@ -36,7 +16,7 @@ export function OperatorNav({
   const pathname = usePathname();
   const router = useRouter();
   const { signOut } = useIdentity();
-  const visible = items.filter((item) => !item.ownerOnly || role === "owner");
+  const visible = OPERATOR_NAV_ITEMS.filter((item) => !item.ownerOnly || role === "owner");
   const badgeFor: Record<string, number | undefined> = {
     "/operator/fleet": counts?.fleet,
     "/operator/pilots": counts?.pilots,
@@ -51,38 +31,42 @@ export function OperatorNav({
   }
 
   return (
-    <nav className="flex flex-row gap-1 overflow-x-auto lg:flex-col lg:gap-0.5 lg:overflow-visible">
-      {visible.map(({ label, href, icon: Icon }) => {
-        const active = pathname === href;
-        const badge = badgeFor[href];
-        return (
-          <Link
-            key={href}
-            href={href}
-            className={`ui flex shrink-0 items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors ${
-              active
-                ? "bg-brand-soft text-brand dark:bg-brand-soft-dark dark:text-blue-300"
-                : "text-slate-600 hover:bg-slate-100 dark:text-zinc-400 dark:hover:bg-zinc-900"
-            }`}
-          >
-            <Icon size={16} />
-            {label}
-            {!!badge && (
-              <span className="ui ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-red-600 px-1.5 text-[11px] font-bold leading-none text-white">
-                {badge > 99 ? "99+" : badge}
-              </span>
-            )}
-          </Link>
-        );
-      })}
-      <button
-        type="button"
-        onClick={handleSignOut}
-        className="ui flex shrink-0 items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-medium text-red-600 transition-colors hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/30 lg:mt-4 lg:border-t lg:border-slate-200 lg:pt-4 dark:lg:border-zinc-800"
-      >
-        <LogOut size={16} />
-        Sign out
-      </button>
-    </nav>
+    <div className="flex flex-1 flex-col">
+      <nav className="flex flex-col gap-0.5">
+        {visible.map(({ label, href, icon: Icon }) => {
+          const active = pathname === href;
+          const badge = badgeFor[href];
+          return (
+            <Link
+              key={href}
+              href={href}
+              className={`ui flex shrink-0 items-center gap-2.5 rounded-xl px-3 py-2.5 text-[13.5px] font-semibold transition-colors ${
+                active
+                  ? "bg-brand-soft text-brand dark:bg-brand-soft-dark dark:text-blue-300"
+                  : "text-slate-700 hover:bg-slate-100 hover:text-slate-900 dark:text-zinc-300 dark:hover:bg-zinc-900 dark:hover:text-zinc-100"
+              }`}
+            >
+              <Icon size={17} strokeWidth={2.2} />
+              {label}
+              {!!badge && (
+                <span className="ui ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-red-600 px-1.5 text-[11px] font-bold leading-none text-white">
+                  {badge > 99 ? "99+" : badge}
+                </span>
+              )}
+            </Link>
+          );
+        })}
+      </nav>
+      <div className="mt-auto pt-4">
+        <button
+          type="button"
+          onClick={handleSignOut}
+          className="ui flex w-full items-center justify-center gap-2 rounded-xl bg-red-600 px-3 py-2.5 text-[13.5px] font-semibold text-white transition-colors hover:bg-red-700"
+        >
+          <LogOut size={17} strokeWidth={2.2} />
+          Sign out
+        </button>
+      </div>
+    </div>
   );
 }

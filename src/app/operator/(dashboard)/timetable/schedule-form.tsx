@@ -79,20 +79,20 @@ export function ScheduleForm({ journeys }: { journeys: OperatorJourney[] }) {
 
   if (activeJourneys.length === 0) {
     return (
-      <div className="card p-6 text-sm text-slate-500 dark:text-zinc-400">
+      <div className="card p-6 text-sm text-muted-foreground">
         You have no active journeys yet. Create one in Journeys first, then schedule its dates here.
       </div>
     );
   }
 
-  const labelCls = "ui flex flex-col gap-1.5 text-sm font-medium text-slate-700 dark:text-zinc-300";
+  const labelCls = "ui flex flex-col gap-1.5 text-sm font-medium text-foreground";
 
   return (
     <form onSubmit={submit} className="card-lg p-6">
-      <h2 className="ui text-xs font-semibold uppercase tracking-wide text-slate-400 dark:text-zinc-600">
+      <h2 className="ui text-xs font-semibold uppercase tracking-wide text-muted-foreground">
         Schedule trips
       </h2>
-      <p className="ui mt-1 text-xs text-slate-500 dark:text-zinc-500">
+      <p className="ui mt-1 text-xs text-muted-foreground">
         Pick a journey and the dates it should run. Each date becomes a bookable trip at the journey&apos;s
         departure time.
       </p>
@@ -121,7 +121,7 @@ export function ScheduleForm({ journeys }: { journeys: OperatorJourney[] }) {
             </select>
             <ChevronDown
               size={16}
-              className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-zinc-500"
+              className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
             />
           </div>
         </label>
@@ -144,7 +144,7 @@ export function ScheduleForm({ journeys }: { journeys: OperatorJourney[] }) {
       </div>
 
       {selectedJourney && (
-        <p className="ui mt-3 rounded-xl bg-slate-50 px-3 py-2 text-xs text-slate-600 dark:bg-zinc-900 dark:text-zinc-400">
+        <p className="ui mt-3 rounded-xl bg-muted px-3 py-2 text-xs text-muted-foreground">
           Departs {formatTime(selectedJourney.depart_time)} → arrives {formatTime(selectedJourney.arrive_time)} ·
           Bus {selectedJourney.bus?.reg_no ?? "—"} · LKR {Number(selectedJourney.base_fare).toLocaleString("en-LK")}
         </p>

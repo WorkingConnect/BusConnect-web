@@ -36,19 +36,19 @@ export function AmenitiesPicker({
 
   return (
     <div>
-      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-1 sm:grid-cols-2">
         {PREDEFINED_AMENITIES.map((name) => (
           <label
             key={name}
-            className="ui flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm text-slate-700 hover:bg-slate-50 dark:text-zinc-300 dark:hover:bg-zinc-900"
+            className="ui flex items-start gap-2.5 rounded-lg px-2 py-1.5 text-sm text-foreground hover:bg-muted"
           >
             <input
               type="checkbox"
               checked={selected.has(name)}
               onChange={() => toggle(name)}
-              className="h-4 w-4 rounded border-slate-300 text-brand focus:ring-brand dark:border-zinc-700"
+              className="mt-0.5 h-4 w-4 shrink-0 rounded border-border text-brand focus:ring-brand"
             />
-            {name}
+            <span className="leading-snug">{name}</span>
           </label>
         ))}
       </div>
@@ -79,8 +79,8 @@ export function AmenitiesPicker({
               addCustom();
             }
           }}
-          placeholder="Add another amenity not listed above"
-          className="field text-sm"
+          placeholder="Add another amenity"
+          className="field min-w-0 text-sm"
         />
         <button type="button" onClick={addCustom} className="btn-secondary shrink-0 whitespace-nowrap px-3">
           <Plus size={16} /> Add

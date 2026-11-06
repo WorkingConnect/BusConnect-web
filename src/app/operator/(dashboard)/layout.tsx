@@ -1,7 +1,7 @@
 import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import { getMyRoles, getOperatorFleet, listPilots, ApiError } from "@/lib/api";
-import { OperatorNav } from "./operator-nav";
+import { OperatorChrome } from "./sidebar-shell";
 import { AdminModeBanner } from "./admin-mode-banner";
 
 export default async function OperatorDashboardLayout({
@@ -61,16 +61,8 @@ export default async function OperatorDashboardLayout({
     <div className="flex w-full flex-1 flex-col">
       {adminOperatorId && <AdminModeBanner operatorName={operatorName} />}
       <div className="flex flex-1 flex-col lg:flex-row">
-        <aside className="w-full shrink-0 border-b border-border bg-card lg:sticky lg:top-16 lg:h-[calc(100vh-4rem)] lg:w-64 lg:overflow-y-auto lg:border-b-0 lg:border-r">
-          <div className="px-4 py-5 lg:px-5 lg:py-6">
-            <p className="ui text-xs font-semibold uppercase tracking-wide text-slate-400 dark:text-zinc-600">
-              Operator
-            </p>
-            <p className="font-heading mb-4 text-base font-bold tracking-tight">Workspace</p>
-            <OperatorNav role={role} counts={{ fleet: fleetPending, pilots: pilotsPending }} />
-          </div>
-        </aside>
-        <div className="min-w-0 flex-1 px-4 py-10 sm:px-6 lg:px-8">{children}</div>
+        <OperatorChrome role={role} counts={{ fleet: fleetPending, pilots: pilotsPending }} />
+        <div className="min-w-0 flex-1 px-4 py-6 pb-24 sm:px-6 lg:px-8 lg:py-8 lg:pb-8">{children}</div>
       </div>
     </div>
   );

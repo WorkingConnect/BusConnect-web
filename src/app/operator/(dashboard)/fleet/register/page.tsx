@@ -7,13 +7,13 @@ export default function RegisterBusPage() {
     <div className="mx-auto w-full max-w-2xl">
       <Link
         href="/operator/fleet"
-        className="ui inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 transition-colors hover:text-slate-900 dark:text-zinc-400 dark:hover:text-white"
+        className="ui inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
       >
         <ArrowLeft size={15} /> Back to fleet
       </Link>
 
       <h1 className="mt-5 font-heading text-3xl font-bold tracking-tight">Register a bus</h1>
-      <p className="ui mt-2 text-sm font-medium text-slate-600 dark:text-zinc-300">
+      <p className="ui mt-2 text-sm text-muted-foreground">
         Submit your bus for approval. It stays pending (not schedulable for trips) until
         BusConnect reviews and approves it.
       </p>

@@ -111,11 +111,12 @@ export function RegisterBusForm() {
     <form onSubmit={submit} className="flex flex-col gap-8">
       {/* ── 1. Basic information ─────────────────────────────────────────── */}
       <section className="card-lg p-6">
-        <h2 className="ui text-xs font-semibold uppercase tracking-wide text-slate-400 dark:text-zinc-600">
+        <p className="ui text-xs font-semibold uppercase tracking-wide text-muted-foreground">New bus</p>
+        <h2 className="ui mt-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
           Basic information
         </h2>
         <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <label className="ui flex flex-col gap-1.5 text-sm font-medium text-slate-700 dark:text-zinc-300">
+          <label className="ui flex flex-col gap-1.5 text-sm font-medium text-foreground">
             Vehicle registration number
             <input
               value={regNo}
@@ -126,7 +127,7 @@ export function RegisterBusForm() {
               className="field text-sm"
             />
           </label>
-          <label className="ui flex flex-col gap-1.5 text-sm font-medium text-slate-700 dark:text-zinc-300">
+          <label className="ui flex flex-col gap-1.5 text-sm font-medium text-foreground">
             Bus type
             <div className="relative">
               <select
@@ -142,7 +143,7 @@ export function RegisterBusForm() {
               </select>
               <ChevronDown
                 size={16}
-                className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-zinc-500"
+                className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
               />
             </div>
           </label>
@@ -151,11 +152,11 @@ export function RegisterBusForm() {
 
       {/* ── 2. Seating information ───────────────────────────────────────── */}
       <section className="card-lg p-6">
-        <h2 className="ui text-xs font-semibold uppercase tracking-wide text-slate-400 dark:text-zinc-600">
+        <h2 className="ui text-xs font-semibold uppercase tracking-wide text-muted-foreground">
           Seating information
         </h2>
         <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <label className="ui flex flex-col gap-1.5 text-sm font-medium text-slate-700 dark:text-zinc-300">
+          <label className="ui flex flex-col gap-1.5 text-sm font-medium text-foreground">
             Total seat capacity
             <input
               value={totalSeats}
@@ -166,7 +167,7 @@ export function RegisterBusForm() {
               className="field text-sm"
             />
           </label>
-          <label className="ui flex flex-col gap-1.5 text-sm font-medium text-slate-700 dark:text-zinc-300">
+          <label className="ui flex flex-col gap-1.5 text-sm font-medium text-foreground">
             Seat layout
             <div className="relative">
               <select
@@ -182,7 +183,7 @@ export function RegisterBusForm() {
               </select>
               <ChevronDown
                 size={16}
-                className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-zinc-500"
+                className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
               />
             </div>
           </label>
@@ -191,7 +192,7 @@ export function RegisterBusForm() {
 
       {/* ── 3. Amenities ──────────────────────────────────────────────────── */}
       <section className="card-lg p-6">
-        <h2 className="ui text-xs font-semibold uppercase tracking-wide text-slate-400 dark:text-zinc-600">
+        <h2 className="ui text-xs font-semibold uppercase tracking-wide text-muted-foreground">
           Bus features / amenities
         </h2>
         <div className="mt-4">
@@ -201,10 +202,10 @@ export function RegisterBusForm() {
 
       {/* ── 4. Bus images ─────────────────────────────────────────────────── */}
       <section className="card-lg p-6">
-        <h2 className="ui text-xs font-semibold uppercase tracking-wide text-slate-400 dark:text-zinc-600">
+        <h2 className="ui text-xs font-semibold uppercase tracking-wide text-muted-foreground">
           Bus images
         </h2>
-        <p className="ui mt-1 text-xs text-slate-500 dark:text-zinc-500">
+        <p className="ui mt-1 text-xs text-muted-foreground">
           All optional individually. At least one photo is required.
         </p>
         <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -238,7 +239,7 @@ export function RegisterBusForm() {
 
       {/* ── 5. Notes ──────────────────────────────────────────────────────── */}
       <section className="card-lg p-6">
-        <h2 className="ui text-xs font-semibold uppercase tracking-wide text-slate-400 dark:text-zinc-600">
+        <h2 className="ui text-xs font-semibold uppercase tracking-wide text-muted-foreground">
           Notes
         </h2>
         <textarea

@@ -1,8 +1,11 @@
 import Link from "next/link";
-import { ArrowRight, CalendarClock, ChevronRight, PlusCircle, User } from "lucide-react";
+import { ArrowRight, CalendarClock, PlusCircle, Play, Pause } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { listJourneys, ApiError, type OperatorJourney } from "@/lib/api";
 import { formatTime, durationLabel } from "@/lib/journey-format";
+import { Card } from "@/components/ui/card";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { KpiCard, EmptyState } from "../dashboard-ui";
 
 const STATUS_STYLE: Record<string, string> = {
   active: "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300",
@@ -44,12 +47,15 @@ export default async function OperatorJourneysPage() {
     );
   }
 
+  const activeCount = journeys.filter((j) => j.status === "active").length;
+  const pausedCount = journeys.filter((j) => j.status === "paused").length;
+
   return (
     <div>
-      <div className="flex items-center justify-between gap-4">
+      <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 className="font-heading text-3xl font-bold tracking-tight">Journeys</h1>
-          <p className="ui mt-2 text-sm font-medium text-slate-600 dark:text-zinc-300">
+          <p className="ui mt-1 text-sm text-muted-foreground">
             Your recurring services: a bus + crew running a route on a schedule. Each journey puts
             seats on sale for every date it runs.
           </p>
@@ -59,59 +65,98 @@ export default async function OperatorJourneysPage() {
         </Link>
       </div>
 
-      <div className="mt-8 flex flex-col gap-3">
+      <div className="mt-6 grid grid-cols-3 gap-3">
+        <KpiCard icon={<CalendarClock size={16} />} label="Total journeys" value={String(journeys.length)} meta="on your roster" />
+        <KpiCard icon={<Play size={16} />} label="Active" value={String(activeCount)} meta="on sale" />
+        <KpiCard icon={<Pause size={16} />} label="Paused" value={String(pausedCount)} meta="not scheduling" />
+      </div>
+
+      <div className="mt-6">
         {journeys.length === 0 ? (
-          <div className="card p-10 text-center text-sm text-slate-500 dark:text-zinc-400">
-            <CalendarClock size={28} className="mx-auto mb-3 text-slate-300 dark:text-zinc-700" />
-            No journeys yet. Create one to put a bus on sale.
-          </div>
+          <EmptyState
+            icon={<CalendarClock size={32} className="mx-auto text-slate-400 dark:text-zinc-600" />}
+            title="No journeys yet"
+            subtitle="Create one to put a bus on sale."
+            action={
+              <Link href="/operator/journeys/new" className="btn-primary mt-4">
+                <PlusCircle size={16} /> Create journey
+              </Link>
+            }
+          />
         ) : (
-          journeys.map((j) => (
-            <Link
-              key={j.id}
-              href={`/operator/journeys/${j.id}`}
-              className="card card-hover flex flex-col gap-3 p-5 sm:flex-row sm:items-center sm:justify-between"
-            >
-              <div className="min-w-0">
-                <div className="flex flex-wrap items-center gap-2">
-                  <p className="truncate font-heading font-semibold">{j.route?.name ?? "—"}</p>
-                  {j.code && (
-                    <span className="ui rounded-md bg-slate-100 px-1.5 py-0.5 text-[11px] font-semibold text-slate-500 dark:bg-zinc-800 dark:text-zinc-400">
-                      {j.code}
-                    </span>
-                  )}
-                  <span className={`ui rounded-full px-2 py-0.5 text-xs font-semibold capitalize ${STATUS_STYLE[j.status]}`}>
-                    {j.status}
-                  </span>
-                </div>
-                <p className="ui mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-slate-600 dark:text-zinc-400">
-                  <span className="font-medium text-slate-900 dark:text-white">{formatTime(j.depart_time)}</span>
-                  <ArrowRight size={13} className="text-slate-400" />
-                  <span className="font-medium text-slate-900 dark:text-white">{formatTime(j.arrive_time)}</span>
-                  {j.arrive_day_offset > 0 && (
-                    <span className="ui rounded bg-amber-100 px-1.5 py-0.5 text-[11px] font-semibold text-amber-700 dark:bg-amber-950/50 dark:text-amber-300">
-                      +1 day
-                    </span>
-                  )}
-                  <span className="text-slate-400">·</span>
-                  <span>{durationLabel(j.depart_time, j.arrive_time, j.arrive_day_offset)}</span>
-                </p>
-                <p className="ui mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-slate-500 dark:text-zinc-500">
-                  <span>
-                    {j.bus?.reg_no ?? "—"} · {j.bus?.bus_type?.name ?? "—"}
-                  </span>
-                  {(j.driver || j.conductor) && (
-                    <span className="flex items-center gap-1">
-                      <User size={11} />
-                      {[j.driver?.name, j.conductor?.name].filter(Boolean).join(" · ")}
-                    </span>
-                  )}
-                  <span>LKR {Number(j.base_fare).toLocaleString("en-LK")}</span>
-                </p>
-              </div>
-              <ChevronRight size={16} className="hidden shrink-0 text-slate-400 sm:block" />
-            </Link>
-          ))
+          <Card>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Route</TableHead>
+                  <TableHead>Schedule</TableHead>
+                  <TableHead>Bus</TableHead>
+                  <TableHead>Crew</TableHead>
+                  <TableHead>Fare</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead className="text-right">Action</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {journeys.map((j) => (
+                  <TableRow key={j.id} className="hover:bg-muted/50">
+                    <TableCell>
+                      <Link href={`/operator/journeys/${j.id}`} className="flex min-w-0 items-center gap-2">
+                        <span className="truncate font-heading font-semibold hover:text-brand dark:hover:text-blue-400">
+                          {j.route?.name ?? "—"}
+                        </span>
+                        {j.code && (
+                          <span className="ui shrink-0 rounded-md bg-muted px-1.5 py-0.5 text-[11px] font-semibold text-muted-foreground">
+                            {j.code}
+                          </span>
+                        )}
+                      </Link>
+                    </TableCell>
+                    <TableCell className="ui text-sm">
+                      <span className="inline-flex items-center gap-1.5 font-medium">
+                        {formatTime(j.depart_time)}
+                        <ArrowRight size={12} className="text-muted-foreground" />
+                        {formatTime(j.arrive_time)}
+                        {j.arrive_day_offset > 0 && (
+                          <span className="ui rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-semibold text-amber-700 dark:bg-amber-950/50 dark:text-amber-300">
+                            +1 day
+                          </span>
+                        )}
+                      </span>
+                      <span className="block text-xs text-muted-foreground">
+                        {durationLabel(j.depart_time, j.arrive_time, j.arrive_day_offset)}
+                      </span>
+                    </TableCell>
+                    <TableCell className="ui text-sm text-muted-foreground">
+                      {j.bus?.reg_no ?? "—"}
+                      <span className="block text-xs capitalize">
+                        {j.bus?.bus_type?.class ? j.bus.bus_type.class.replace(/_/g, " ") : "—"}
+                      </span>
+                    </TableCell>
+                    <TableCell className="ui text-sm text-muted-foreground">
+                      {j.driver || j.conductor ? [j.driver?.name, j.conductor?.name].filter(Boolean).join(" · ") : "—"}
+                    </TableCell>
+                    <TableCell className="ui text-sm tabular-nums text-muted-foreground">
+                      LKR {Number(j.base_fare).toLocaleString("en-LK")}
+                    </TableCell>
+                    <TableCell>
+                      <span className={`ui inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold capitalize ${STATUS_STYLE[j.status]}`}>
+                        {j.status}
+                      </span>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <Link
+                        href={`/operator/journeys/${j.id}`}
+                        className="ui inline-flex items-center rounded-lg border border-border px-2.5 py-1.5 text-xs font-semibold text-foreground transition-colors hover:bg-muted"
+                      >
+                        View
+                      </Link>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </Card>
         )}
       </div>
     </div>

@@ -223,7 +223,7 @@ export function JourneyForm({ initial }: { initial?: OperatorJourneyDetail }) {
 
   if (!loaded) {
     return (
-      <div className="flex items-center gap-2 text-slate-500 dark:text-zinc-400">
+      <div className="flex items-center gap-2 text-muted-foreground">
         <Loader2 size={16} className="animate-spin" /> Loading…
       </div>
     );
@@ -245,13 +245,16 @@ export function JourneyForm({ initial }: { initial?: OperatorJourneyDetail }) {
     );
   }
 
-  const labelCls = "ui flex flex-col gap-1.5 text-sm font-medium text-slate-700 dark:text-zinc-300";
+  const labelCls = "ui flex flex-col gap-1.5 text-sm font-medium text-foreground";
 
   return (
     <form onSubmit={submit} className="flex flex-col gap-6">
       {/* ── Route & bus ─────────────────────────────────────────────────── */}
       <section className="card-lg p-6">
-        <h2 className="ui text-xs font-semibold uppercase tracking-wide text-slate-400 dark:text-zinc-600">
+        <p className="ui text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+          {editing ? "Editing journey" : "New journey"}
+        </p>
+        <h2 className="ui mt-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
           Route &amp; bus
         </h2>
         <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -265,7 +268,7 @@ export function JourneyForm({ initial }: { initial?: OperatorJourneyDetail }) {
               ))}
             </Select>
             {routeLocked && (
-              <span className="ui text-xs font-normal text-slate-400 dark:text-zinc-500">
+              <span className="ui text-xs font-normal text-muted-foreground">
                 Can&rsquo;t be changed after a journey is created.
               </span>
             )}
@@ -282,7 +285,7 @@ export function JourneyForm({ initial }: { initial?: OperatorJourneyDetail }) {
           </label>
         </div>
         {busId && (
-          <p className="ui mt-3 flex items-center gap-2 rounded-xl bg-slate-50 px-3 py-2 text-xs text-slate-600 dark:bg-zinc-900 dark:text-zinc-400">
+          <p className="ui mt-3 flex items-center gap-2 rounded-xl bg-muted px-3 py-2 text-xs text-muted-foreground">
             <User size={13} />
             {crew.driver || crew.conductor ? (
               <>
@@ -299,10 +302,10 @@ export function JourneyForm({ initial }: { initial?: OperatorJourneyDetail }) {
 
       {/* ── Times ───────────────────────────────────────────────────────── */}
       <section className="card-lg p-6">
-        <h2 className="ui text-xs font-semibold uppercase tracking-wide text-slate-400 dark:text-zinc-600">
+        <h2 className="ui text-xs font-semibold uppercase tracking-wide text-muted-foreground">
           Times
         </h2>
-        <p className="ui mt-1 text-xs text-slate-500 dark:text-zinc-500">
+        <p className="ui mt-1 text-xs text-muted-foreground">
           {bookingLocked
             ? "This journey has bookings. Times are locked until those trips run out."
             : "The service's departure/arrival times. You choose which dates it runs later, from the Timetable."}
@@ -317,8 +320,8 @@ export function JourneyForm({ initial }: { initial?: OperatorJourneyDetail }) {
             <input type="time" value={arriveTime} onChange={(e) => changeArriveTime(e.target.value)} required disabled={bookingLocked} className="field text-sm" />
           </label>
         </div>
-        <label className="ui mt-3 flex items-center gap-2 text-sm text-slate-700 dark:text-zinc-300">
-          <input type="checkbox" checked={arriveNextDay} onChange={(e) => setArriveNextDay(e.target.checked)} disabled={bookingLocked} className="h-4 w-4 rounded border-slate-300 text-brand focus:ring-brand dark:border-zinc-700" />
+        <label className="ui mt-3 flex items-center gap-2 text-sm text-foreground">
+          <input type="checkbox" checked={arriveNextDay} onChange={(e) => setArriveNextDay(e.target.checked)} disabled={bookingLocked} className="h-4 w-4 rounded border-border text-brand focus:ring-brand" />
           Arrives the next day (overnight)
         </label>
       </section>
@@ -327,7 +330,7 @@ export function JourneyForm({ initial }: { initial?: OperatorJourneyDetail }) {
           operator already sets these via the route's own stops. ────────── */}
       {adminMode && (
       <section className="card-lg p-6">
-        <h2 className="ui text-xs font-semibold uppercase tracking-wide text-slate-400 dark:text-zinc-600">
+        <h2 className="ui text-xs font-semibold uppercase tracking-wide text-muted-foreground">
           Departure &amp; arrival points
         </h2>
         <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -353,11 +356,11 @@ export function JourneyForm({ initial }: { initial?: OperatorJourneyDetail }) {
 
       {/* ── Fare ────────────────────────────────────────────────────────── */}
       <section className="card-lg p-6">
-        <h2 className="ui text-xs font-semibold uppercase tracking-wide text-slate-400 dark:text-zinc-600">
+        <h2 className="ui text-xs font-semibold uppercase tracking-wide text-muted-foreground">
           Fare
         </h2>
         {bookingLocked && (
-          <p className="ui mt-1 text-xs text-slate-500 dark:text-zinc-500">
+          <p className="ui mt-1 text-xs text-muted-foreground">
             This journey has bookings. Fare is locked until those trips run out.
           </p>
         )}
@@ -369,20 +372,20 @@ export function JourneyForm({ initial }: { initial?: OperatorJourneyDetail }) {
 
       {/* ── Boarding & drop-off timetable ───────────────────────────────── */}
       <section className="card-lg p-6">
-        <h2 className="ui text-xs font-semibold uppercase tracking-wide text-slate-400 dark:text-zinc-600">
+        <h2 className="ui text-xs font-semibold uppercase tracking-wide text-muted-foreground">
           Boarding &amp; drop-off points
         </h2>
         {stops.length === 0 ? (
-          <p className="ui mt-3 text-sm text-slate-500 dark:text-zinc-500">Choose a route to load its stops.</p>
+          <p className="ui mt-3 text-sm text-muted-foreground">Choose a route to load its stops.</p>
         ) : (
           <>
-            <p className="ui mt-1 text-xs text-slate-500 dark:text-zinc-500">
+            <p className="ui mt-1 text-xs text-muted-foreground">
               {bookingLocked
                 ? "This journey has bookings. Boarding/drop-off points are locked until those trips run out."
                 : "Set the time the bus is at each stop, and whether passengers can board and/or be dropped there."}
             </p>
             <div className="mt-4 flex flex-col gap-2">
-              <div className="ui hidden grid-cols-[1.5rem_1fr_7rem_auto] items-center gap-3 px-1 text-xs font-medium text-slate-400 sm:grid dark:text-zinc-600">
+              <div className="ui hidden grid-cols-[1.5rem_1fr_7rem_auto] items-center gap-3 px-1 text-xs font-medium text-muted-foreground sm:grid">
                 <span>#</span>
                 <span>Stop</span>
                 <span>Time</span>
@@ -391,9 +394,9 @@ export function JourneyForm({ initial }: { initial?: OperatorJourneyDetail }) {
               {stops.map((s, i) => (
                 <div
                   key={s.routeStopId}
-                  className="grid grid-cols-1 items-center gap-2 rounded-xl bg-slate-50 p-2.5 sm:grid-cols-[1.5rem_1fr_7rem_auto] sm:gap-3 sm:bg-transparent sm:p-1 dark:bg-zinc-900 sm:dark:bg-transparent"
+                  className="grid grid-cols-1 items-center gap-2 rounded-xl bg-muted p-2.5 sm:grid-cols-[1.5rem_1fr_7rem_auto] sm:gap-3 sm:bg-transparent sm:p-1"
                 >
-                  <span className="ui text-xs font-semibold text-slate-400 dark:text-zinc-500">{i + 1}</span>
+                  <span className="ui text-xs font-semibold text-muted-foreground">{i + 1}</span>
                   <span className="truncate text-sm font-medium">{s.name}</span>
                   <input
                     type="time"
@@ -403,12 +406,12 @@ export function JourneyForm({ initial }: { initial?: OperatorJourneyDetail }) {
                     className="field py-1.5 text-sm"
                   />
                   <div className="flex items-center justify-end gap-3 text-xs">
-                    <label className="ui flex items-center gap-1.5 text-slate-600 dark:text-zinc-400">
-                      <input type="checkbox" checked={s.canBoard} onChange={(e) => setStop(i, { canBoard: e.target.checked })} disabled={bookingLocked} className="h-3.5 w-3.5 rounded border-slate-300 text-brand focus:ring-brand dark:border-zinc-700" />
+                    <label className="ui flex items-center gap-1.5 text-muted-foreground">
+                      <input type="checkbox" checked={s.canBoard} onChange={(e) => setStop(i, { canBoard: e.target.checked })} disabled={bookingLocked} className="h-3.5 w-3.5 rounded border-border text-brand focus:ring-brand" />
                       Board
                     </label>
-                    <label className="ui flex items-center gap-1.5 text-slate-600 dark:text-zinc-400">
-                      <input type="checkbox" checked={s.canDrop} onChange={(e) => setStop(i, { canDrop: e.target.checked })} disabled={bookingLocked} className="h-3.5 w-3.5 rounded border-slate-300 text-brand focus:ring-brand dark:border-zinc-700" />
+                    <label className="ui flex items-center gap-1.5 text-muted-foreground">
+                      <input type="checkbox" checked={s.canDrop} onChange={(e) => setStop(i, { canDrop: e.target.checked })} disabled={bookingLocked} className="h-3.5 w-3.5 rounded border-border text-brand focus:ring-brand" />
                       Drop
                     </label>
                   </div>
@@ -461,7 +464,7 @@ function Select({
         </option>
         {children}
       </select>
-      <ChevronDown size={16} className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-zinc-500" />
+      <ChevronDown size={16} className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
     </div>
   );
 }

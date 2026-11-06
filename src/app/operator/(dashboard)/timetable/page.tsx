@@ -47,7 +47,7 @@ export default async function TimetablePage() {
     <div>
       <div>
         <h1 className="font-heading text-3xl font-bold tracking-tight">Timetable</h1>
-        <p className="ui mt-2 text-sm font-medium text-slate-600 dark:text-zinc-300">
+        <p className="ui mt-1 text-sm text-muted-foreground">
           Schedule dated trips from your journeys. Each trip you add goes on sale to passengers immediately.
         </p>
       </div>

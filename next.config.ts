@@ -1,6 +1,10 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // The floating dev-mode status button sits bottom-left and overlaps the
+  // operator mobile bottom tab bar during development. It never ships to
+  // production; turning it off keeps the dev view clean.
+  devIndicators: false,
   images: {
     // Plain object, not `new URL(...)` — Next.js pulls `search` off the URL
     // literally, and a bare "**" URL has no "?", so `new URL(...)` yields

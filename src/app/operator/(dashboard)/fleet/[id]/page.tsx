@@ -1,8 +1,9 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, LayoutGrid } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { getBus, ApiError, type OperatorBusDetail } from "@/lib/api";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { BusIdentityCard } from "./bus-identity-card";
 import { SeatGridPreview } from "@/components/seat-grid-preview";
 
@@ -47,28 +48,32 @@ export default async function OperatorBusDetailPage({
     <div className="w-full">
       <Link
         href="/operator/fleet"
-        className="ui inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 transition-colors hover:text-slate-900 dark:text-zinc-400 dark:hover:text-white"
+        className="ui inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
       >
         <ArrowLeft size={15} /> Back to fleet
       </Link>
 
-      <div className="mt-4 grid grid-cols-1 gap-6 lg:grid-cols-12">
+      <div className="mt-4 grid grid-cols-1 gap-5 lg:grid-cols-12">
         <div className="lg:col-span-4">
           <BusIdentityCard bus={bus} />
         </div>
 
-        <div className="card-lg p-6 lg:col-span-8">
-          <h2 className="ui text-xs font-semibold uppercase tracking-wide text-slate-400 dark:text-zinc-600">
-            Seat map
-          </h2>
-          <p className="ui mt-1 text-xs text-slate-500 dark:text-zinc-500">
-            Set by BusConnect when this bus&apos;s photos and seat count were reviewed. Contact BusConnect
-            support if it needs to change.
-          </p>
-          <div className="mt-4">
+        <Card className="lg:col-span-8">
+          <CardHeader>
+            <div>
+              <CardTitle className="flex items-center gap-2">
+                <LayoutGrid size={15} className="text-brand dark:text-blue-400" /> Seat map
+              </CardTitle>
+              <CardDescription className="mt-1">
+                Set by BusConnect when this bus&apos;s photos and seat count were reviewed. Contact BusConnect
+                support if it needs to change.
+              </CardDescription>
+            </div>
+          </CardHeader>
+          <CardContent>
             <SeatGridPreview layout={bus.bus_type?.layout_json ?? null} seatCount={bus.bus_type?.seat_count ?? 40} />
-          </div>
-        </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

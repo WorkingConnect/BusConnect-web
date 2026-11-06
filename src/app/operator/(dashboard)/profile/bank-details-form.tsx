@@ -10,7 +10,7 @@ import { updateOperatorProfile, ApiError, type OperatorPayoutAccount } from "@/l
 function Row({ label, value }: { label: string; value: string | null | undefined }) {
   return (
     <div className="flex items-center justify-between gap-3 py-2.5 text-sm">
-      <dt className="shrink-0 text-slate-600 dark:text-zinc-400">{label}</dt>
+      <dt className="shrink-0 text-muted-foreground">{label}</dt>
       <dd className="break-words text-right font-heading font-bold">{value || "—"}</dd>
     </div>
   );
@@ -78,7 +78,7 @@ export function BankDetailsForm({ payoutAccount }: { payoutAccount: OperatorPayo
         <div className="flex items-start justify-between gap-3">
           <div>
             <p className="font-heading text-lg font-bold tracking-tight">Bank details</p>
-            <p className="ui mt-0.5 text-xs text-slate-500 dark:text-zinc-500">
+            <p className="ui mt-0.5 text-xs text-muted-foreground">
               Used by BusConnect to pay out your revenue. Only you (the owner) can see this.
             </p>
           </div>
@@ -108,21 +108,25 @@ export function BankDetailsForm({ payoutAccount }: { payoutAccount: OperatorPayo
       <div className="flex items-start justify-between gap-3">
         <div>
           <p className="font-heading text-lg font-bold tracking-tight">Bank details</p>
-          <p className="ui mt-0.5 text-xs text-slate-500 dark:text-zinc-500">
+          <p className="ui mt-0.5 text-xs text-muted-foreground">
             Used by BusConnect to pay out your revenue. Only you (the owner) can see this.
           </p>
         </div>
         <button
           type="button"
           onClick={cancel}
-          className="ui shrink-0 text-sm font-medium text-slate-500 dark:text-zinc-500"
+          className="ui shrink-0 text-sm font-medium text-muted-foreground"
         >
           Cancel
         </button>
       </div>
 
-      <form onSubmit={submit} className="mt-4 flex flex-col gap-5">
-        <label className="ui flex flex-col gap-1.5 text-sm font-medium text-slate-700 dark:text-zinc-300">
+      <p className="ui mt-4 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+        Editing bank details
+      </p>
+
+      <form onSubmit={submit} className="mt-3 flex flex-col gap-5">
+        <label className="ui flex flex-col gap-1.5 text-sm font-medium text-foreground">
           Bank name
           <input
             value={bankName}
@@ -133,7 +137,7 @@ export function BankDetailsForm({ payoutAccount }: { payoutAccount: OperatorPayo
           />
         </label>
 
-        <label className="ui flex flex-col gap-1.5 text-sm font-medium text-slate-700 dark:text-zinc-300">
+        <label className="ui flex flex-col gap-1.5 text-sm font-medium text-foreground">
           Branch name
           <input
             value={branchName}
@@ -144,7 +148,7 @@ export function BankDetailsForm({ payoutAccount }: { payoutAccount: OperatorPayo
           />
         </label>
 
-        <label className="ui flex flex-col gap-1.5 text-sm font-medium text-slate-700 dark:text-zinc-300">
+        <label className="ui flex flex-col gap-1.5 text-sm font-medium text-foreground">
           Account number
           <input
             value={accountNumber}
@@ -156,8 +160,8 @@ export function BankDetailsForm({ payoutAccount }: { payoutAccount: OperatorPayo
           />
         </label>
 
-        <label className="ui flex flex-col gap-1.5 text-sm font-medium text-slate-700 dark:text-zinc-300">
-          Bank code <span className="text-slate-400 dark:text-zinc-500">(optional)</span>
+        <label className="ui flex flex-col gap-1.5 text-sm font-medium text-foreground">
+          Bank code <span className="text-muted-foreground">(optional)</span>
           <input
             value={bankCode}
             onChange={(e) => setBankCode(e.target.value)}

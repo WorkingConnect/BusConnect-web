@@ -74,7 +74,7 @@ export function JourneyActions({
         type="button"
         onClick={toggle}
         disabled={!!busy}
-        className="ui inline-flex items-center gap-1.5 rounded-lg border border-slate-200 px-2.5 py-1.5 text-xs font-semibold text-slate-700 transition-colors hover:bg-slate-50 disabled:opacity-60 dark:border-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-800"
+        className="ui inline-flex items-center gap-1.5 rounded-lg border border-border px-2.5 py-1.5 text-xs font-semibold text-foreground transition-colors hover:bg-muted disabled:opacity-60"
       >
         {busy === "status" ? (
           <Loader2 size={13} className="animate-spin" />
@@ -97,7 +97,7 @@ export function JourneyActions({
       ) : (
         <div className="flex flex-col gap-1.5">
           <div className="flex items-center gap-1.5">
-            <span className="ui text-xs text-slate-600 dark:text-zinc-400">Delete this journey?</span>
+            <span className="ui text-xs text-muted-foreground">Delete this journey?</span>
             <button
               type="button"
               onClick={() => {
@@ -106,7 +106,7 @@ export function JourneyActions({
                 setCanOverride(false);
               }}
               disabled={!!busy}
-              className="ui rounded-lg border border-slate-200 px-2.5 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-60 dark:border-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-800"
+              className="ui rounded-lg border border-border px-2.5 py-1.5 text-xs font-semibold text-foreground hover:bg-muted disabled:opacity-60"
             >
               Cancel
             </button>

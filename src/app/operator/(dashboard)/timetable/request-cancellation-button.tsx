@@ -98,7 +98,7 @@ export function RequestCancellationButton({
           type="button"
           onClick={() => void withdraw()}
           disabled={busy}
-          className="ui text-xs font-medium text-slate-500 underline transition-colors hover:text-slate-900 disabled:opacity-60 dark:text-zinc-400 dark:hover:text-white"
+          className="ui text-xs font-medium text-muted-foreground underline transition-colors hover:text-foreground disabled:opacity-60"
         >
           {busy ? "Withdrawing…" : "Withdraw request"}
         </button>
@@ -120,7 +120,7 @@ export function RequestCancellationButton({
         type="button"
         onClick={() => setConfirming(true)}
         aria-label="Cancel trip"
-        className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/30"
+        className="rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/30"
       >
         <Trash2 size={15} />
       </button>
@@ -133,7 +133,7 @@ export function RequestCancellationButton({
         {error && !needsRequest && (
           <span className="ui whitespace-nowrap text-xs text-red-600 dark:text-red-400">{error}</span>
         )}
-        {!error && <span className="ui whitespace-nowrap text-xs text-slate-600 dark:text-zinc-400">Cancel?</span>}
+        {!error && <span className="ui whitespace-nowrap text-xs text-muted-foreground">Cancel?</span>}
         <button
           type="button"
           onClick={() => {
@@ -142,7 +142,7 @@ export function RequestCancellationButton({
             setNeedsRequest(false);
           }}
           disabled={busy}
-          className="ui rounded-lg border border-slate-200 px-2 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-60 dark:border-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-800"
+          className="ui rounded-lg border border-border px-2 py-1 text-xs font-semibold text-foreground hover:bg-muted disabled:opacity-60"
         >
           No
         </button>

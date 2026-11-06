@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { getOperatorProfile, ApiError, type OperatorProfile } from "@/lib/api";
+import { Card } from "@/components/ui/card";
 import { ProfileForm } from "./profile-form";
 import { BankDetailsForm } from "./bank-details-form";
 
@@ -44,20 +45,20 @@ export default async function OperatorProfilePage() {
   return (
     <div>
       <h1 className="font-heading text-3xl font-bold tracking-tight">Profile</h1>
-      <p className="ui mt-2 text-sm font-medium text-slate-600 dark:text-zinc-300">
+      <p className="ui mt-1 text-sm text-muted-foreground">
         {editable
           ? "Your company's contact details on file with BusConnect."
           : "Contact details for the operator you work under."}
       </p>
 
-      <div className="mt-8 grid grid-cols-1 items-start gap-6 xl:grid-cols-2">
-        <div className="card-lg p-6">
+      <div className="mt-6 grid grid-cols-1 items-start gap-5 xl:grid-cols-2">
+        <Card className="p-6">
           <ProfileForm profile={profile} editable={editable} />
-        </div>
+        </Card>
         {editable && (
-          <div className="card-lg p-6">
+          <Card className="p-6">
             <BankDetailsForm payoutAccount={profile.payout_account} />
-          </div>
+          </Card>
         )}
       </div>
     </div>

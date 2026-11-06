@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { Wallet } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { getOperatorRevenue, ApiError, type OperatorRevenue } from "@/lib/api";
 import { RevenueView } from "./revenue-view";
@@ -41,16 +40,11 @@ export default async function OperatorRevenuePage() {
 
   return (
     <div>
-      <div className="flex items-center gap-2.5">
-        <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand-soft text-brand dark:bg-brand-soft-dark dark:text-blue-300">
-          <Wallet size={18} />
-        </span>
-        <div>
-          <h1 className="font-heading text-3xl font-bold tracking-tight">Revenue</h1>
-          <p className="ui mt-1 text-sm font-medium text-slate-600 dark:text-zinc-300">
-            Every trip&apos;s earnings: awaiting settlement, still upcoming, or already paid out.
-          </p>
-        </div>
+      <div>
+        <h1 className="font-heading text-3xl font-bold tracking-tight">Revenue</h1>
+        <p className="ui mt-1 text-sm text-muted-foreground">
+          Every trip&apos;s earnings: awaiting settlement, still upcoming, or already paid out.
+        </p>
       </div>
 
       <RevenueView rows={data.rows} />

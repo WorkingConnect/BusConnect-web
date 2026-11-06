@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import jsQR from "jsqr";
 import { Loader2, XCircle, Camera, QrCode, X, User, Bus, LogIn, LogOut, Check } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { previewTicket, boardTicket, ApiError, type PreviewTicketResult } from "@/lib/api";
@@ -14,16 +15,6 @@ const REASON_MESSAGE: Record<string, string> = {
   invalid_seats: "Could not board those seats. Try again.",
 };
 
-// Native browser API (Chrome/Edge/Android) — no extra dependency. Absent on
-// Safari/iOS, where the manual-paste fallback below still works fully.
-declare global {
-  interface Window {
-    BarcodeDetector?: new (options: { formats: string[] }) => {
-      detect: (source: CanvasImageSource) => Promise<{ rawValue: string }[]>;
-    };
-  }
-}
-
 export function TicketScanner() {
   const [token, setToken] = useState("");
   const [busy, setBusy] = useState(false);
@@ -34,11 +25,18 @@ export function TicketScanner() {
   const [cameraSupported, setCameraSupported] = useState(false);
   const [cameraOn, setCameraOn] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
+  // Never rendered — created lazily purely as an off-DOM decode buffer, so
+  // there's no mount-timing dependency the way there would be with a hidden
+  // <canvas> in the JSX tree.
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const tokenRef = useRef<string | null>(null);
 
   useEffect(() => {
-    setCameraSupported(typeof window !== "undefined" && !!window.BarcodeDetector);
+    // jsQR decodes raw pixel data ourselves, so the only real requirement is
+    // camera access — unlike the native BarcodeDetector API this replaces,
+    // which is Chrome/Android-only and silently absent on Safari/iOS.
+    setCameraSupported(typeof navigator !== "undefined" && !!navigator.mediaDevices?.getUserMedia);
   }, []);
 
   async function submit(scannedToken: string) {
@@ -133,20 +131,28 @@ export function TicketScanner() {
   }
 
   function scanLoop() {
-    if (!window.BarcodeDetector || !videoRef.current) return;
-    const detector = new window.BarcodeDetector({ formats: ["qr_code"] });
-    const tick = async () => {
-      if (!streamRef.current || !videoRef.current) return;
-      try {
-        const codes = await detector.detect(videoRef.current);
-        if (codes.length > 0) {
+    const video = videoRef.current;
+    if (!video) return;
+    if (!canvasRef.current) canvasRef.current = document.createElement("canvas");
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext("2d", { willReadFrequently: true });
+    if (!ctx) return;
+    const tick = () => {
+      if (!streamRef.current || !video) return;
+      // Video dimensions aren't known until metadata loads — skip frames
+      // until they are rather than decoding a 0x0 canvas.
+      if (video.videoWidth > 0 && video.videoHeight > 0) {
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        const frame = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const code = jsQR(frame.data, frame.width, frame.height, { inversionAttempts: "dontInvert" });
+        if (code?.data) {
           stopCamera();
-          setToken(codes[0].rawValue);
-          void submit(codes[0].rawValue);
+          setToken(code.data);
+          void submit(code.data);
           return;
         }
-      } catch {
-        /* keep trying */
       }
       if (streamRef.current) requestAnimationFrame(tick);
     };
@@ -161,13 +167,21 @@ export function TicketScanner() {
     <div>
       {cameraSupported && (
         <div className="card mb-4 overflow-hidden p-0">
-          {cameraOn ? (
-            <video ref={videoRef} className="aspect-video w-full bg-black object-cover" muted playsInline />
-          ) : (
+          {/* Always mounted (never conditionally rendered on cameraOn) so
+              videoRef.current is already attached by the time startCamera
+              assigns the stream — otherwise the ref would still be null on
+              the very first call, since cameraOn only flips true afterwards. */}
+          <video
+            ref={videoRef}
+            className={`aspect-video w-full bg-black object-cover ${cameraOn ? "" : "hidden"}`}
+            muted
+            playsInline
+          />
+          {!cameraOn && (
             <button
               type="button"
               onClick={startCamera}
-              className="ui flex w-full items-center justify-center gap-2 p-8 text-sm font-medium text-slate-600 dark:text-zinc-400"
+              className="ui flex w-full items-center justify-center gap-2 p-8 text-sm font-medium text-muted-foreground"
             >
               <Camera size={18} /> Scan with camera
             </button>
@@ -176,7 +190,7 @@ export function TicketScanner() {
             <button
               type="button"
               onClick={stopCamera}
-              className="ui w-full border-t border-slate-200 p-2.5 text-sm font-medium text-slate-500 dark:border-zinc-800 dark:text-zinc-400"
+              className="ui w-full border-t border-border p-2.5 text-sm font-medium text-muted-foreground"
             >
               Stop camera
             </button>
@@ -191,7 +205,7 @@ export function TicketScanner() {
         }}
         className="card flex flex-col gap-3 p-5"
       >
-        <label className="ui flex flex-col gap-1.5 text-sm font-medium text-slate-700 dark:text-zinc-300">
+        <label className="ui flex flex-col gap-1.5 text-sm font-medium text-foreground">
           Ticket token (paste or scan)
           <textarea
             value={token}
@@ -222,14 +236,14 @@ export function TicketScanner() {
             <div className="flex items-start gap-3">
               <div className="min-w-0 flex-1">
                 <p className="flex items-center gap-1.5 truncate font-heading text-base font-bold">
-                  <User size={15} className="shrink-0 text-slate-400" />
+                  <User size={15} className="shrink-0 text-muted-foreground" />
                   {preview.passengerName ?? "Passenger"}
                 </p>
-                <p className="ui mt-0.5 truncate text-xs text-slate-500 dark:text-zinc-500">
+                <p className="ui mt-0.5 truncate text-xs text-muted-foreground">
                   {preview.routeName ?? "Trip"} · #{preview.bookingCode}
                 </p>
               </div>
-              <button type="button" onClick={dismiss} className="text-slate-400 hover:text-slate-700 dark:hover:text-zinc-200">
+              <button type="button" onClick={dismiss} className="text-muted-foreground hover:text-foreground">
                 <X size={20} />
               </button>
             </div>
@@ -257,7 +271,7 @@ export function TicketScanner() {
               </div>
             )}
 
-            <p className="ui mt-4 text-xs font-semibold uppercase tracking-wide text-slate-400 dark:text-zinc-600">
+            <p className="ui mt-4 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
               {preview.seats.length === 1 ? "Seat" : `Seats (${preview.seats.length})`}
             </p>
             <div className="mt-2 flex flex-wrap gap-1.5">
@@ -275,7 +289,7 @@ export function TicketScanner() {
                         ? "border-emerald-500 bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300"
                         : isSelected
                           ? "border-brand bg-brand-soft text-brand dark:bg-brand-soft-dark dark:text-blue-300"
-                          : "border-slate-200 text-slate-700 dark:border-zinc-800 dark:text-zinc-300"
+                          : "border-border text-foreground"
                     }`}
                   >
                     {isBoarded && <Check size={13} />}
@@ -310,8 +324,8 @@ export function TicketScanner() {
 
 function DetailRow({ icon: Icon, value }: { icon: typeof Bus; value: string }) {
   return (
-    <div className="flex items-center gap-2 border-t border-slate-100 py-2.5 text-sm first:border-t-0 dark:border-zinc-800/60">
-      <Icon size={14} className="shrink-0 text-slate-400" />
+    <div className="flex items-center gap-2 border-t border-border py-2.5 text-sm first:border-t-0">
+      <Icon size={14} className="shrink-0 text-muted-foreground" />
       <span className="font-medium">{value}</span>
     </div>
   );
