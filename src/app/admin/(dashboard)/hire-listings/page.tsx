@@ -1,7 +1,9 @@
 import Link from "next/link";
-import { Bus, ChevronRight } from "lucide-react";
+import { Bus, ChevronRight, ClipboardList } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { listAdminHireListings, ApiError, type AdminHireListing } from "@/lib/api";
+import { Card } from "@/components/ui/card";
+import { KpiCard, EmptyState } from "../dashboard-ui";
 
 type ReviewStatus = "pending" | "approved" | "rejected";
 type TabId = ReviewStatus | "all";
@@ -32,7 +34,6 @@ export default async function AdminHireListingsPage({
 }) {
   const { status: rawStatus } = await searchParams;
   const activeTab: TabId = TABS.some((t) => t.id === rawStatus) ? (rawStatus as TabId) : "pending";
-  const reviewStatus = activeTab === "all" ? undefined : activeTab;
 
   const supabase = await createClient();
   const {
@@ -47,10 +48,10 @@ export default async function AdminHireListingsPage({
     );
   }
 
-  let listings: AdminHireListing[] = [];
+  let allListings: AdminHireListing[] = [];
   let error: string | null = null;
   try {
-    listings = await listAdminHireListings(session.access_token, reviewStatus);
+    allListings = await listAdminHireListings(session.access_token);
   } catch (e) {
     error =
       e instanceof ApiError
@@ -68,26 +69,38 @@ export default async function AdminHireListingsPage({
     );
   }
 
+  const pendingCount = allListings.filter((l) => l.moderation_status === "pending").length;
+  const approvedCount = allListings.filter((l) => l.moderation_status === "approved").length;
+  const rejectedCount = allListings.filter((l) => l.moderation_status === "rejected").length;
+  const listings = activeTab === "all" ? allListings : allListings.filter((l) => l.moderation_status === activeTab);
+
   return (
     <div>
       <div>
         <h1 className="font-heading text-2xl font-bold tracking-tight">Hire Listings</h1>
-        <p className="ui mt-1 text-sm text-slate-500 dark:text-zinc-400">
+        <p className="ui mt-1 text-sm text-muted-foreground">
           Bus-for-hire classifieds posted by passengers from the app. Every listing needs review before it
           goes public. Posting/editing is passenger-owned in BusConnect-mobile; open a listing to review,
           optionally edit, and approve or reject it.
         </p>
       </div>
 
-      <div className="ui mt-6 flex flex-wrap gap-1 rounded-xl bg-slate-100 p-1 dark:bg-zinc-800">
+      <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <KpiCard icon={<ClipboardList size={16} />} tone="amber" label="Pending" value={String(pendingCount)} />
+        <KpiCard icon={<ClipboardList size={16} />} tone="emerald" label="Approved" value={String(approvedCount)} />
+        <KpiCard icon={<ClipboardList size={16} />} tone="slate" label="Rejected" value={String(rejectedCount)} />
+        <KpiCard icon={<ClipboardList size={16} />} tone="blue" label="Total" value={String(allListings.length)} />
+      </div>
+
+      <div className="ui mt-6 flex flex-wrap gap-1 rounded-xl bg-muted p-1">
         {TABS.map((t) => (
           <Link
             key={t.id}
             href={`/admin/hire-listings?status=${t.id}`}
             className={`rounded-lg px-3 py-1.5 text-sm font-semibold transition-colors ${
               activeTab === t.id
-                ? "bg-white text-slate-900 shadow-sm dark:bg-zinc-950 dark:text-white"
-                : "text-slate-500 hover:text-slate-700 dark:text-zinc-400 dark:hover:text-zinc-200"
+                ? "bg-card text-foreground shadow-sm"
+                : "text-muted-foreground hover:text-foreground"
             }`}
           >
             {t.label}
@@ -96,23 +109,24 @@ export default async function AdminHireListingsPage({
       </div>
 
       {listings.length === 0 ? (
-        <div className="card mt-6 p-12 text-center text-slate-500 dark:text-zinc-400">
-          No {activeTab === "all" ? "" : activeTab} listings here.
-        </div>
+        <EmptyState
+          title={`No ${activeTab === "all" ? "" : activeTab} listings`}
+          subtitle="New postings from the app will show up here."
+        />
       ) : (
-        <div className="card mt-6 divide-y divide-border overflow-hidden">
+        <Card className="mt-6 divide-y divide-border overflow-hidden">
           {listings.map((l) => (
             <Link
               key={l.id}
               href={`/admin/hire-listings/${l.id}`}
               className="card-hover flex items-start gap-4 p-4 transition-colors"
             >
-              <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-slate-100 dark:bg-zinc-800">
+              <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-muted">
                 {l.images[0] ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={l.images[0]} alt="" className="h-full w-full object-cover" />
                 ) : (
-                  <Bus size={20} className="text-slate-400 dark:text-zinc-600" />
+                  <Bus size={20} className="text-muted-foreground" />
                 )}
               </div>
               <div className="min-w-0 flex-1">
@@ -122,12 +136,12 @@ export default async function AdminHireListingsPage({
                     {MODERATION_LABEL[l.moderation_status]}
                   </span>
                   {l.is_archived && (
-                    <span className="ui rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-semibold text-slate-600 dark:bg-zinc-800 dark:text-zinc-400">
+                    <span className="ui rounded-full bg-muted px-2 py-0.5 text-[11px] font-semibold text-muted-foreground">
                       Archived
                     </span>
                   )}
                 </div>
-                <p className="ui mt-0.5 text-xs text-slate-500 dark:text-zinc-500">
+                <p className="ui mt-0.5 text-xs text-muted-foreground">
                   {l.poster?.name ?? "Unknown"} · {l.poster?.phone ?? l.contact_phone} ·{" "}
                   {new Date(l.created_at).toLocaleDateString("en-LK", {
                     day: "numeric",
@@ -135,12 +149,12 @@ export default async function AdminHireListingsPage({
                     year: "numeric",
                   })}
                 </p>
-                {l.area && <p className="ui mt-1 text-xs text-slate-500 dark:text-zinc-500">{l.area}</p>}
+                {l.area && <p className="ui mt-1 text-xs text-muted-foreground">{l.area}</p>}
               </div>
-              <ChevronRight size={16} className="mt-1 shrink-0 text-slate-300 dark:text-zinc-700" />
+              <ChevronRight size={16} className="mt-1 shrink-0 text-muted-foreground" />
             </Link>
           ))}
-        </div>
+        </Card>
       )}
     </div>
   );

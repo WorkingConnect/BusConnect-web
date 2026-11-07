@@ -35,7 +35,7 @@ export function DeleteRefundButton({ refundId }: { refundId: string }) {
         type="button"
         onClick={() => setConfirming(true)}
         aria-label="Delete refund record"
-        className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/30"
+        className="rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/30"
       >
         <Trash2 size={14} />
       </button>
@@ -46,12 +46,12 @@ export function DeleteRefundButton({ refundId }: { refundId: string }) {
     <div className="flex flex-col items-end gap-1">
       <div className="flex items-center gap-1.5">
         {error && <span className="ui text-xs text-red-600 dark:text-red-400">{error}</span>}
-        {!error && <span className="ui text-xs text-slate-600 dark:text-zinc-400">Delete permanently?</span>}
+        {!error && <span className="ui text-xs text-muted-foreground">Delete permanently?</span>}
         <button
           type="button"
           onClick={() => setConfirming(false)}
           disabled={busy}
-          className="ui rounded-lg border border-slate-200 px-2 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-60 dark:border-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-800"
+          className="ui rounded-lg border border-border px-2 py-1 text-xs font-semibold text-foreground hover:bg-muted disabled:opacity-60"
         >
           No
         </button>

@@ -86,7 +86,7 @@ function ChipMultiSelect({
             className={`ui rounded-full border px-3 py-1.5 text-xs font-medium transition-colors ${
               active
                 ? "border-brand bg-brand-soft text-brand dark:border-blue-400 dark:bg-brand-soft-dark dark:text-blue-300"
-                : "border-slate-200 text-slate-600 hover:bg-slate-50 dark:border-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-900"
+                : "border-border text-muted-foreground hover:bg-muted"
             }`}
           >
             {o.label}
@@ -99,7 +99,7 @@ function ChipMultiSelect({
 
 function FieldLabel({ children }: { children: React.ReactNode }) {
   return (
-    <label className="ui flex flex-col gap-1.5 text-sm font-medium text-slate-700 dark:text-zinc-300">
+    <label className="ui flex flex-col gap-1.5 text-sm font-medium text-foreground">
       {children}
     </label>
   );
@@ -125,7 +125,7 @@ function Select({
       </select>
       <ChevronDown
         size={16}
-        className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-zinc-500"
+        className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
       />
     </div>
   );
@@ -362,7 +362,7 @@ export function HireListingDetailCard({ listing }: { listing: AdminHireListing }
     return (
       <form onSubmit={save} className="flex flex-col gap-6">
         <section className="card-lg p-6">
-          <h2 className="ui text-xs font-semibold uppercase tracking-wide text-slate-400 dark:text-zinc-600">
+          <h2 className="ui text-xs font-semibold uppercase tracking-wide text-muted-foreground">
             Basic Details
           </h2>
           <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -404,12 +404,12 @@ export function HireListingDetailCard({ listing }: { listing: AdminHireListing }
             </FieldLabel>
             <FieldLabel>
               A/C
-              <div className="inline-flex w-fit overflow-hidden rounded-lg border border-slate-200 dark:border-zinc-800">
+              <div className="inline-flex w-fit overflow-hidden rounded-lg border border-border">
                 <button
                   type="button"
                   onClick={() => setIsAc(true)}
                   className={`px-3.5 py-2 text-sm font-medium transition-colors ${
-                    isAc ? "bg-brand text-brand-fg" : "bg-transparent text-slate-600 dark:text-zinc-400"
+                    isAc ? "bg-brand text-brand-fg" : "bg-transparent text-muted-foreground"
                   }`}
                 >
                   A/C
@@ -418,7 +418,7 @@ export function HireListingDetailCard({ listing }: { listing: AdminHireListing }
                   type="button"
                   onClick={() => setIsAc(false)}
                   className={`px-3.5 py-2 text-sm font-medium transition-colors ${
-                    !isAc ? "bg-brand text-brand-fg" : "bg-transparent text-slate-600 dark:text-zinc-400"
+                    !isAc ? "bg-brand text-brand-fg" : "bg-transparent text-muted-foreground"
                   }`}
                 >
                   Non-A/C
@@ -442,7 +442,7 @@ export function HireListingDetailCard({ listing }: { listing: AdminHireListing }
         </section>
 
         <section className="card-lg p-6">
-          <h2 className="ui text-xs font-semibold uppercase tracking-wide text-slate-400 dark:text-zinc-600">
+          <h2 className="ui text-xs font-semibold uppercase tracking-wide text-muted-foreground">
             Features & Facilities
           </h2>
           <div className="mt-4">
@@ -451,7 +451,7 @@ export function HireListingDetailCard({ listing }: { listing: AdminHireListing }
         </section>
 
         <section className="card-lg p-6">
-          <h2 className="ui text-xs font-semibold uppercase tracking-wide text-slate-400 dark:text-zinc-600">
+          <h2 className="ui text-xs font-semibold uppercase tracking-wide text-muted-foreground">
             Hire Details
           </h2>
           <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -504,7 +504,7 @@ export function HireListingDetailCard({ listing }: { listing: AdminHireListing }
         </section>
 
         <section className="card-lg p-6">
-          <h2 className="ui text-xs font-semibold uppercase tracking-wide text-slate-400 dark:text-zinc-600">
+          <h2 className="ui text-xs font-semibold uppercase tracking-wide text-muted-foreground">
             Description & Suitable For
           </h2>
           <textarea
@@ -520,7 +520,7 @@ export function HireListingDetailCard({ listing }: { listing: AdminHireListing }
         </section>
 
         <section className="card-lg p-6">
-          <h2 className="ui text-xs font-semibold uppercase tracking-wide text-slate-400 dark:text-zinc-600">
+          <h2 className="ui text-xs font-semibold uppercase tracking-wide text-muted-foreground">
             Location
           </h2>
           <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -552,7 +552,7 @@ export function HireListingDetailCard({ listing }: { listing: AdminHireListing }
         </section>
 
         <section className="card-lg p-6">
-          <h2 className="ui text-xs font-semibold uppercase tracking-wide text-slate-400 dark:text-zinc-600">
+          <h2 className="ui text-xs font-semibold uppercase tracking-wide text-muted-foreground">
             Contact Details
           </h2>
           <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -598,7 +598,7 @@ export function HireListingDetailCard({ listing }: { listing: AdminHireListing }
         </section>
 
         <section className="card-lg p-6">
-          <h2 className="ui text-xs font-semibold uppercase tracking-wide text-slate-400 dark:text-zinc-600">
+          <h2 className="ui text-xs font-semibold uppercase tracking-wide text-muted-foreground">
             Photos
           </h2>
           <div className="mt-4 flex flex-wrap gap-3">
@@ -608,20 +608,20 @@ export function HireListingDetailCard({ listing }: { listing: AdminHireListing }
                 <img
                   src={url}
                   alt={`Listing photo ${i + 1}`}
-                  className="h-20 w-20 rounded-lg border border-slate-200 object-cover dark:border-zinc-800"
+                  className="h-20 w-20 rounded-lg border border-border object-cover"
                 />
                 <button
                   type="button"
                   onClick={() => removeImageAt(i)}
                   aria-label="Remove image"
-                  className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-slate-900 text-white shadow-sm transition-colors hover:bg-slate-700 dark:bg-zinc-700 dark:hover:bg-zinc-600"
+                  className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-foreground text-background shadow-sm transition-colors hover:opacity-80"
                 >
                   <X size={11} />
                 </button>
               </div>
             ))}
             {images.length < MAX_PHOTOS && (
-              <label className="ui flex h-20 w-20 shrink-0 cursor-pointer flex-col items-center justify-center gap-1 rounded-lg border border-dashed border-slate-300 text-slate-400 transition-colors hover:border-brand hover:text-brand dark:border-zinc-700 dark:text-zinc-600">
+              <label className="ui flex h-20 w-20 shrink-0 cursor-pointer flex-col items-center justify-center gap-1 rounded-lg border border-dashed border-border text-muted-foreground transition-colors hover:border-brand hover:text-brand">
                 {uploadingPhoto ? (
                   <Loader2 size={18} className="animate-spin" />
                 ) : (
@@ -657,7 +657,7 @@ export function HireListingDetailCard({ listing }: { listing: AdminHireListing }
             type="button"
             onClick={cancel}
             disabled={busy}
-            className="ui inline-flex items-center gap-1.5 rounded-lg border border-slate-200 px-3 py-3 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50 disabled:opacity-60 dark:border-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-800"
+            className="ui inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-3 text-sm font-medium text-foreground transition-colors hover:bg-muted disabled:opacity-60"
           >
             <X size={16} /> Cancel
           </button>
@@ -685,7 +685,7 @@ export function HireListingDetailCard({ listing }: { listing: AdminHireListing }
                 {MODERATION_LABEL[listing.moderation_status]}
               </span>
               {listing.is_archived && (
-                <span className="ui rounded-full bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-600 dark:bg-zinc-800 dark:text-zinc-400">
+                <span className="ui rounded-full bg-muted px-2 py-0.5 text-xs font-semibold text-muted-foreground">
                   Archived
                 </span>
               )}
@@ -693,11 +693,11 @@ export function HireListingDetailCard({ listing }: { listing: AdminHireListing }
             <p className="font-heading mt-1 text-lg font-bold text-brand dark:text-blue-400">
               {formatPrice(listing.price_amount, listing.price_type)}
             </p>
-            <p className="ui mt-1 flex items-center gap-1.5 text-sm text-slate-600 dark:text-zinc-400">
+            <p className="ui mt-1 flex items-center gap-1.5 text-sm text-muted-foreground">
               <MapPin size={14} />
               {listing.city}, {listing.district}, {listing.province}
             </p>
-            <p className="ui mt-1 text-xs text-slate-500 dark:text-zinc-500">
+            <p className="ui mt-1 text-xs text-muted-foreground">
               Posted by {listing.poster?.name ?? "Unknown"} · {listing.poster?.phone ?? listing.contact_phone} ·{" "}
               {new Date(listing.created_at).toLocaleDateString("en-LK", {
                 day: "numeric",
@@ -709,7 +709,7 @@ export function HireListingDetailCard({ listing }: { listing: AdminHireListing }
           <button
             type="button"
             onClick={startEditing}
-            className="ui inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-slate-200 px-2.5 py-1.5 text-xs font-semibold text-slate-700 transition-colors hover:bg-slate-50 dark:border-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-800"
+            className="ui inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-border px-2.5 py-1.5 text-xs font-semibold text-foreground transition-colors hover:bg-muted"
           >
             <Pencil size={13} /> Edit details
           </button>
@@ -723,7 +723,7 @@ export function HireListingDetailCard({ listing }: { listing: AdminHireListing }
           ))}
         </div>
 
-        <div className="mt-5 flex flex-wrap items-center gap-2 border-t border-slate-200 pt-5 dark:border-zinc-800">
+        <div className="mt-5 flex flex-wrap items-center gap-2 border-t border-border pt-5">
           {listing.moderation_status !== "approved" && (
             <button
               type="button"
@@ -748,7 +748,7 @@ export function HireListingDetailCard({ listing }: { listing: AdminHireListing }
             type="button"
             onClick={() => setReviewStatus("pending")}
             disabled={!!actionBusy}
-            className="ui inline-flex items-center gap-1.5 rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700 transition-colors hover:bg-slate-50 disabled:opacity-60 dark:border-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-800"
+            className="ui inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-xs font-semibold text-foreground transition-colors hover:bg-muted disabled:opacity-60"
           >
             {actionBusy === "pending" ? <Loader2 size={13} className="animate-spin" /> : <RotateCcw size={13} />}
             Re-queue
@@ -766,12 +766,12 @@ export function HireListingDetailCard({ listing }: { listing: AdminHireListing }
               </button>
             ) : (
               <div className="flex items-center gap-1.5">
-                <span className="ui text-xs text-slate-600 dark:text-zinc-400">Delete permanently?</span>
+                <span className="ui text-xs text-muted-foreground">Delete permanently?</span>
                 <button
                   type="button"
                   onClick={() => setConfirmingDelete(false)}
                   disabled={!!actionBusy}
-                  className="ui rounded-lg border border-slate-200 px-2 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-60 dark:border-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-800"
+                  className="ui rounded-lg border border-border px-2 py-1 text-xs font-semibold text-foreground hover:bg-muted disabled:opacity-60"
                 >
                   No
                 </button>
@@ -793,7 +793,7 @@ export function HireListingDetailCard({ listing }: { listing: AdminHireListing }
 
       <div className="overflow-hidden rounded-2xl border border-border">
         {listing.images.length > 0 ? (
-          <div className="grid grid-cols-2 gap-1 bg-slate-100 dark:bg-zinc-800 sm:grid-cols-3">
+          <div className="grid grid-cols-2 gap-1 bg-muted sm:grid-cols-3">
             {listing.images.slice(0, 4).map((src, i) => (
               // eslint-disable-next-line @next/next/no-img-element
               <img
@@ -818,25 +818,25 @@ export function HireListingDetailCard({ listing }: { listing: AdminHireListing }
         <div className="card divide-y divide-border overflow-hidden">
           {listing.bus_model && (
             <div className="ui flex items-center justify-between px-4 py-2.5 text-sm">
-              <span className="text-slate-500 dark:text-zinc-400">Bus Model</span>
+              <span className="text-muted-foreground">Bus Model</span>
               <span className="font-medium">{listing.bus_model}</span>
             </div>
           )}
           {listing.manufacturing_year && (
             <div className="ui flex items-center justify-between px-4 py-2.5 text-sm">
-              <span className="text-slate-500 dark:text-zinc-400">Manufacturing Year</span>
+              <span className="text-muted-foreground">Manufacturing Year</span>
               <span className="font-medium">{listing.manufacturing_year}</span>
             </div>
           )}
           {listing.min_hire_duration && (
             <div className="ui flex items-center justify-between px-4 py-2.5 text-sm">
-              <span className="text-slate-500 dark:text-zinc-400">Minimum Hire Duration</span>
+              <span className="text-muted-foreground">Minimum Hire Duration</span>
               <span className="font-medium">{listing.min_hire_duration}</span>
             </div>
           )}
           {listing.area && (
             <div className="ui flex items-center justify-between px-4 py-2.5 text-sm">
-              <span className="text-slate-500 dark:text-zinc-400">Service Area</span>
+              <span className="text-muted-foreground">Service Area</span>
               <span className="font-medium">{listing.area}</span>
             </div>
           )}
@@ -845,7 +845,7 @@ export function HireListingDetailCard({ listing }: { listing: AdminHireListing }
 
       {listing.features.length > 0 && (
         <div>
-          <h2 className="ui text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-zinc-500">
+          <h2 className="ui text-xs font-semibold uppercase tracking-wide text-muted-foreground">
             Features & Facilities
           </h2>
           <div className="mt-2 flex flex-wrap gap-2">
@@ -860,7 +860,7 @@ export function HireListingDetailCard({ listing }: { listing: AdminHireListing }
 
       {listing.suitable_for.length > 0 && (
         <div>
-          <h2 className="ui text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-zinc-500">
+          <h2 className="ui text-xs font-semibold uppercase tracking-wide text-muted-foreground">
             Suitable For
           </h2>
           <div className="mt-2 flex flex-wrap gap-2">
@@ -875,37 +875,37 @@ export function HireListingDetailCard({ listing }: { listing: AdminHireListing }
 
       {listing.description && (
         <div>
-          <h2 className="ui text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-zinc-500">
+          <h2 className="ui text-xs font-semibold uppercase tracking-wide text-muted-foreground">
             Description
           </h2>
-          <p className="mt-2 whitespace-pre-line text-sm leading-relaxed text-slate-700 dark:text-zinc-300">
+          <p className="mt-2 whitespace-pre-line text-sm leading-relaxed text-foreground">
             {listing.description}
           </p>
         </div>
       )}
 
       <div className="card p-5">
-        <h2 className="ui text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-zinc-500">
+        <h2 className="ui text-xs font-semibold uppercase tracking-wide text-muted-foreground">
           Contact Details
         </h2>
         <dl className="ui mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
           <div>
-            <p className="text-xs font-medium text-slate-500 dark:text-zinc-500">Contact name</p>
+            <p className="text-xs font-medium text-muted-foreground">Contact name</p>
             <p className="mt-0.5 text-sm font-medium">{listing.contact_name}</p>
           </div>
           <div>
-            <p className="text-xs font-medium text-slate-500 dark:text-zinc-500">Contact phone</p>
+            <p className="text-xs font-medium text-muted-foreground">Contact phone</p>
             <p className="mt-0.5 text-sm font-medium">{listing.contact_phone}</p>
           </div>
           {listing.contact_whatsapp && (
             <div>
-              <p className="text-xs font-medium text-slate-500 dark:text-zinc-500">WhatsApp</p>
+              <p className="text-xs font-medium text-muted-foreground">WhatsApp</p>
               <p className="mt-0.5 text-sm font-medium">{listing.contact_whatsapp}</p>
             </div>
           )}
           {listing.preferred_contact_method && (
             <div>
-              <p className="text-xs font-medium text-slate-500 dark:text-zinc-500">Preferred contact method</p>
+              <p className="text-xs font-medium text-muted-foreground">Preferred contact method</p>
               <p className="mt-0.5 text-sm font-medium capitalize">{listing.preferred_contact_method}</p>
             </div>
           )}

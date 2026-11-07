@@ -5,6 +5,8 @@ import { Images, Loader2, PlusCircle, Save, Trash2, X } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { uploadRouteImage } from "@/lib/storage";
 import { ImageSlot } from "@/components/image-slot";
+import { Card } from "@/components/ui/card";
+import { KpiCard, EmptyState } from "../dashboard-ui";
 import {
   listAdminRouteCards,
   createAdminRouteCard,
@@ -57,7 +59,7 @@ export default function AdminRouteCardsPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center gap-2 text-slate-500 dark:text-zinc-400">
+      <div className="flex items-center gap-2 text-muted-foreground">
         <Loader2 size={16} className="animate-spin" /> Loading route cards…
       </div>
     );
@@ -75,7 +77,7 @@ export default function AdminRouteCardsPage() {
       <div className="flex items-center justify-between gap-4">
         <div>
           <h1 className="font-heading text-2xl font-bold tracking-tight">Route Cards</h1>
-          <p className="ui mt-1 text-sm text-slate-600 dark:text-zinc-400">
+          <p className="ui mt-1 text-sm text-muted-foreground">
             Shared corridor name + photo templates. Link several physically different routes
             (different operators, different stops) to the same card so they all display a
             consistent name. Editing a card updates every route linked to it immediately.
@@ -92,6 +94,10 @@ export default function AdminRouteCardsPage() {
         )}
       </div>
 
+      <div className="mt-5 grid grid-cols-1 gap-3 sm:max-w-xs">
+        <KpiCard icon={<Images size={16} />} tone="blue" label="Total route cards" value={String(cards.length)} />
+      </div>
+
       {editor && (
         <RouteCardEditor
           token={token}
@@ -104,41 +110,47 @@ export default function AdminRouteCardsPage() {
         />
       )}
 
-      <div className="mt-6 flex flex-col gap-2">
+      <div className="mt-6">
         {cards.length === 0 ? (
-          <div className="card p-10 text-center text-sm text-slate-500 dark:text-zinc-400">
-            No route cards yet.
-          </div>
+          <EmptyState
+            icon={<Images size={32} className="mx-auto text-slate-400 dark:text-zinc-600" />}
+            title="No route cards yet"
+            subtitle="Create a route card to get started."
+          />
         ) : (
-          cards.map((c) => (
-            <div key={c.id} className="card flex items-center gap-3 p-4">
-              {c.image_url ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={c.image_url}
-                  alt={`${c.name} photo`}
-                  className="h-14 w-14 shrink-0 rounded-lg border border-slate-200 object-cover dark:border-zinc-800"
-                />
-              ) : (
-                <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg border border-dashed border-slate-300 text-slate-400 dark:border-zinc-700 dark:text-zinc-600">
-                  <Images size={18} />
+          <Card>
+            <div className="flex flex-col">
+              {cards.map((c) => (
+                <div key={c.id} className="flex items-center gap-3 border-b border-border p-4 last:border-0">
+                  {c.image_url ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={c.image_url}
+                      alt={`${c.name} photo`}
+                      className="h-14 w-14 shrink-0 rounded-lg border border-border object-cover"
+                    />
+                  ) : (
+                    <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg border border-dashed border-border text-muted-foreground">
+                      <Images size={18} />
+                    </div>
+                  )}
+                  <div className="flex flex-1 items-center justify-between gap-3">
+                    <p className="font-medium">{c.name}</p>
+                    <div className="flex shrink-0 items-center gap-1.5">
+                      <button
+                        type="button"
+                        onClick={() => setEditor({ id: c.id, name: c.name, imageUrl: c.image_url ?? undefined })}
+                        className="ui rounded-lg border border-border px-2.5 py-1.5 text-xs font-semibold text-foreground transition-colors hover:bg-muted"
+                      >
+                        Edit
+                      </button>
+                      <DeleteRouteCardButton token={token} cardId={c.id} cardName={c.name} onDeleted={loadAll} />
+                    </div>
+                  </div>
                 </div>
-              )}
-              <div className="flex flex-1 items-center justify-between gap-3">
-                <p className="font-medium">{c.name}</p>
-                <div className="flex shrink-0 items-center gap-1.5">
-                  <button
-                    type="button"
-                    onClick={() => setEditor({ id: c.id, name: c.name, imageUrl: c.image_url ?? undefined })}
-                    className="ui rounded-lg border border-slate-200 px-2.5 py-1.5 text-xs font-semibold text-slate-700 transition-colors hover:bg-slate-50 dark:border-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-800"
-                  >
-                    Edit
-                  </button>
-                  <DeleteRouteCardButton token={token} cardId={c.id} cardName={c.name} onDeleted={loadAll} />
-                </div>
-              </div>
+              ))}
             </div>
-          ))
+          </Card>
         )}
       </div>
     </div>
@@ -204,14 +216,14 @@ function RouteCardEditor({
         <button
           type="button"
           onClick={() => setEditor(null)}
-          className="rounded-lg p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:text-zinc-500 dark:hover:bg-zinc-800 dark:hover:text-zinc-300"
+          className="rounded-lg p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
           aria-label="Close"
         >
           <X size={16} />
         </button>
       </div>
 
-      <label className="ui mt-4 flex flex-col gap-1.5 text-sm font-medium text-slate-700 dark:text-zinc-300">
+      <label className="ui mt-4 flex flex-col gap-1.5 text-sm font-medium text-foreground">
         Corridor name
         <input
           value={editor.name}
@@ -283,12 +295,12 @@ function DeleteRouteCardButton({
   return (
     <div className="flex items-center gap-1.5">
       {error && <span className="ui whitespace-nowrap text-xs text-red-600 dark:text-red-400">{error}</span>}
-      <span className="ui whitespace-nowrap text-xs text-slate-600 dark:text-zinc-400">Delete {cardName}?</span>
+      <span className="ui whitespace-nowrap text-xs text-muted-foreground">Delete {cardName}?</span>
       <button
         type="button"
         onClick={() => setConfirming(false)}
         disabled={busy}
-        className="ui rounded-lg border border-slate-200 px-2.5 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-60 dark:border-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-800"
+        className="ui rounded-lg border border-border px-2.5 py-1.5 text-xs font-semibold text-foreground hover:bg-muted disabled:opacity-60"
       >
         Cancel
       </button>

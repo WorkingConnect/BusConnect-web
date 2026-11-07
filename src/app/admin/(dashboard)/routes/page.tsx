@@ -24,6 +24,8 @@ import {
 import { createClient } from "@/lib/supabase/client";
 import { StopLocationPicker } from "@/components/stop-location-picker";
 import { RoutePreviewMap, type RouteMapStop } from "@/components/route-preview-map";
+import { Card } from "@/components/ui/card";
+import { KpiCard, EmptyState } from "../dashboard-ui";
 import {
   listAdminLocations,
   createAdminLocation,
@@ -165,7 +167,7 @@ export default function AdminRoutesPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center gap-2 text-slate-500 dark:text-zinc-400">
+      <div className="flex items-center gap-2 text-muted-foreground">
         <Loader2 size={16} className="animate-spin" /> Loading routes…
       </div>
     );
@@ -178,12 +180,14 @@ export default function AdminRoutesPage() {
     );
   }
 
+  const onboardCount = routes.filter((r) => r.mode === "onboard").length;
+
   return (
     <div>
       <div className="flex items-center justify-between gap-4">
         <div>
           <h1 className="font-heading text-2xl font-bold tracking-tight">Routes</h1>
-          <p className="ui mt-1 text-sm text-slate-600 dark:text-zinc-400">
+          <p className="ui mt-1 text-sm text-muted-foreground">
             Shared route catalog. Each route is an ordered list of stops from origin to
             destination. A route is only usable by the operators explicitly assigned to it.
           </p>
@@ -208,6 +212,11 @@ export default function AdminRoutesPage() {
         )}
       </div>
 
+      <div className="mt-5 grid grid-cols-2 gap-3 sm:max-w-sm">
+        <KpiCard icon={<RouteIcon size={16} />} tone="blue" label="Total routes" value={String(routes.length)} />
+        <KpiCard icon={<RouteIcon size={16} />} tone="purple" label="Onboard" value={String(onboardCount)} />
+      </div>
+
       {editor && (
         <RouteEditor
           token={token}
@@ -224,62 +233,68 @@ export default function AdminRoutesPage() {
         />
       )}
 
-      <div className="mt-6 flex flex-col gap-2">
+      <div className="mt-6">
         {routes.length === 0 ? (
-          <div className="card p-10 text-center text-sm text-slate-500 dark:text-zinc-400">
-            No routes yet.
-          </div>
+          <EmptyState
+            icon={<RouteIcon size={32} className="mx-auto text-slate-400 dark:text-zinc-600" />}
+            title="No routes yet"
+            subtitle="Create a route to get started."
+          />
         ) : (
-          routes.map((r) => {
-            const visible = r.stops.filter((s) => !s.is_waypoint);
-            const waypointCount = r.stops.length - visible.length;
-            return (
-              <div key={r.id} className="card flex items-center gap-3 p-4">
-                {r.image_url ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={r.image_url}
-                    alt={`${r.name} photo`}
-                    className="h-14 w-14 shrink-0 rounded-lg border border-slate-200 object-cover dark:border-zinc-800"
-                  />
-                ) : (
-                  <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg border border-dashed border-slate-300 text-slate-400 dark:border-zinc-700 dark:text-zinc-600">
-                    <RouteIcon size={18} />
+          <Card>
+            <div className="flex flex-col">
+              {routes.map((r) => {
+                const visible = r.stops.filter((s) => !s.is_waypoint);
+                const waypointCount = r.stops.length - visible.length;
+                return (
+                  <div key={r.id} className="flex items-center gap-3 border-b border-border p-4 last:border-0">
+                    {r.image_url ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={r.image_url}
+                        alt={`${r.name} photo`}
+                        className="h-14 w-14 shrink-0 rounded-lg border border-border object-cover"
+                      />
+                    ) : (
+                      <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg border border-dashed border-border text-muted-foreground">
+                        <RouteIcon size={18} />
+                      </div>
+                    )}
+                    <div className="flex flex-1 items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="flex items-center gap-2 font-medium">
+                          {r.name}
+                          {r.mode === "onboard" && (
+                            <span className="ui rounded-full bg-brand-soft px-2 py-0.5 text-[11px] font-semibold text-brand dark:bg-brand-soft-dark dark:text-blue-300">
+                              Onboard
+                            </span>
+                          )}
+                        </p>
+                        <p className="ui mt-1 text-sm text-muted-foreground">
+                          {visible.map((s) => s.name ?? "—").join("  →  ")}
+                        </p>
+                        <p className="ui mt-1 text-xs text-muted-foreground">
+                          {visible.length} stops
+                          {waypointCount > 0 && ` · ${waypointCount} hidden waypoint${waypointCount > 1 ? "s" : ""}`}
+                        </p>
+                      </div>
+                      <div className="flex shrink-0 items-center gap-1.5">
+                        <RegeneratePathButton token={token} routeId={r.id} onDone={loadAll} />
+                        <button
+                          type="button"
+                          onClick={() => setEditor(editorFromRoute(r))}
+                          className="ui rounded-lg border border-border px-2.5 py-1.5 text-xs font-semibold text-foreground transition-colors hover:bg-muted"
+                        >
+                          Edit
+                        </button>
+                        <DeleteRouteButton token={token} routeId={r.id} routeName={r.name} onDeleted={loadAll} />
+                      </div>
+                    </div>
                   </div>
-                )}
-                <div className="flex flex-1 items-start justify-between gap-3">
-                  <div className="min-w-0">
-                    <p className="flex items-center gap-2 font-medium">
-                      {r.name}
-                      {r.mode === "onboard" && (
-                        <span className="ui rounded-full bg-brand-soft px-2 py-0.5 text-[11px] font-semibold text-brand dark:bg-brand-soft-dark dark:text-blue-300">
-                          Onboard
-                        </span>
-                      )}
-                    </p>
-                    <p className="ui mt-1 text-sm text-slate-500 dark:text-zinc-400">
-                      {visible.map((s) => s.name ?? "—").join("  →  ")}
-                    </p>
-                    <p className="ui mt-1 text-xs text-slate-400 dark:text-zinc-500">
-                      {visible.length} stops
-                      {waypointCount > 0 && ` · ${waypointCount} hidden waypoint${waypointCount > 1 ? "s" : ""}`}
-                    </p>
-                  </div>
-                  <div className="flex shrink-0 items-center gap-1.5">
-                    <RegeneratePathButton token={token} routeId={r.id} onDone={loadAll} />
-                    <button
-                      type="button"
-                      onClick={() => setEditor(editorFromRoute(r))}
-                      className="ui rounded-lg border border-slate-200 px-2.5 py-1.5 text-xs font-semibold text-slate-700 transition-colors hover:bg-slate-50 dark:border-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-800"
-                    >
-                      Edit
-                    </button>
-                    <DeleteRouteButton token={token} routeId={r.id} routeName={r.name} onDeleted={loadAll} />
-                  </div>
-                </div>
-              </div>
-            );
-          })
+                );
+              })}
+            </div>
+          </Card>
         )}
       </div>
     </div>
@@ -595,17 +610,17 @@ function RouteEditor({
 
   const stopsPanel = (
     <>
-      <p className="ui text-sm font-semibold text-slate-900 dark:text-white">
-        Stops <span className="font-normal text-slate-400">(origin first → destination last)</span>
+      <p className="ui text-sm font-semibold text-foreground">
+        Stops <span className="font-normal text-muted-foreground">(origin first → destination last)</span>
       </p>
-      <div className="mt-2 flex flex-col gap-2 rounded-xl border border-slate-200 p-2.5 dark:border-zinc-800">
+      <div className="mt-2 flex flex-col gap-2 rounded-xl border border-border p-2.5">
         {stops.map((s, i) => {
           const isEndpoint = i === 0 || i === stops.length - 1;
           return (
             <div key={s.key} className="flex items-center gap-2">
               <span
                 className={`ui w-6 shrink-0 text-center text-xs font-semibold ${
-                  s.isWaypoint ? "text-purple-500" : "text-slate-400 dark:text-zinc-500"
+                  s.isWaypoint ? "text-purple-500" : "text-muted-foreground"
                 }`}
               >
                 {s.isWaypoint ? "W" : i + 1}
@@ -634,7 +649,7 @@ function RouteEditor({
                   className={`rounded-md p-1.5 disabled:opacity-30 ${
                     s.lat != null
                       ? "text-brand hover:bg-brand-soft dark:text-blue-400"
-                      : "text-slate-400 hover:bg-slate-100 dark:hover:bg-zinc-800"
+                      : "text-muted-foreground hover:bg-muted"
                   }`}
                   aria-label="Set location on map"
                   title={s.lat != null ? "Pinned. Click to move" : "Set location on map"}
@@ -648,7 +663,7 @@ function RouteEditor({
                   className={`rounded-md p-1.5 disabled:opacity-20 ${
                     s.isWaypoint
                       ? "text-purple-500 hover:bg-purple-50 dark:hover:bg-purple-950/30"
-                      : "text-slate-400 hover:bg-slate-100 dark:hover:bg-zinc-800"
+                      : "text-muted-foreground hover:bg-muted"
                   }`}
                   aria-label={s.isWaypoint ? "Make a visible stop" : "Make a hidden waypoint"}
                   title={
@@ -665,7 +680,7 @@ function RouteEditor({
                   type="button"
                   onClick={() => move(i, -1)}
                   disabled={i === 0}
-                  className="rounded-md p-1.5 text-slate-400 hover:bg-slate-100 disabled:opacity-30 dark:hover:bg-zinc-800"
+                  className="rounded-md p-1.5 text-muted-foreground hover:bg-muted disabled:opacity-30"
                   aria-label="Move up"
                 >
                   <ArrowUp size={14} />
@@ -674,7 +689,7 @@ function RouteEditor({
                   type="button"
                   onClick={() => move(i, 1)}
                   disabled={i === stops.length - 1}
-                  className="rounded-md p-1.5 text-slate-400 hover:bg-slate-100 disabled:opacity-30 dark:hover:bg-zinc-800"
+                  className="rounded-md p-1.5 text-muted-foreground hover:bg-muted disabled:opacity-30"
                   aria-label="Move down"
                 >
                   <ArrowDown size={14} />
@@ -702,7 +717,7 @@ function RouteEditor({
           <Waypoints size={15} /> Add waypoint
         </button>
       </div>
-      <p className="ui mt-2 text-xs text-slate-400 dark:text-zinc-500">
+      <p className="ui mt-2 text-xs text-muted-foreground">
         A hidden waypoint bends the road path onto the correct road but is never shown to
         passengers. Use it when the generated path takes a wrong turn.
       </p>
@@ -713,9 +728,9 @@ function RouteEditor({
 
   const routeCardPanel = (
     <div className="flex flex-col gap-5">
-      <div className="rounded-xl bg-slate-50 p-3.5 dark:bg-zinc-900/40">
-        <p className="ui text-sm font-semibold text-slate-900 dark:text-white">
-          Import from Google Maps <span className="font-normal text-slate-400">(optional)</span>
+      <div className="rounded-xl bg-muted p-3.5">
+        <p className="ui text-sm font-semibold text-foreground">
+          Import from Google Maps <span className="font-normal text-muted-foreground">(optional)</span>
         </p>
         <div className="mt-2 flex gap-2">
           <input
@@ -754,7 +769,7 @@ function RouteEditor({
       </div>
 
       <div>
-        <p className="ui text-sm font-semibold text-slate-900 dark:text-white">
+        <p className="ui text-sm font-semibold text-foreground">
           Route card{" "}
           <Link
             href="/admin/route-cards"
@@ -779,16 +794,16 @@ function RouteEditor({
         </select>
 
         {editor.routeCardId && (
-          <div className="ui mt-3 flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 p-2.5 dark:border-zinc-800 dark:bg-zinc-900/50">
+          <div className="ui mt-3 flex items-center gap-3 rounded-xl border border-border bg-muted p-2.5">
             {editor.imageUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={editor.imageUrl}
                 alt={`${editor.name} photo`}
-                className="h-12 w-12 shrink-0 rounded-lg border border-slate-200 object-cover dark:border-zinc-800"
+                className="h-12 w-12 shrink-0 rounded-lg border border-border object-cover"
               />
             ) : (
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg border border-dashed border-slate-300 text-slate-400 dark:border-zinc-700 dark:text-zinc-600">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg border border-dashed border-border text-muted-foreground">
                 <RouteIcon size={16} />
               </div>
             )}
@@ -798,13 +813,13 @@ function RouteEditor({
       </div>
 
       <div>
-        <p className="ui text-sm font-semibold text-slate-900 dark:text-white">Route mode</p>
-        <p className="ui mt-0.5 text-xs text-slate-500 dark:text-zinc-400">
+        <p className="ui text-sm font-semibold text-foreground">Route mode</p>
+        <p className="ui mt-0.5 text-xs text-muted-foreground">
           Reserved routes use the normal seat-booking flow. Onboard routes have no seat map —
           passengers pay the conductor on board by scanning their wallet QR instead of booking in
           advance.
         </p>
-        <div className="mt-2 inline-flex rounded-lg border border-slate-200 p-0.5 dark:border-zinc-800">
+        <div className="mt-2 inline-flex rounded-lg border border-border p-0.5">
           {(["reserved", "onboard"] as const).map((m) => (
             <button
               key={m}
@@ -813,7 +828,7 @@ function RouteEditor({
               className={`ui rounded-md px-3 py-1.5 text-xs font-semibold transition-colors ${
                 editor.mode === m
                   ? "bg-brand text-white"
-                  : "text-slate-600 hover:text-slate-900 dark:text-zinc-400 dark:hover:text-white"
+                  : "text-muted-foreground hover:text-foreground"
               }`}
             >
               {m === "reserved" ? "Reserved (seat booking)" : "Onboard (city bus, pay by QR)"}
@@ -823,8 +838,8 @@ function RouteEditor({
       </div>
 
       <div>
-        <p className="ui text-sm font-semibold text-slate-900 dark:text-white">Operators</p>
-        <p className="ui mt-0.5 text-xs text-slate-500 dark:text-zinc-400">
+        <p className="ui text-sm font-semibold text-foreground">Operators</p>
+        <p className="ui mt-0.5 text-xs text-muted-foreground">
           Only the operators picked here can use this route. Leave none selected and no operator
           can use it yet.
         </p>
@@ -853,7 +868,7 @@ function RouteEditor({
         className={`ui inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-xs font-semibold transition-colors ${
           waypointClickMode
             ? "border-purple-400 bg-purple-50 text-purple-700 dark:border-purple-700 dark:bg-purple-950/30 dark:text-purple-300"
-            : "border-slate-200 text-slate-700 hover:bg-slate-50 dark:border-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-800"
+            : "border-border text-foreground hover:bg-muted"
         }`}
       >
         <Waypoints size={13} />
@@ -863,7 +878,7 @@ function RouteEditor({
         type="button"
         onClick={() => void previewPath()}
         disabled={previewing}
-        className="ui inline-flex items-center gap-1.5 rounded-lg border border-slate-200 px-2.5 py-1.5 text-xs font-semibold text-slate-700 transition-colors hover:bg-slate-50 disabled:opacity-60 dark:border-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-800"
+        className="ui inline-flex items-center gap-1.5 rounded-lg border border-border px-2.5 py-1.5 text-xs font-semibold text-foreground transition-colors hover:bg-muted disabled:opacity-60"
       >
         {previewing ? <Loader2 size={13} className="animate-spin" /> : <RefreshCw size={13} />}
         Preview path
@@ -879,7 +894,7 @@ function RouteEditor({
         </p>
       )}
       {previewError && <p className="ui mt-2 text-xs text-red-600 dark:text-red-400">{previewError}</p>}
-      <p className="ui mt-2 text-xs text-slate-400 dark:text-zinc-500">
+      <p className="ui mt-2 text-xs text-muted-foreground">
         Path takes a wrong turn? Add a waypoint (via the stop list or &ldquo;Add waypoint on
         map&rdquo;) where it should bend, then hit Preview path again.
       </p>
@@ -890,7 +905,7 @@ function RouteEditor({
     <>
       {options && options.length > 1 && (
         <div>
-          <p className="ui mb-1.5 text-xs font-medium text-slate-600 dark:text-zinc-400">
+          <p className="ui mb-1.5 text-xs font-medium text-muted-foreground">
             Google offered {options.length} routes. Pick the one that matches the real road:
           </p>
           <div className="flex flex-col gap-1.5">
@@ -902,7 +917,7 @@ function RouteEditor({
                 className={`ui flex items-center justify-between rounded-lg border px-3 py-1.5 text-left text-xs transition-colors ${
                   i === selectedOption
                     ? "border-brand bg-brand-soft text-brand dark:border-blue-500 dark:bg-brand-soft-dark dark:text-blue-300"
-                    : "border-slate-200 text-slate-600 hover:bg-slate-50 dark:border-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                    : "border-border text-muted-foreground hover:bg-muted"
                 }`}
               >
                 <span className="font-medium">{o.summary || `Route ${i + 1}`}</span>
@@ -915,7 +930,7 @@ function RouteEditor({
         </div>
       )}
       {editor.path && (
-        <p className="ui mt-2 text-xs text-slate-400 dark:text-zinc-500">
+        <p className="ui mt-2 text-xs text-muted-foreground">
           {usedTripId
             ? "Using a real recorded trip's driven path. It saves with the route."
             : "Road path set. It saves with the route."}
@@ -923,11 +938,11 @@ function RouteEditor({
       )}
 
       {editor.id && (
-        <div className="mt-4 border-t border-slate-100 pt-3 dark:border-zinc-800">
+        <div className="mt-4 border-t border-border pt-3">
           <button
             type="button"
             onClick={() => void openTripSection()}
-            className="ui flex w-full items-center justify-between text-left text-xs font-medium text-slate-600 hover:text-slate-800 dark:text-zinc-400 dark:hover:text-zinc-200"
+            className="ui flex w-full items-center justify-between text-left text-xs font-medium text-muted-foreground hover:text-foreground"
           >
             <span>Optional: use a real recorded trip&rsquo;s driven path instead</span>
             <ArrowDown
@@ -937,17 +952,17 @@ function RouteEditor({
           </button>
           {tripSectionOpen && (
             <div className="mt-2">
-              <p className="ui mb-2 text-xs text-slate-400 dark:text-zinc-500">
+              <p className="ui mb-2 text-xs text-muted-foreground">
                 If a bus has actually run this route with live tracking on, its recorded GPS trace
                 can become the route&rsquo;s official path (snapped to roads), more accurate than
                 a Directions guess since it&rsquo;s the exact road the bus took.
               </p>
               {loadingTrips ? (
-                <div className="flex items-center gap-2 text-xs text-slate-400 dark:text-zinc-500">
+                <div className="flex items-center gap-2 text-xs text-muted-foreground">
                   <Loader2 size={13} className="animate-spin" /> Loading trips…
                 </div>
               ) : !candidateTrips?.length ? (
-                <p className="ui text-xs text-slate-400 dark:text-zinc-500">
+                <p className="ui text-xs text-muted-foreground">
                   No trips on this route have a recorded GPS trace yet.
                 </p>
               ) : (
@@ -958,7 +973,7 @@ function RouteEditor({
                       className={`ui flex items-center justify-between rounded-lg border px-3 py-1.5 text-xs ${
                         usedTripId === t.trip_id
                           ? "border-brand bg-brand-soft text-brand dark:border-blue-500 dark:bg-brand-soft-dark dark:text-blue-300"
-                          : "border-slate-200 text-slate-600 dark:border-zinc-800 dark:text-zinc-300"
+                          : "border-border text-muted-foreground"
                       }`}
                     >
                       <span>
@@ -1022,14 +1037,14 @@ function RouteEditor({
 
   if (fullscreen) {
     return (
-      <div className="fixed inset-0 z-50 flex bg-white dark:bg-zinc-950">
-        <div className="flex w-96 shrink-0 flex-col overflow-y-auto border-r border-slate-200 p-4 dark:border-zinc-800">
+      <div className="fixed inset-0 z-50 flex bg-background">
+        <div className="flex w-96 shrink-0 flex-col overflow-y-auto border-r border-border p-4">
           <div className="mb-4 flex items-center justify-between gap-2">
             <p className="font-heading text-lg font-semibold">{editor.id ? "Edit route" : "New route"}</p>
             <button
               type="button"
               onClick={() => setFullscreen(false)}
-              className="rounded-lg p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:text-zinc-500 dark:hover:bg-zinc-800 dark:hover:text-zinc-300"
+              className="rounded-lg p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
               aria-label="Exit fullscreen"
             >
               <Minimize2 size={16} />
@@ -1041,7 +1056,7 @@ function RouteEditor({
           <div className="mt-6">{stopsPanel}</div>
 
           <div className="mt-6">
-            <p className="ui text-sm font-semibold text-slate-900 dark:text-white">Route map</p>
+            <p className="ui text-sm font-semibold text-foreground">Route map</p>
             <div className="mt-2 flex flex-wrap gap-1.5">{mapActionButtons}</div>
             {mapHints}
           </div>
@@ -1074,7 +1089,7 @@ function RouteEditor({
         <button
           type="button"
           onClick={() => setEditor(null)}
-          className="rounded-lg p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:text-zinc-500 dark:hover:bg-zinc-800 dark:hover:text-zinc-300"
+          className="rounded-lg p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
           aria-label="Close"
         >
           <X size={16} />
@@ -1090,14 +1105,14 @@ function RouteEditor({
         {/* ── Map + path preview ────────────────────────────────────── */}
         <div>
           <div className="mb-2 flex items-center justify-between gap-2">
-            <p className="ui text-sm font-semibold text-slate-900 dark:text-white">Route map</p>
+            <p className="ui text-sm font-semibold text-foreground">Route map</p>
             <div className="flex items-center gap-1.5">
               {mapActionButtons}
-              <span className="h-4 w-px bg-slate-200 dark:bg-zinc-700" aria-hidden />
+              <span className="h-4 w-px bg-border" aria-hidden />
               <button
                 type="button"
                 onClick={() => setFullscreen(true)}
-                className="ui rounded-lg border border-slate-200 p-1.5 text-slate-700 transition-colors hover:bg-slate-50 dark:border-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-800"
+                className="ui rounded-lg border border-border p-1.5 text-foreground transition-colors hover:bg-muted"
                 aria-label="Expand map to fullscreen"
                 title="Expand to fullscreen"
               >
@@ -1151,7 +1166,7 @@ function RegeneratePathButton({
         onClick={() => void run()}
         disabled={busy}
         title="Re-fetch the real road path from this route's stops"
-        className="ui rounded-lg border border-slate-200 px-2.5 py-1.5 text-xs font-semibold text-slate-700 transition-colors hover:bg-slate-50 disabled:opacity-60 dark:border-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-800"
+        className="ui rounded-lg border border-border px-2.5 py-1.5 text-xs font-semibold text-foreground transition-colors hover:bg-muted disabled:opacity-60"
       >
         {busy ? <Loader2 size={13} className="animate-spin" /> : <RefreshCw size={13} />}
       </button>
@@ -1226,9 +1241,9 @@ function OperatorMultiSelect({
           className="field text-sm"
         />
         {open && (
-          <div className="absolute z-20 mt-1 max-h-56 w-full overflow-auto rounded-xl border border-slate-200 bg-white p-1 shadow-lg dark:border-zinc-800 dark:bg-zinc-900">
+          <div className="absolute z-20 mt-1 max-h-56 w-full overflow-auto rounded-xl border border-border bg-card p-1 shadow-lg">
             {matches.length === 0 ? (
-              <p className="ui px-3 py-2 text-xs text-slate-400 dark:text-zinc-500">
+              <p className="ui px-3 py-2 text-xs text-muted-foreground">
                 {operators.length === 0 ? "No operators yet." : "No matches."}
               </p>
             ) : (
@@ -1240,7 +1255,7 @@ function OperatorMultiSelect({
                     onToggle(op.id);
                     setQuery("");
                   }}
-                  className="ui flex w-full items-center justify-between gap-2 rounded-lg px-3 py-1.5 text-left text-sm text-slate-700 hover:bg-slate-100 dark:text-zinc-200 dark:hover:bg-zinc-800"
+                  className="ui flex w-full items-center justify-between gap-2 rounded-lg px-3 py-1.5 text-left text-sm text-foreground hover:bg-muted"
                 >
                   <span className="truncate">{op.name}</span>
                   {op.status !== "active" && (
@@ -1308,7 +1323,7 @@ function StopPicker({
         className="field text-sm"
       />
       {open && (
-        <div className="absolute z-20 mt-1 max-h-56 w-full overflow-auto rounded-xl border border-slate-200 bg-white p-1 shadow-lg dark:border-zinc-800 dark:bg-zinc-900">
+        <div className="absolute z-20 mt-1 max-h-56 w-full overflow-auto rounded-xl border border-border bg-card p-1 shadow-lg">
           {matches.map((l) => (
             <button
               key={l.id}
@@ -1317,7 +1332,7 @@ function StopPicker({
                 onSelect(l);
                 setOpen(false);
               }}
-              className="ui block w-full rounded-lg px-3 py-1.5 text-left text-sm text-slate-700 hover:bg-slate-100 dark:text-zinc-200 dark:hover:bg-zinc-800"
+              className="ui block w-full rounded-lg px-3 py-1.5 text-left text-sm text-foreground hover:bg-muted"
             >
               {l.name_en}
             </button>
@@ -1336,7 +1351,7 @@ function StopPicker({
             </button>
           )}
           {matches.length === 0 && !q && (
-            <p className="ui px-3 py-2 text-xs text-slate-400 dark:text-zinc-500">
+            <p className="ui px-3 py-2 text-xs text-muted-foreground">
               No stops yet. Type a name to add one.
             </p>
           )}
@@ -1389,12 +1404,12 @@ function DeleteRouteButton({
   return (
     <div className="flex items-center gap-1.5">
       {error && <span className="ui whitespace-nowrap text-xs text-red-600 dark:text-red-400">{error}</span>}
-      <span className="ui whitespace-nowrap text-xs text-slate-600 dark:text-zinc-400">Delete {routeName}?</span>
+      <span className="ui whitespace-nowrap text-xs text-muted-foreground">Delete {routeName}?</span>
       <button
         type="button"
         onClick={() => setConfirming(false)}
         disabled={busy}
-        className="ui rounded-lg border border-slate-200 px-2.5 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-60 dark:border-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-800"
+        className="ui rounded-lg border border-border px-2.5 py-1.5 text-xs font-semibold text-foreground hover:bg-muted disabled:opacity-60"
       >
         Cancel
       </button>

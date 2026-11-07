@@ -1654,6 +1654,15 @@ export function findAdminBookingsByEmail(accessToken: string, email: string) {
   });
 }
 
+/** `code` is the 6-character "Booking code" shown on the passenger's ticket
+ *  in the mobile app (first 6 hex chars of the booking id, uppercased) —
+ *  not globally unique, so this can return more than one match. */
+export function findAdminBookingsByCode(accessToken: string, code: string) {
+  return request<AdminBooking[]>(`/admin/bookings?code=${encodeURIComponent(code)}`, {
+    accessToken,
+  });
+}
+
 export function listAdminLocations(accessToken: string) {
   return request<AdminLocation[]>('/admin/locations', { accessToken });
 }

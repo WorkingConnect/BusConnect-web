@@ -4,6 +4,9 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { ChevronRight, Search, User } from "lucide-react";
 import type { AdminPilot } from "@/lib/api";
+import { Card } from "@/components/ui/card";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { EmptyState } from "../dashboard-ui";
 import { StatusActions } from "./status-actions";
 
 const STATUS_STYLE: Record<string, string> = {
@@ -40,10 +43,10 @@ export function PilotList({ pilots }: { pilots: PilotWithPhoto[] }) {
 
   return (
     <div>
-      <div className="relative mt-6">
+      <div className="relative mt-6 max-w-md">
         <Search
           size={16}
-          className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-zinc-500"
+          className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
         />
         <input
           value={query}
@@ -53,13 +56,31 @@ export function PilotList({ pilots }: { pilots: PilotWithPhoto[] }) {
         />
       </div>
 
-      <div className="mt-4 flex flex-col gap-2">
+      <div className="mt-4">
         {filtered.length === 0 ? (
-          <div className="card p-8 text-center text-sm text-slate-500 dark:text-zinc-400">
-            {pilots.length === 0 ? "No pilots registered yet." : `No pilots match "${query}".`}
-          </div>
+          <EmptyState
+            icon={<User size={32} className="mx-auto text-slate-400 dark:text-zinc-600" />}
+            title={pilots.length === 0 ? "No pilots registered yet" : "No matches"}
+            subtitle={pilots.length === 0 ? "New registrations will show up here." : `No pilots match "${query}".`}
+          />
         ) : (
-          filtered.map((p) => <PilotRow key={p.id} pilot={p} />)
+          <Card>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Pilot</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Operator &amp; contact</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filtered.map((p) => (
+                  <PilotRow key={p.id} pilot={p} />
+                ))}
+              </TableBody>
+            </Table>
+          </Card>
         )}
       </div>
     </div>
@@ -68,46 +89,52 @@ export function PilotList({ pilots }: { pilots: PilotWithPhoto[] }) {
 
 function PilotRow({ pilot }: { pilot: PilotWithPhoto }) {
   return (
-    <div className="card flex items-center justify-between gap-4 p-4">
-      <Link href={`/admin/pilots/${pilot.id}`} className="flex min-w-0 flex-1 items-center gap-3">
-        {pilot.photoUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={pilot.photoUrl}
-            alt={`${pilot.name} photo`}
-            className="h-11 w-11 shrink-0 rounded-full border border-slate-200 object-cover dark:border-zinc-800"
-          />
-        ) : (
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-dashed border-slate-300 text-slate-400 dark:border-zinc-700 dark:text-zinc-600">
-            <User size={16} />
-          </div>
-        )}
-        <div className="min-w-0">
-          <p className="truncate font-medium">{pilot.name}</p>
-          <p className="ui mt-0.5 flex flex-wrap items-center gap-2 text-xs text-slate-500 dark:text-zinc-500">
-            <span className={`rounded-full px-2 py-0.5 font-medium ${STATUS_STYLE[pilot.status]}`}>
-              {STATUS_LABEL[pilot.status] ?? pilot.status}
-            </span>
-            <span>{pilot.operator?.name ?? "—"}</span>
-            <span>{pilot.phone_no}</span>
-            {pilot.bus && (
-              <span className="capitalize">
-                {pilot.assigned_role} · {pilot.bus.reg_no}
-              </span>
-            )}
-            {pilot.user_id && <span className="text-emerald-600 dark:text-emerald-400">Account linked</span>}
-          </p>
-        </div>
-      </Link>
-      <div className="flex shrink-0 items-center gap-2">
-        <StatusActions pilotId={pilot.id} status={pilot.status} />
-        <Link
-          href={`/admin/pilots/${pilot.id}`}
-          className="ui inline-flex items-center gap-1 rounded-lg border border-slate-200 px-2.5 py-1.5 text-xs font-semibold text-slate-700 transition-colors hover:bg-slate-50 dark:border-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-800"
-        >
-          View <ChevronRight size={13} />
+    <TableRow className="hover:bg-muted/50">
+      <TableCell>
+        <Link href={`/admin/pilots/${pilot.id}`} className="flex min-w-0 items-center gap-3">
+          {pilot.photoUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={pilot.photoUrl}
+              alt={`${pilot.name} photo`}
+              className="h-10 w-10 shrink-0 rounded-full border border-border object-cover"
+            />
+          ) : (
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-dashed border-border text-muted-foreground">
+              <User size={15} />
+            </div>
+          )}
+          <span className="truncate font-medium hover:text-brand dark:hover:text-blue-400">{pilot.name}</span>
         </Link>
-      </div>
-    </div>
+        {pilot.bus && (
+          <p className="ui mt-0.5 truncate text-xs capitalize text-muted-foreground">
+            {pilot.assigned_role} · {pilot.bus.reg_no}
+          </p>
+        )}
+      </TableCell>
+      <TableCell>
+        <span className={`ui inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold ${STATUS_STYLE[pilot.status]}`}>
+          {STATUS_LABEL[pilot.status] ?? pilot.status}
+        </span>
+      </TableCell>
+      <TableCell className="ui text-sm text-muted-foreground">
+        {pilot.operator?.name ?? "—"}
+        <span className="block text-xs">
+          {pilot.phone_no}
+          {pilot.user_id && <span className="ml-1.5 text-emerald-600 dark:text-emerald-400">· Account linked</span>}
+        </span>
+      </TableCell>
+      <TableCell className="text-right">
+        <div className="flex items-center justify-end gap-1.5">
+          <StatusActions pilotId={pilot.id} status={pilot.status} />
+          <Link
+            href={`/admin/pilots/${pilot.id}`}
+            className="ui inline-flex items-center gap-0.5 rounded-lg border border-border px-2.5 py-1.5 text-xs font-semibold text-foreground transition-colors hover:bg-muted"
+          >
+            View <ChevronRight size={13} />
+          </Link>
+        </div>
+      </TableCell>
+    </TableRow>
   );
 }

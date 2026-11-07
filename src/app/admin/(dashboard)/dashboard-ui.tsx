@@ -45,14 +45,14 @@ export function EmptyState({
   title,
   subtitle,
 }: {
-  icon: React.ReactNode;
+  icon?: React.ReactNode;
   title: string;
   subtitle: string;
 }) {
   return (
     <div className="card p-10 text-center">
       {icon}
-      <p className="mt-4 font-heading font-semibold">{title}</p>
+      <p className={icon ? "mt-4 font-heading font-semibold" : "font-heading font-semibold"}>{title}</p>
       <p className="ui mt-1 text-sm text-muted-foreground">{subtitle}</p>
     </div>
   );

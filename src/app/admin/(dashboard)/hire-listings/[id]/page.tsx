@@ -54,7 +54,7 @@ export default async function AdminHireListingDetailPage({
     <div className="mx-auto w-full max-w-2xl">
       <Link
         href="/admin/hire-listings"
-        className="ui inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 transition-colors hover:text-slate-900 dark:text-zinc-400 dark:hover:text-white"
+        className="ui inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
       >
         <ArrowLeft size={15} /> Back to hire listings
       </Link>

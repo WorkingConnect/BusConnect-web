@@ -1,10 +1,12 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { Loader2, PlusCircle, Save, Tag, Trash2, X } from "lucide-react";
+import { Loader2, PlusCircle, Save, Tag, Trash2, X, Eye, EyeOff } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { uploadOfferImage } from "@/lib/storage";
 import { ImageSlot } from "@/components/image-slot";
+import { Card } from "@/components/ui/card";
+import { KpiCard, EmptyState } from "../dashboard-ui";
 import {
   listAdminOffers,
   createAdminOffer,
@@ -135,7 +137,7 @@ export default function AdminOffersPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center gap-2 text-slate-500 dark:text-zinc-400">
+      <div className="flex items-center gap-2 text-muted-foreground">
         <Loader2 size={16} className="animate-spin" /> Loading offers…
       </div>
     );
@@ -153,9 +155,9 @@ export default function AdminOffersPage() {
       <div className="flex items-center justify-between gap-4">
         <div>
           <h1 className="font-heading text-2xl font-bold tracking-tight">Offers</h1>
-          <p className="ui mt-1 text-sm text-slate-600 dark:text-zinc-400">
+          <p className="ui mt-1 text-sm text-muted-foreground">
             Promo cards shown in &quot;Offers for you&quot; on the homepage. A passenger can enter the code
-            on their booking&apos;s payment screen — the discount is validated and applied server-side.
+            on their booking&apos;s payment screen, and the discount is validated and applied server-side.
           </p>
         </div>
         {!editor && (
@@ -163,6 +165,11 @@ export default function AdminOffersPage() {
             <PlusCircle size={16} /> New offer
           </button>
         )}
+      </div>
+
+      <div className="mt-5 grid grid-cols-2 gap-3 sm:max-w-sm">
+        <KpiCard icon={<Eye size={16} />} tone="emerald" label="Visible" value={String(offers.filter((o) => o.is_active).length)} />
+        <KpiCard icon={<EyeOff size={16} />} tone="slate" label="Hidden" value={String(offers.filter((o) => !o.is_active).length)} />
       </div>
 
       {editor && (
@@ -180,66 +187,74 @@ export default function AdminOffersPage() {
         />
       )}
 
-      <div className="mt-6 flex flex-col gap-2">
+      <div className="mt-6">
         {offers.length === 0 ? (
-          <div className="card p-10 text-center text-sm text-slate-500 dark:text-zinc-400">No offers yet.</div>
+          <EmptyState
+            icon={<Tag size={32} className="mx-auto text-slate-400 dark:text-zinc-600" />}
+            title="No offers yet"
+            subtitle="Create an offer to get started."
+          />
         ) : (
-          offers.map((o) => (
-            <div key={o.id} className="card flex items-center gap-3 p-4">
-              <div className={`h-10 w-10 shrink-0 rounded-lg ${THEME_SWATCH[o.theme]}`} />
-              <div className="flex flex-1 items-center justify-between gap-3">
-                <div className="min-w-0">
-                  <div className="flex items-center gap-2">
-                    <p className="truncate font-medium">{o.title}</p>
-                    {!o.is_active && (
-                      <span className="ui shrink-0 rounded-full bg-slate-200 px-2 py-0.5 text-[11px] font-semibold text-slate-600 dark:bg-zinc-800 dark:text-zinc-400">
-                        Hidden
-                      </span>
-                    )}
+          <Card>
+            <div className="flex flex-col">
+              {offers.map((o) => (
+                <div key={o.id} className="flex items-center gap-3 border-b border-border p-4 last:border-0">
+                  <div className={`h-10 w-10 shrink-0 rounded-lg ${THEME_SWATCH[o.theme]}`} />
+                  <div className="flex flex-1 items-center justify-between gap-3">
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2">
+                        <p className="truncate font-medium">{o.title}</p>
+                        {!o.is_active && (
+                          <span className="ui shrink-0 rounded-full bg-muted px-2 py-0.5 text-[11px] font-semibold text-muted-foreground">
+                            Hidden
+                          </span>
+                        )}
+                      </div>
+                      <p className="ui mt-0.5 flex items-center gap-1 text-xs text-muted-foreground">
+                        <Tag size={11} /> {o.code} · Valid till {o.valid_till}
+                      </p>
+                      <p className="ui mt-0.5 text-xs font-medium text-brand dark:text-blue-400">{formatDiscount(o)}</p>
+                      <p className="ui mt-0.5 text-xs text-muted-foreground">
+                        {o.operator?.name ?? "No operator"}
+                        {o.route?.name ? ` · ${o.route.name}` : " · all routes"}
+                        {o.offer_trips.length > 0 ? ` · ${o.offer_trips.length} trip(s)` : ""}
+                      </p>
+                    </div>
+                    <div className="flex shrink-0 items-center gap-1.5">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setEditor({
+                            id: o.id,
+                            title: o.title,
+                            code: o.code,
+                            validTill: o.valid_till,
+                            terms: o.terms.join("\n"),
+                            theme: o.theme,
+                            imageUrl: o.image_url ?? undefined,
+                            isActive: o.is_active,
+                            sortOrder: o.sort_order,
+                            discountType: o.discount_type,
+                            discountValue: o.discount_value,
+                            maxDiscount: o.max_discount != null ? String(o.max_discount) : "",
+                            minAmount: o.min_amount,
+                            maxUses: o.max_uses != null ? String(o.max_uses) : "",
+                            operatorId: o.operator_id,
+                            routeId: o.route_id ?? "",
+                            tripIds: o.offer_trips.map((t) => t.trip_id),
+                          })
+                        }
+                        className="ui rounded-lg border border-border px-2.5 py-1.5 text-xs font-semibold text-foreground transition-colors hover:bg-muted"
+                      >
+                        Edit
+                      </button>
+                      <DeleteOfferButton token={token} offerId={o.id} offerTitle={o.title} onDeleted={loadAll} />
+                    </div>
                   </div>
-                  <p className="ui mt-0.5 flex items-center gap-1 text-xs text-slate-500 dark:text-zinc-500">
-                    <Tag size={11} /> {o.code} · Valid till {o.valid_till}
-                  </p>
-                  <p className="ui mt-0.5 text-xs font-medium text-brand dark:text-blue-400">{formatDiscount(o)}</p>
-                  <p className="ui mt-0.5 text-xs text-slate-500 dark:text-zinc-500">
-                    {o.operator?.name ?? "No operator"}
-                    {o.route?.name ? ` · ${o.route.name}` : " · all routes"}
-                    {o.offer_trips.length > 0 ? ` · ${o.offer_trips.length} trip(s)` : ""}
-                  </p>
                 </div>
-                <div className="flex shrink-0 items-center gap-1.5">
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setEditor({
-                        id: o.id,
-                        title: o.title,
-                        code: o.code,
-                        validTill: o.valid_till,
-                        terms: o.terms.join("\n"),
-                        theme: o.theme,
-                        imageUrl: o.image_url ?? undefined,
-                        isActive: o.is_active,
-                        sortOrder: o.sort_order,
-                        discountType: o.discount_type,
-                        discountValue: o.discount_value,
-                        maxDiscount: o.max_discount != null ? String(o.max_discount) : "",
-                        minAmount: o.min_amount,
-                        maxUses: o.max_uses != null ? String(o.max_uses) : "",
-                        operatorId: o.operator_id,
-                        routeId: o.route_id ?? "",
-                        tripIds: o.offer_trips.map((t) => t.trip_id),
-                      })
-                    }
-                    className="ui rounded-lg border border-slate-200 px-2.5 py-1.5 text-xs font-semibold text-slate-700 transition-colors hover:bg-slate-50 dark:border-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-800"
-                  >
-                    Edit
-                  </button>
-                  <DeleteOfferButton token={token} offerId={o.id} offerTitle={o.title} onDeleted={loadAll} />
-                </div>
-              </div>
+              ))}
             </div>
-          ))
+          </Card>
         )}
       </div>
     </div>
@@ -341,7 +356,7 @@ function OfferEditor({
         <button
           type="button"
           onClick={() => setEditor(null)}
-          className="rounded-lg p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:text-zinc-500 dark:hover:bg-zinc-800 dark:hover:text-zinc-300"
+          className="rounded-lg p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
           aria-label="Close"
         >
           <X size={16} />
@@ -349,7 +364,7 @@ function OfferEditor({
       </div>
 
       <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <label className="ui flex flex-col gap-1.5 text-sm font-medium text-slate-700 dark:text-zinc-300">
+        <label className="ui flex flex-col gap-1.5 text-sm font-medium text-foreground">
           Title
           <input
             value={editor.title}
@@ -359,7 +374,7 @@ function OfferEditor({
           />
         </label>
 
-        <label className="ui flex flex-col gap-1.5 text-sm font-medium text-slate-700 dark:text-zinc-300">
+        <label className="ui flex flex-col gap-1.5 text-sm font-medium text-foreground">
           Code
           <input
             value={editor.code}
@@ -369,7 +384,7 @@ function OfferEditor({
           />
         </label>
 
-        <label className="ui flex flex-col gap-1.5 text-sm font-medium text-slate-700 dark:text-zinc-300">
+        <label className="ui flex flex-col gap-1.5 text-sm font-medium text-foreground">
           Valid till
           <input
             type="date"
@@ -379,7 +394,7 @@ function OfferEditor({
           />
         </label>
 
-        <label className="ui flex flex-col gap-1.5 text-sm font-medium text-slate-700 dark:text-zinc-300">
+        <label className="ui flex flex-col gap-1.5 text-sm font-medium text-foreground">
           Card theme
           <select
             value={editor.theme}
@@ -394,7 +409,7 @@ function OfferEditor({
           </select>
         </label>
 
-        <label className="ui flex flex-col gap-1.5 text-sm font-medium text-slate-700 dark:text-zinc-300">
+        <label className="ui flex flex-col gap-1.5 text-sm font-medium text-foreground">
           Operator
           <select
             value={editor.operatorId}
@@ -410,7 +425,7 @@ function OfferEditor({
           </select>
         </label>
 
-        <label className="ui flex flex-col gap-1.5 text-sm font-medium text-slate-700 dark:text-zinc-300">
+        <label className="ui flex flex-col gap-1.5 text-sm font-medium text-foreground">
           Route (optional)
           <select
             value={editor.routeId}
@@ -428,18 +443,18 @@ function OfferEditor({
         </label>
 
         {editor.routeId && (
-          <div className="ui flex flex-col gap-1.5 text-sm font-medium text-slate-700 dark:text-zinc-300 sm:col-span-2">
-            Specific trips (optional — leave none checked for any trip on this route)
-            <div className="max-h-40 overflow-y-auto rounded-lg border border-slate-200 p-2 dark:border-zinc-800">
+          <div className="ui flex flex-col gap-1.5 text-sm font-medium text-foreground sm:col-span-2">
+            Specific trips (optional, leave none checked for any trip on this route)
+            <div className="max-h-40 overflow-y-auto rounded-lg border border-border p-2">
               {routeTrips.length === 0 ? (
-                <p className="ui px-1 py-1 text-xs font-normal text-slate-500 dark:text-zinc-500">
+                <p className="ui px-1 py-1 text-xs font-normal text-muted-foreground">
                   No scheduled trips for this operator on this route yet.
                 </p>
               ) : (
                 routeTrips.map((t) => (
                   <label
                     key={t.id}
-                    className="ui flex items-center gap-2 rounded-md px-1 py-1 text-xs font-normal hover:bg-slate-50 dark:hover:bg-zinc-900"
+                    className="ui flex items-center gap-2 rounded-md px-1 py-1 text-xs font-normal hover:bg-muted"
                   >
                     <input
                       type="checkbox"
@@ -452,7 +467,7 @@ function OfferEditor({
                             : editor.tripIds.filter((id) => id !== t.id),
                         })
                       }
-                      className="h-3.5 w-3.5 rounded border-slate-300 text-brand focus:ring-brand dark:border-zinc-700"
+                      className="h-3.5 w-3.5 rounded border-border text-brand focus:ring-brand"
                     />
                     {new Date(t.depart_at).toLocaleString("en-LK", {
                       day: "numeric",
@@ -468,7 +483,7 @@ function OfferEditor({
           </div>
         )}
 
-        <label className="ui flex flex-col gap-1.5 text-sm font-medium text-slate-700 dark:text-zinc-300">
+        <label className="ui flex flex-col gap-1.5 text-sm font-medium text-foreground">
           Discount type
           <select
             value={editor.discountType}
@@ -480,7 +495,7 @@ function OfferEditor({
           </select>
         </label>
 
-        <label className="ui flex flex-col gap-1.5 text-sm font-medium text-slate-700 dark:text-zinc-300">
+        <label className="ui flex flex-col gap-1.5 text-sm font-medium text-foreground">
           {editor.discountType === "percent" ? "Discount (%)" : "Discount (LKR)"}
           <input
             type="number"
@@ -492,7 +507,7 @@ function OfferEditor({
         </label>
 
         {editor.discountType === "percent" && (
-          <label className="ui flex flex-col gap-1.5 text-sm font-medium text-slate-700 dark:text-zinc-300">
+          <label className="ui flex flex-col gap-1.5 text-sm font-medium text-foreground">
             Max discount (LKR, optional)
             <input
               type="number"
@@ -505,7 +520,7 @@ function OfferEditor({
           </label>
         )}
 
-        <label className="ui flex flex-col gap-1.5 text-sm font-medium text-slate-700 dark:text-zinc-300">
+        <label className="ui flex flex-col gap-1.5 text-sm font-medium text-foreground">
           Minimum booking (LKR)
           <input
             type="number"
@@ -516,7 +531,7 @@ function OfferEditor({
           />
         </label>
 
-        <label className="ui flex flex-col gap-1.5 text-sm font-medium text-slate-700 dark:text-zinc-300">
+        <label className="ui flex flex-col gap-1.5 text-sm font-medium text-foreground">
           Max redemptions (optional)
           <input
             type="number"
@@ -528,7 +543,7 @@ function OfferEditor({
           />
         </label>
 
-        <label className="ui flex flex-col gap-1.5 text-sm font-medium text-slate-700 dark:text-zinc-300 sm:col-span-2">
+        <label className="ui flex flex-col gap-1.5 text-sm font-medium text-foreground sm:col-span-2">
           Terms &amp; conditions
           <textarea
             value={editor.terms}
@@ -545,17 +560,17 @@ function OfferEditor({
       </div>
 
       <div className="mt-4 flex flex-wrap items-center gap-6">
-        <label className="ui flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-zinc-300">
+        <label className="ui flex items-center gap-2 text-sm font-medium text-foreground">
           <input
             type="checkbox"
             checked={editor.isActive}
             onChange={(e) => setEditor({ ...editor, isActive: e.target.checked })}
-            className="h-4 w-4 rounded border-slate-300 text-brand focus:ring-brand dark:border-zinc-700"
+            className="h-4 w-4 rounded border-border text-brand focus:ring-brand"
           />
           Visible on homepage
         </label>
 
-        <label className="ui flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-zinc-300">
+        <label className="ui flex items-center gap-2 text-sm font-medium text-foreground">
           Sort order
           <input
             type="number"
@@ -624,12 +639,12 @@ function DeleteOfferButton({
   return (
     <div className="flex items-center gap-1.5">
       {error && <span className="ui whitespace-nowrap text-xs text-red-600 dark:text-red-400">{error}</span>}
-      <span className="ui whitespace-nowrap text-xs text-slate-600 dark:text-zinc-400">Delete {offerTitle}?</span>
+      <span className="ui whitespace-nowrap text-xs text-muted-foreground">Delete {offerTitle}?</span>
       <button
         type="button"
         onClick={() => setConfirming(false)}
         disabled={busy}
-        className="ui rounded-lg border border-slate-200 px-2.5 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-60 dark:border-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-800"
+        className="ui rounded-lg border border-border px-2.5 py-1.5 text-xs font-semibold text-foreground hover:bg-muted disabled:opacity-60"
       >
         Cancel
       </button>

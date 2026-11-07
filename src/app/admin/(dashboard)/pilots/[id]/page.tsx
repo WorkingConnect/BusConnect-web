@@ -35,12 +35,12 @@ function Field({
 }) {
   return (
     <div className="flex items-start gap-3">
-      <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-500 dark:bg-zinc-900 dark:text-zinc-400">
+      <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
         <Icon size={15} />
       </div>
       <div>
-        <p className="ui text-xs font-medium text-slate-500 dark:text-zinc-500">{label}</p>
-        <p className="mt-0.5 text-sm font-medium text-slate-900 dark:text-white">{value}</p>
+        <p className="ui text-xs font-medium text-muted-foreground">{label}</p>
+        <p className="mt-0.5 text-sm font-medium text-foreground">{value}</p>
       </div>
     </div>
   );
@@ -103,7 +103,7 @@ export default async function AdminPilotDetailPage({
     <div className="mx-auto w-full max-w-2xl">
       <Link
         href="/admin/pilots"
-        className="ui inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 transition-colors hover:text-slate-900 dark:text-zinc-400 dark:hover:text-white"
+        className="ui inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
       >
         <ArrowLeft size={15} /> Back to pilots
       </Link>
@@ -116,16 +116,16 @@ export default async function AdminPilotDetailPage({
               <img
                 src={photoUrl}
                 alt={`${pilot.name} photo`}
-                className="h-16 w-16 shrink-0 rounded-full border border-slate-200 object-cover dark:border-zinc-800"
+                className="h-16 w-16 shrink-0 rounded-full border border-border object-cover"
               />
             ) : (
-              <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full border border-dashed border-slate-300 text-slate-400 dark:border-zinc-700 dark:text-zinc-600">
+              <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full border border-dashed border-border text-muted-foreground">
                 <User size={20} />
               </div>
             )}
             <div>
               <h1 className="font-heading text-xl font-bold tracking-tight">{pilot.name}</h1>
-              <p className="ui mt-1 flex flex-wrap items-center gap-2 text-xs text-slate-500 dark:text-zinc-500">
+              <p className="ui mt-1 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
                 <span className={`rounded-full px-2 py-0.5 font-semibold ${STATUS_STYLE[pilot.status]}`}>
                   {STATUS_LABEL[pilot.status] ?? pilot.status}
                 </span>
@@ -136,17 +136,12 @@ export default async function AdminPilotDetailPage({
           <StatusActions pilotId={pilot.id} status={pilot.status} />
         </div>
 
-        <p className="ui mt-4 flex items-start gap-2 rounded-xl bg-slate-50 p-3 text-xs text-slate-600 dark:bg-zinc-900 dark:text-zinc-400">
+        <p className="ui mt-4 flex items-start gap-2 rounded-xl bg-muted p-3 text-xs text-muted-foreground">
           <ShieldAlert size={14} className="mt-0.5 shrink-0" />
           {STATUS_CAPTION[pilot.status] ?? ""}
         </p>
-      </div>
 
-      <div className="card-lg mt-4 p-6">
-        <h2 className="ui text-xs font-semibold uppercase tracking-wide text-slate-400 dark:text-zinc-600">
-          Registration details
-        </h2>
-        <div className="mt-4 grid grid-cols-1 gap-5 sm:grid-cols-2">
+        <dl className="ui mt-5 grid grid-cols-1 gap-5 border-t border-border pt-5 sm:grid-cols-2">
           <Field icon={Hash} label="ID number" value={pilot.id_number} />
           <Field icon={Phone} label="Phone number" value={pilot.phone_no} />
           <Field
@@ -163,24 +158,16 @@ export default async function AdminPilotDetailPage({
             label="Fleet assignment"
             value={pilot.bus ? <span className="capitalize">{pilot.assigned_role} · {pilot.bus.reg_no}</span> : "Not assigned yet"}
           />
+        </dl>
+
+        <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-border pt-5">
+          <p className="ui text-sm text-muted-foreground">
+            {pilot.user_id
+              ? "BusConnect account linked. This pilot can sign in and scan boarding tickets for their assigned trips."
+              : "BusConnect account not linked yet. The operator can link one once approved."}
+          </p>
+          {pilot.profile_image_url && <ViewPhotoButton pilotId={pilot.id} />}
         </div>
-
-        {pilot.profile_image_url && (
-          <div className="mt-6 border-t border-slate-200 pt-5 dark:border-zinc-800">
-            <ViewPhotoButton pilotId={pilot.id} />
-          </div>
-        )}
-      </div>
-
-      <div className="card-lg mt-4 p-6">
-        <h2 className="ui text-xs font-semibold uppercase tracking-wide text-slate-400 dark:text-zinc-600">
-          BusConnect account
-        </h2>
-        <p className="ui mt-3 text-sm text-slate-600 dark:text-zinc-400">
-          {pilot.user_id
-            ? "Linked. This pilot can sign in and scan boarding tickets for their assigned trips."
-            : "Not linked yet. The operator can link this pilot to a BusConnect account once approved."}
-        </p>
       </div>
     </div>
   );

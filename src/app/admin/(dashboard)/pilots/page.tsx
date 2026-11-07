@@ -1,6 +1,8 @@
 import Link from "next/link";
+import { Users, UserCheck, UserCog } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { listAdminPilots, getAdminPilotPhotoUrl, ApiError, type AdminPilot } from "@/lib/api";
+import { KpiCard } from "../dashboard-ui";
 import { PilotList, type PilotWithPhoto } from "./pilot-list";
 
 export default async function AdminPilotsPage() {
@@ -60,13 +62,22 @@ export default async function AdminPilotsPage() {
     photoUrl: photoUrls.get(p.id) ?? null,
   }));
 
+  const activeCount = pilots.filter((p) => p.status === "active").length;
+  const pendingCount = pilots.filter((p) => p.status === "pending").length;
+
   return (
     <div>
       <h1 className="font-heading text-2xl font-bold tracking-tight">Pilots</h1>
-      <p className="ui mt-1 text-sm text-slate-600 dark:text-zinc-400">
+      <p className="ui mt-1 text-sm text-muted-foreground">
         Every driver and conductor operators have registered. They&apos;re active immediately, no approval needed.
         Reject one here if it needs to be deactivated.
       </p>
+
+      <div className="mt-5 grid grid-cols-3 gap-3 sm:max-w-lg">
+        <KpiCard icon={<Users size={16} />} tone="blue" label="Total" value={String(pilots.length)} />
+        <KpiCard icon={<UserCheck size={16} />} tone="emerald" label="Active" value={String(activeCount)} />
+        <KpiCard icon={<UserCog size={16} />} tone="amber" label="Pending" value={String(pendingCount)} />
+      </div>
 
       <PilotList pilots={pilotsWithPhoto} />
     </div>
